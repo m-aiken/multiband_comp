@@ -22,6 +22,23 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
                        )
 #endif
 {
+    attack = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Attack"));
+    jassert(attack != nullptr);
+    
+    release = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Release"));
+    jassert(release != nullptr);
+    
+    threshold = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Threshold"));
+    jassert(threshold != nullptr);
+    
+    makeupGain = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("MakeupGain"));
+    jassert(makeupGain != nullptr);
+    
+    ratio = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("Ratio"));
+    jassert(ratio != nullptr);
+    
+    bypassed = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("Bypassed"));
+    jassert(bypassed != nullptr);
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -93,8 +110,14 @@ void PFMProject12AudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    
+    compressor.prepare(spec);
+    outputGain.prepare(spec);
+    outputGain.setRampDurationSeconds(0.05); // 50ms
 }
 
 void PFMProject12AudioProcessor::releaseResources()
@@ -144,18 +167,20 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    compressor.setAttack(attack->get());
+    compressor.setRelease(release->get());
+    compressor.setThreshold(threshold->get());
+    compressor.setRatio(ratio->getCurrentChoiceName().getFloatValue());
+    
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    
+    context.isBypassed = bypassed->get();
+    
+    compressor.process(context);
+    
+    outputGain.setGainDecibels(makeupGain->get());
+    outputGain.process(context);
 }
 
 //==============================================================================
