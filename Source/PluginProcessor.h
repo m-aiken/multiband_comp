@@ -11,6 +11,31 @@
 #include <JuceHeader.h>
 
 //==============================================================================
+struct CompressorBand
+{
+    void prepare(juce::dsp::ProcessSpec& spec);
+    void updateCompressor();
+    void updateGain();
+    void updateBypassState();
+    void process(juce::AudioBuffer<float>& buffer);
+    
+    juce::AudioParameterFloat*  attack     { nullptr };
+    juce::AudioParameterFloat*  release    { nullptr };
+    juce::AudioParameterFloat*  threshold  { nullptr };
+    juce::AudioParameterFloat*  makeupGain { nullptr };
+    juce::AudioParameterChoice* ratio      { nullptr };
+    juce::AudioParameterBool*   bypassed   { nullptr };
+    
+private:
+    bool compressorConfigured = false;
+    bool gainConfigured = false;
+    bool shouldBeBypassed = false;
+    
+    juce::dsp::Compressor<float> compressor;
+    juce::dsp::Gain<float> gain;
+};
+
+//==============================================================================
 /**
 */
 class PFMProject12AudioProcessor  : public juce::AudioProcessor
@@ -58,15 +83,7 @@ public:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
 private:
-    juce::dsp::Compressor<float> compressor;
-    juce::dsp::Gain<float> outputGain;
-    
-    juce::AudioParameterFloat*  attack     { nullptr };
-    juce::AudioParameterFloat*  release    { nullptr };
-    juce::AudioParameterFloat*  threshold  { nullptr };
-    juce::AudioParameterFloat*  makeupGain { nullptr };
-    juce::AudioParameterChoice* ratio      { nullptr };
-    juce::AudioParameterBool*   bypassed   { nullptr };
+    CompressorBand bandOne;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessor)
