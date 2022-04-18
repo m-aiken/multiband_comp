@@ -86,6 +86,21 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     
     bandOne.bypassed = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("Bypassed"));
     jassert(bandOne.bypassed != nullptr);
+    
+    lowMidCrossover = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("LowMidCrossover"));
+    jassert(lowMidCrossover != nullptr);
+    
+    midHighCrossover = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("MidHighCrossover"));
+    jassert(midHighCrossover != nullptr);
+    
+    LP1.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
+    HP1.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
+    AP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
+    LP2.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
+    HP2.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
+    
+    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
+    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -163,6 +178,21 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     spec.numChannels = getTotalNumOutputChannels();
     
     bandOne.prepare(spec);
+    
+    LP1.prepare(spec);
+    HP1.prepare(spec);
+    AP2.prepare(spec);
+    LP2.prepare(spec);
+    HP2.prepare(spec);
+    
+    for ( auto& fBuffer : filterBuffers )
+    {
+        fBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
+    }
+    
+    invAP1.prepare(spec);
+    invAP2.prepare(spec);
+    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
 void PFMProject12AudioProcessor::releaseResources()
@@ -212,10 +242,94 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    auto crossoverFreq0 = lowMidCrossover->get();
+    auto crossoverFreq1 = midHighCrossover->get();
+    
+    /*
+    Filter network
+    xf0    xf1         xf0    xf1
+    LP1 -> AP2    ------\               LP tuned to xf0
+    HP1 -> LP2;         /-----\         bandpass between xf0 and xf1
+       \-> HP2;               /------   HP tuned to xf1
+    */
+    
+    LP1.setCutoffFrequency(crossoverFreq0);
+    HP1.setCutoffFrequency(crossoverFreq0);
+    AP2.setCutoffFrequency(crossoverFreq1);
+    LP2.setCutoffFrequency(crossoverFreq1);
+    HP2.setCutoffFrequency(crossoverFreq1);
+    
+    for ( auto& fBuffer : filterBuffers )
+    {
+        fBuffer = buffer;
+    }
+    
+    apBuffer = buffer;
+    
+    // process filterBuffers[0] - LP1 --> AP2
+    auto fb0Block = juce::dsp::AudioBlock<float>(filterBuffers[0]);
+    auto fb0Ctx = juce::dsp::ProcessContextReplacing<float>(fb0Block);
+    LP1.process(fb0Ctx);
+    AP2.process(fb0Ctx);
+    
+    // process filterBuffers[1] - HP1 --> LP2
+    auto fb1Block = juce::dsp::AudioBlock<float>(filterBuffers[1]);
+    auto fb1Ctx = juce::dsp::ProcessContextReplacing<float>(fb1Block);
+    HP1.process(fb1Ctx);
+    
+    // the buffer HP1 has just processed filterBuffers[1] needs to be copied to filterBuffers[2] BEFORE LP2 processes it
+    filterBuffers[2] = filterBuffers[1];
+    
+    // resume processing filterBuffers[1]
+    LP2.process(fb1Ctx);
+    
+    // process filterBuffers[2] - (already processed by HP1) --> HP2
+    auto fb2Block = juce::dsp::AudioBlock<float>(filterBuffers[2]);
+    auto fb2Ctx = juce::dsp::ProcessContextReplacing<float>(fb2Block);
+    HP2.process(fb2Ctx);
+    
+    auto numChannels = buffer.getNumChannels();
+    auto numSamples = buffer.getNumSamples();
+    
+    buffer.clear();
+    
+    // sum the filtered buffers back to the main buffer
+    addBand(buffer, filterBuffers[0]);
+    addBand(buffer, filterBuffers[1]);
+    addBand(buffer, filterBuffers[2]);
+    
+    // test with an inverted allpass filter, it should cancel the phase of the post-filtered signal
+    if ( bandOne.bypassed->get() )
+    {
+        invAP1.setCutoffFrequency(crossoverFreq0);
+        invAP2.setCutoffFrequency(crossoverFreq1);
+        
+        auto invApBlock = juce::dsp::AudioBlock<float>(apBuffer);
+        auto invApCtx = juce::dsp::ProcessContextReplacing<float>(invApBlock);
+        
+        invAP1.process(invApCtx);
+        invAP2.process(invApCtx);
+        
+        for ( auto i = 0; i < numChannels; ++i )
+        {
+            juce::FloatVectorOperations::multiply(apBuffer.getWritePointer(i), -1.f, numSamples);
+        }
+        
+        addBand(buffer, apBuffer);
+    }
+    
     bandOne.updateCompressor();
     bandOne.updateGain();
     bandOne.updateBypassState();
     bandOne.process(buffer);
+}
+
+void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source)
+{
+    for ( int channel = 0; channel < source.getNumChannels(); ++channel )
+    {
+        target.addFrom(channel, 0, source, channel, 0, source.getNumSamples());
+    }
 }
 
 //==============================================================================
@@ -285,6 +399,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     layout.add(std::make_unique<juce::AudioParameterBool>("Bypassed",
                                                           "Bypassed",
                                                           false));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("LowMidCrossover",
+                                                           "Low-Mid Crossover",
+                                                           juce::NormalisableRange<float>(20.f, 999.f, 1.f, 1.f),
+                                                           400.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MidHighCrossover",
+                                                           "Mid-High Crossover",
+                                                           juce::NormalisableRange<float>(1000.f, 20000.f, 1.f, 1.f),
+                                                           2000.f));
     
     return layout;
 }
