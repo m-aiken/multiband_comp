@@ -25,6 +25,8 @@ struct CompressorBand
     juce::AudioParameterFloat*  makeupGain { nullptr };
     juce::AudioParameterChoice* ratio      { nullptr };
     juce::AudioParameterBool*   bypassed   { nullptr };
+    juce::AudioParameterBool*   solo       { nullptr };
+    juce::AudioParameterBool*   mute       { nullptr };
     
 private:
     bool compressorConfigured = false;
