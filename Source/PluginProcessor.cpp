@@ -69,38 +69,62 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
                        )
 #endif
 {
-    bandOne.attack = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Attack"));
-    jassert(bandOne.attack != nullptr);
+    auto assignFloatParam = [&apvts = this->apvts](auto& target, const auto& name)
+    {
+        auto param = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter(name));
+        jassert(param != nullptr);
+        target = param;
+    };
     
-    bandOne.release = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Release"));
-    jassert(bandOne.release != nullptr);
+    auto assignChoiceParam = [&apvts = this->apvts](auto& target, const auto& name)
+    {
+        auto param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter(name));
+        jassert(param != nullptr);
+        target = param;
+    };
     
-    bandOne.threshold = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("Threshold"));
-    jassert(bandOne.threshold != nullptr);
+    auto assignBoolParam = [&apvts = this->apvts](auto& target, const auto& name)
+    {
+        auto param = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter(name));
+        jassert(param != nullptr);
+        target = param;
+    };
     
-    bandOne.makeupGain = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("MakeupGain"));
-    jassert(bandOne.makeupGain != nullptr);
+    assignFloatParam(lowBand.attack, "AttackLowBand");
+    assignFloatParam(midBand.attack, "AttackMidBand");
+    assignFloatParam(highBand.attack, "AttackHighBand");
     
-    bandOne.ratio = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter("Ratio"));
-    jassert(bandOne.ratio != nullptr);
+    assignFloatParam(lowBand.release, "ReleaseLowBand");
+    assignFloatParam(midBand.release, "ReleaseMidBand");
+    assignFloatParam(highBand.release, "ReleaseHighBand");
     
-    bandOne.bypassed = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter("Bypassed"));
-    jassert(bandOne.bypassed != nullptr);
+    assignFloatParam(lowBand.threshold, "ThresholdLowBand");
+    assignFloatParam(midBand.threshold, "ThresholdMidBand");
+    assignFloatParam(highBand.threshold, "ThresholdHighBand");
     
-    lowMidCrossover = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("LowMidCrossover"));
-    jassert(lowMidCrossover != nullptr);
+    assignFloatParam(lowBand.makeupGain, "MakeupGainLowBand");
+    assignFloatParam(midBand.makeupGain, "MakeupGainMidBand");
+    assignFloatParam(highBand.makeupGain, "MakeupGainHighBand");
     
-    midHighCrossover = dynamic_cast<juce::AudioParameterFloat*>(apvts.getParameter("MidHighCrossover"));
-    jassert(midHighCrossover != nullptr);
+    assignChoiceParam(lowBand.ratio, "RatioLowBand");
+    assignChoiceParam(midBand.ratio, "RatioMidBand");
+    assignChoiceParam(highBand.ratio, "RatioHighBand");
+    
+    assignBoolParam(lowBand.bypassed, "BypassedLowBand");
+    assignBoolParam(midBand.bypassed, "BypassedMidBand");
+    assignBoolParam(highBand.bypassed, "BypassedHighBand");
+    
+    assignFloatParam(lowMidCrossover, "LowMidCrossover");
+    assignFloatParam(midHighCrossover, "MidHighCrossover");
     
     LP1.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP1.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
     AP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
     LP2.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP2.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
-    
-    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
-    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
+
+//    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
+//    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -176,8 +200,11 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
-    
-    bandOne.prepare(spec);
+        
+    for ( auto& comp : compressors )
+    {
+        comp.prepare(spec);
+    }
     
     LP1.prepare(spec);
     HP1.prepare(spec);
@@ -189,10 +216,10 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     {
         fBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     }
-    
-    invAP1.prepare(spec);
-    invAP2.prepare(spec);
-    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
+
+//    invAP1.prepare(spec);
+//    invAP2.prepare(spec);
+//    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
 void PFMProject12AudioProcessor::releaseResources()
@@ -242,8 +269,14 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    auto crossoverFreq0 = lowMidCrossover->get();
-    auto crossoverFreq1 = midHighCrossover->get();
+    for ( auto& fBuffer : filterBuffers )
+    {
+        fBuffer = buffer;
+    }
+    
+//    apBuffer = buffer;
+    
+    updateBands();
     
     /*
     Filter network
@@ -252,20 +285,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     HP1 -> LP2;         /-----\         bandpass between xf0 and xf1
        \-> HP2;               /------   HP tuned to xf1
     */
-    
-    LP1.setCutoffFrequency(crossoverFreq0);
-    HP1.setCutoffFrequency(crossoverFreq0);
-    AP2.setCutoffFrequency(crossoverFreq1);
-    LP2.setCutoffFrequency(crossoverFreq1);
-    HP2.setCutoffFrequency(crossoverFreq1);
-    
-    for ( auto& fBuffer : filterBuffers )
-    {
-        fBuffer = buffer;
-    }
-    
-    apBuffer = buffer;
-    
+        
     // process filterBuffers[0] - LP1 --> AP2
     auto fb0Block = juce::dsp::AudioBlock<float>(filterBuffers[0]);
     auto fb0Ctx = juce::dsp::ProcessContextReplacing<float>(fb0Block);
@@ -288,8 +308,10 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto fb2Ctx = juce::dsp::ProcessContextReplacing<float>(fb2Block);
     HP2.process(fb2Ctx);
     
-    auto numChannels = buffer.getNumChannels();
-    auto numSamples = buffer.getNumSamples();
+    for ( auto i = 0; i < compressors.size(); ++i )
+    {
+        compressors[i].process(filterBuffers[i]);
+    }
     
     buffer.clear();
     
@@ -298,9 +320,17 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     addBand(buffer, filterBuffers[1]);
     addBand(buffer, filterBuffers[2]);
     
+    /*
     // test with an inverted allpass filter, it should cancel the phase of the post-filtered signal
+     
+    auto numChannels = buffer.getNumChannels();
+    auto numSamples = buffer.getNumSamples();
+    
     if ( bandOne.bypassed->get() )
     {
+        auto crossoverFreq0 = lowMidCrossover->get();
+        auto crossoverFreq1 = midHighCrossover->get();
+     
         invAP1.setCutoffFrequency(crossoverFreq0);
         invAP2.setCutoffFrequency(crossoverFreq1);
         
@@ -317,11 +347,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         
         addBand(buffer, apBuffer);
     }
-    
-    bandOne.updateCompressor();
-    bandOne.updateGain();
-    bandOne.updateBypassState();
-    bandOne.process(buffer);
+    */
 }
 
 void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source)
@@ -330,6 +356,25 @@ void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const
     {
         target.addFrom(channel, 0, source, channel, 0, source.getNumSamples());
     }
+}
+
+void PFMProject12AudioProcessor::updateBands()
+{
+    for ( auto& comp : compressors )
+    {
+        comp.updateCompressor();
+        comp.updateGain();
+        comp.updateBypassState();
+    }
+    
+    auto crossoverFreq0 = lowMidCrossover->get();
+    auto crossoverFreq1 = midHighCrossover->get();
+    
+    LP1.setCutoffFrequency(crossoverFreq0);
+    HP1.setCutoffFrequency(crossoverFreq0);
+    AP2.setCutoffFrequency(crossoverFreq1);
+    LP2.setCutoffFrequency(crossoverFreq1);
+    HP2.setCutoffFrequency(crossoverFreq1);
 }
 
 //==============================================================================
@@ -364,25 +409,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Attack",
-                                                           "Attack",
-                                                           juce::NormalisableRange<float>(5.f, 250.f, 1.f, 1.f),
-                                                           50.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Release",
-                                                           "Release",
-                                                           juce::NormalisableRange<float>(5.f, 500.f, 1.f, 1.f),
-                                                           250.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>("Threshold",
-                                                           "Threshold",
-                                                           juce::NormalisableRange<float>(-60.f, 12.f, 1.f, 1.f),
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGain",
-                                                           "Makeup Gain",
-                                                           juce::NormalisableRange<float>(0.f, 24.f, 1.f, 1.f),
-                                                           0.f));
+    auto attackRange = juce::NormalisableRange<float>(5.f, 250.f, 1.f, 1.f);
+    auto releaseRange = juce::NormalisableRange<float>(5.f, 500.f, 1.f, 1.f);
+    auto thresholdRange = juce::NormalisableRange<float>(-60.f, 12.f, 1.f, 1.f);
+    auto makeupGainRange = juce::NormalisableRange<float>(0.f, 24.f, 1.f, 1.f);
     
     auto ratioChoices = std::vector<double>{ 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 20, 50, 100 };
     juce::StringArray choicesStringArray;
@@ -391,15 +421,34 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
         choicesStringArray.add( juce::String(choice, 1) );
     }
     
-    layout.add(std::make_unique<juce::AudioParameterChoice>("Ratio",
-                                                            "Ratio",
-                                                            choicesStringArray,
-                                                            2)); // 3:1 ratio set as default
+    //==============================================================================
+    // Low Band
+    layout.add(std::make_unique<juce::AudioParameterFloat>("AttackLowBand", "Attack Low", attackRange, 50.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("ReleaseLowBand", "Release Low", releaseRange, 250.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("ThresholdLowBand", "Threshold Low", thresholdRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGainLowBand", "Makeup Gain Low", makeupGainRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("RatioLowBand", "Ratio Low", choicesStringArray, 2)); // 3:1 ratio set as default
+    layout.add(std::make_unique<juce::AudioParameterBool>("BypassedLowBand", "Bypassed Low", false));
     
-    layout.add(std::make_unique<juce::AudioParameterBool>("Bypassed",
-                                                          "Bypassed",
-                                                          false));
+    //==============================================================================
+    // Mid Band
+    layout.add(std::make_unique<juce::AudioParameterFloat>("AttackMidBand", "Attack Mid", attackRange, 50.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("ReleaseMidBand", "Release Mid", releaseRange, 250.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("ThresholdMidBand", "Threshold Mid", thresholdRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGainMidBand", "Makeup Gain Mid", makeupGainRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("RatioMidBand", "Ratio Mid", choicesStringArray, 2)); // 3:1 ratio set as default
+    layout.add(std::make_unique<juce::AudioParameterBool>("BypassedMidBand", "Bypassed Mid", false));
     
+    //==============================================================================
+    // High Band
+    layout.add(std::make_unique<juce::AudioParameterFloat>("AttackHighBand", "Attack High", attackRange, 50.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("ReleaseHighBand", "Release High", releaseRange, 250.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("ThresholdHighBand", "Threshold High", thresholdRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGainHighBand", "Makeup Gain High", makeupGainRange, 0.f));
+    layout.add(std::make_unique<juce::AudioParameterChoice>("RatioHighBand", "Ratio High", choicesStringArray, 2)); // 3:1 ratio set as default
+    layout.add(std::make_unique<juce::AudioParameterBool>("BypassedHighBand", "Bypassed High", false));
+    
+    //==============================================================================
     layout.add(std::make_unique<juce::AudioParameterFloat>("LowMidCrossover",
                                                            "Low-Mid Crossover",
                                                            juce::NormalisableRange<float>(20.f, 999.f, 1.f, 1.f),

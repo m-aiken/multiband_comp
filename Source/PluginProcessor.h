@@ -79,13 +79,17 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
     
     void addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source);
+    void updateBands();
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
 private:
-    CompressorBand bandOne;
+    std::array<CompressorBand, 3> compressors;
+    CompressorBand& lowBand = compressors[0];
+    CompressorBand& midBand = compressors[1];
+    CompressorBand& highBand = compressors[2];
     
     juce::AudioParameterFloat* lowMidCrossover { nullptr };
     juce::AudioParameterFloat* midHighCrossover { nullptr };
@@ -96,8 +100,8 @@ private:
     
     std::array<juce::AudioBuffer<float>, 3> filterBuffers;
     
-    juce::dsp::LinkwitzRileyFilter<float> invAP1, invAP2;
-    juce::AudioBuffer<float> apBuffer;
+//    juce::dsp::LinkwitzRileyFilter<float> invAP1, invAP2;
+//    juce::AudioBuffer<float> apBuffer;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessor)
