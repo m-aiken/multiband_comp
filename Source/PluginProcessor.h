@@ -10,6 +10,83 @@
 
 #include <JuceHeader.h>
 
+#define MIN_BANDS 0
+#define MAX_BANDS 7
+
+//==============================================================================
+namespace Params
+{
+
+inline juce::String getAttackParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Attack";
+    return str;
+}
+
+inline juce::String getReleaseParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Release";
+    return str;
+}
+
+inline juce::String getThresholdParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Threshold";
+    return str;
+}
+
+inline juce::String getGainParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Gain";
+    return str;
+}
+
+inline juce::String getRatioParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Ratio";
+    return str;
+}
+
+inline juce::String getBypassParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Bypass";
+    return str;
+}
+
+inline juce::String getSoloParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Solo";
+    return str;
+}
+
+inline juce::String getMuteParamName(int bandNum)
+{
+    juce::String str;
+    str << "Band " << bandNum << " Mute";
+    return str;
+}
+
+inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
+{
+    jassert(lowBandNum < highBandNum);
+    jassert(lowBandNum >= MIN_BANDS);
+    jassert(highBandNum < MAX_BANDS);
+    jassert(highBandNum - lowBandNum == 1);
+    
+    juce::String str;
+    str << "Band " << lowBandNum << "-" << highBandNum << " X-Over";
+    return str;
+}
+
+}
+
 //==============================================================================
 struct CompressorBand
 {
