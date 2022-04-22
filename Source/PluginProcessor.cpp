@@ -90,40 +90,40 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
         target = param;
     };
     
-    assignFloatParam(lowBand.attack, "AttackLowBand");
-    assignFloatParam(midBand.attack, "AttackMidBand");
-    assignFloatParam(highBand.attack, "AttackHighBand");
+    assignFloatParam(lowBand.attack,  Params::getAttackParamName(0));
+    assignFloatParam(midBand.attack,  Params::getAttackParamName(1));
+    assignFloatParam(highBand.attack, Params::getAttackParamName(2));
     
-    assignFloatParam(lowBand.release, "ReleaseLowBand");
-    assignFloatParam(midBand.release, "ReleaseMidBand");
-    assignFloatParam(highBand.release, "ReleaseHighBand");
+    assignFloatParam(lowBand.release,  Params::getReleaseParamName(0));
+    assignFloatParam(midBand.release,  Params::getReleaseParamName(1));
+    assignFloatParam(highBand.release, Params::getReleaseParamName(2));
     
-    assignFloatParam(lowBand.threshold, "ThresholdLowBand");
-    assignFloatParam(midBand.threshold, "ThresholdMidBand");
-    assignFloatParam(highBand.threshold, "ThresholdHighBand");
+    assignFloatParam(lowBand.threshold,  Params::getThresholdParamName(0));
+    assignFloatParam(midBand.threshold,  Params::getThresholdParamName(1));
+    assignFloatParam(highBand.threshold, Params::getThresholdParamName(2));
     
-    assignFloatParam(lowBand.makeupGain, "MakeupGainLowBand");
-    assignFloatParam(midBand.makeupGain, "MakeupGainMidBand");
-    assignFloatParam(highBand.makeupGain, "MakeupGainHighBand");
+    assignFloatParam(lowBand.makeupGain,  Params::getGainParamName(0));
+    assignFloatParam(midBand.makeupGain,  Params::getGainParamName(1));
+    assignFloatParam(highBand.makeupGain, Params::getGainParamName(2));
     
-    assignChoiceParam(lowBand.ratio, "RatioLowBand");
-    assignChoiceParam(midBand.ratio, "RatioMidBand");
-    assignChoiceParam(highBand.ratio, "RatioHighBand");
+    assignChoiceParam(lowBand.ratio,  Params::getRatioParamName(0));
+    assignChoiceParam(midBand.ratio,  Params::getRatioParamName(1));
+    assignChoiceParam(highBand.ratio, Params::getRatioParamName(2));
     
-    assignBoolParam(lowBand.bypassed, "BypassedLowBand");
-    assignBoolParam(midBand.bypassed, "BypassedMidBand");
-    assignBoolParam(highBand.bypassed, "BypassedHighBand");
+    assignBoolParam(lowBand.bypassed,  Params::getBypassParamName(0));
+    assignBoolParam(midBand.bypassed,  Params::getBypassParamName(1));
+    assignBoolParam(highBand.bypassed, Params::getBypassParamName(2));
     
-    assignBoolParam(lowBand.solo, "SoloLowBand");
-    assignBoolParam(midBand.solo, "SoloMidBand");
-    assignBoolParam(highBand.solo, "SoloHighBand");
+    assignBoolParam(lowBand.solo,  Params::getSoloParamName(0));
+    assignBoolParam(midBand.solo,  Params::getSoloParamName(1));
+    assignBoolParam(highBand.solo, Params::getSoloParamName(2));
     
-    assignBoolParam(lowBand.mute, "MuteLowBand");
-    assignBoolParam(midBand.mute, "MuteMidBand");
-    assignBoolParam(highBand.mute, "MuteHighBand");
+    assignBoolParam(lowBand.mute,  Params::getMuteParamName(0));
+    assignBoolParam(midBand.mute,  Params::getMuteParamName(1));
+    assignBoolParam(highBand.mute, Params::getMuteParamName(2));
     
-    assignFloatParam(lowMidCrossover, "LowMidCrossover");
-    assignFloatParam(midHighCrossover, "MidHighCrossover");
+    assignFloatParam(lowMidCrossover,  Params::getCrossoverParamName(0, 1));
+    assignFloatParam(midHighCrossover, Params::getCrossoverParamName(1, 2));
     
     LP1.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP1.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
@@ -456,46 +456,127 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     }
     
     //==============================================================================
-    // Low Band
-    layout.add(std::make_unique<juce::AudioParameterFloat>("AttackLowBand", "Attack Low", attackRange, 50.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("ReleaseLowBand", "Release Low", releaseRange, 250.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("ThresholdLowBand", "Threshold Low", thresholdRange, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGainLowBand", "Makeup Gain Low", makeupGainRange, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterChoice>("RatioLowBand", "Ratio Low", choicesStringArray, 2)); // 3:1 ratio set as default
-    layout.add(std::make_unique<juce::AudioParameterBool>("BypassedLowBand", "Bypass Low", false));
-    layout.add(std::make_unique<juce::AudioParameterBool>("SoloLowBand", "Solo Low", false));
-    layout.add(std::make_unique<juce::AudioParameterBool>("MuteLowBand", "Mute Low", false));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(0),
+                                                           Params::getAttackParamName(0),
+                                                           attackRange,
+                                                           50.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(0),
+                                                           Params::getReleaseParamName(0),
+                                                           releaseRange,
+                                                           250.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(0),
+                                                           Params::getThresholdParamName(0),
+                                                           thresholdRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(0),
+                                                           Params::getGainParamName(0),
+                                                           makeupGainRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(0),
+                                                            Params::getRatioParamName(0),
+                                                            choicesStringArray,
+                                                            2)); // 3:1 ratio set as default
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(0),
+                                                          Params::getBypassParamName(0),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(0),
+                                                          Params::getSoloParamName(0),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(0),
+                                                          Params::getMuteParamName(0),
+                                                          false));
     
     //==============================================================================
-    // Mid Band
-    layout.add(std::make_unique<juce::AudioParameterFloat>("AttackMidBand", "Attack Mid", attackRange, 50.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("ReleaseMidBand", "Release Mid", releaseRange, 250.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("ThresholdMidBand", "Threshold Mid", thresholdRange, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGainMidBand", "Makeup Gain Mid", makeupGainRange, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterChoice>("RatioMidBand", "Ratio Mid", choicesStringArray, 2)); // 3:1 ratio set as default
-    layout.add(std::make_unique<juce::AudioParameterBool>("BypassedMidBand", "Bypass Mid", false));
-    layout.add(std::make_unique<juce::AudioParameterBool>("SoloMidBand", "Solo Mid", false));
-    layout.add(std::make_unique<juce::AudioParameterBool>("MuteMidBand", "Mute Mid", false));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(1),
+                                                           Params::getAttackParamName(1),
+                                                           attackRange,
+                                                           50.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(1),
+                                                           Params::getReleaseParamName(1),
+                                                           releaseRange,
+                                                           250.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(1),
+                                                           Params::getThresholdParamName(1),
+                                                           thresholdRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(1),
+                                                           Params::getGainParamName(1),
+                                                           makeupGainRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(1),
+                                                            Params::getRatioParamName(1),
+                                                            choicesStringArray,
+                                                            2)); // 3:1 ratio set as default
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(1),
+                                                          Params::getBypassParamName(1),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(1),
+                                                          Params::getSoloParamName(1),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(1),
+                                                          Params::getMuteParamName(1),
+                                                          false));
     
     //==============================================================================
-    // High Band
-    layout.add(std::make_unique<juce::AudioParameterFloat>("AttackHighBand", "Attack High", attackRange, 50.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("ReleaseHighBand", "Release High", releaseRange, 250.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("ThresholdHighBand", "Threshold High", thresholdRange, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MakeupGainHighBand", "Makeup Gain High", makeupGainRange, 0.f));
-    layout.add(std::make_unique<juce::AudioParameterChoice>("RatioHighBand", "Ratio High", choicesStringArray, 2)); // 3:1 ratio set as default
-    layout.add(std::make_unique<juce::AudioParameterBool>("BypassedHighBand", "Bypass High", false));
-    layout.add(std::make_unique<juce::AudioParameterBool>("SoloHighBand", "Solo High", false));
-    layout.add(std::make_unique<juce::AudioParameterBool>("MuteHighBand", "Mute High", false));
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(2),
+                                                           Params::getAttackParamName(2),
+                                                           attackRange,
+                                                           50.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(2),
+                                                           Params::getReleaseParamName(2),
+                                                           releaseRange,
+                                                           250.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(2),
+                                                           Params::getThresholdParamName(2),
+                                                           thresholdRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(2),
+                                                           Params::getGainParamName(2),
+                                                           makeupGainRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(2),
+                                                            Params::getRatioParamName(2),
+                                                            choicesStringArray,
+                                                            2)); // 3:1 ratio set as default
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(2),
+                                                          Params::getBypassParamName(2),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(2),
+                                                          Params::getSoloParamName(2),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(2),
+                                                          Params::getMuteParamName(2),
+                                                          false));
     
     //==============================================================================
-    layout.add(std::make_unique<juce::AudioParameterFloat>("LowMidCrossover",
-                                                           "Low-Mid Crossover",
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(0, 1),
+                                                           Params::getCrossoverParamName(0, 1),
                                                            juce::NormalisableRange<float>(20.f, 999.f, 1.f, 1.f),
                                                            400.f));
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>("MidHighCrossover",
-                                                           "Mid-High Crossover",
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(1, 2),
+                                                           Params::getCrossoverParamName(1, 2),
                                                            juce::NormalisableRange<float>(1000.f, 20000.f, 1.f, 1.f),
                                                            2000.f));
     
