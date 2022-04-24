@@ -41,11 +41,6 @@ struct FilterSequence
             }
         }
         
-        for ( auto& filterBuffer : filterBuffers )
-        {
-            filterBuffer.setSize(numChannels, numSamples);
-        }
-        
         prepared = true;
     }
     
@@ -152,9 +147,45 @@ private:
         return buffers;
     }
                                              
-    void createFilters(size_t numBands);
-    static std::vector<Filter> createFilterSequence(size_t bandNum,
-                                                    size_t numBands);
+    void createFilters(size_t numBands)
+    {
+        std::vector<std::vector<Filter>> filterBands;
+        for ( auto i = 0; i < numBands; ++i )
+        {
+            auto band = createFilterSequence(i, numBands);
+            filterBands.push_back(band);
+        }
+        
+        const juce::ScopedLock scopedFilterLock(filterCS);
+        mbFilters = filterBands;
+    }
+    
+    static std::vector<Filter> createFilterSequence(size_t bandNum, size_t numBands)
+    {
+        std::vector<Filter> filterSequence;
+        
+        auto numFiltersNeeded = ( bandNum < 2 ) ? numBands - 1 : numBands - bandNum;
+        
+        for ( auto i = 0; i < numFiltersNeeded; ++i )
+        {
+            Filter f;
+            filterSequence.push_back(f);
+        }
+        
+        using filterType = juce::dsp::LinkwitzRileyFilterType;
+        
+        filterSequence[0].setType( ( bandNum == 0 ) ? filterType::lowpass : filterType::highpass );
+        
+        if ( bandNum != numBands - 1 ) // final band will only have one filter
+        {
+            for ( auto i = 1; i < numFiltersNeeded; ++i )
+            {
+                filterSequence[i].setType( ( i == 1 && bandNum != 0 ) ? filterType::lowpass : filterType::allpass );
+            }
+        }
+        
+        return filterSequence;
+    }
                                                     
     std::vector<std::vector<Filter>> mbFilters;
     std::vector<Buffer> filterBuffers;
