@@ -176,7 +176,7 @@ private:
         
         filterSequence[0].setType( ( bandNum == 0 ) ? filterType::lowpass : filterType::highpass );
         
-        if ( bandNum != numBands - 1 ) // final band will only have one filter
+        if ( numFiltersNeeded != 1 )
         {
             for ( auto i = 1; i < numFiltersNeeded; ++i )
             {
