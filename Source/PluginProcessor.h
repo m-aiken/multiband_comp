@@ -133,10 +133,24 @@ struct FilterSequence
     }
     
 private:
-    void createBuffers(size_t numBands);
-    static std::vector<Buffer> createBuffers(size_t numBuffers,
-                                             int numChannels,
-                                             int numSamples);
+    void createBuffers(size_t numBands)
+    {
+        auto buffers = createBuffers(numBands, numChannels, numSamples);
+        const juce::ScopedLock scopedBufferLock(bufferCS);
+        filterBuffers = buffers;
+    }
+    
+    static std::vector<Buffer> createBuffers(size_t numBuffers, int numChannels, int numSamples)
+    {
+        std::vector<Buffer> buffers;
+        for ( auto i = 0; i < numBuffers; ++i )
+        {
+            Buffer b;
+            b.setSize(numChannels, numSamples, false, true, true);
+            buffers.push_back(b);
+        }
+        return buffers;
+    }
                                              
     void createFilters(size_t numBands);
     static std::vector<Filter> createFilterSequence(size_t bandNum,
