@@ -41,6 +41,11 @@ struct FilterSequence
             }
         }
         
+        for ( auto& filterBuffer : filterBuffers )
+        {
+            filterBuffer.setSize(numChannels, numSamples);
+        }
+        
         prepared = true;
     }
     
@@ -71,7 +76,51 @@ struct FilterSequence
         }
     }
     
-    void process(const Buffer& input);
+    void process(const Buffer& input)
+    {
+        jassert( prepared );
+        const juce::ScopedLock scopedBufferLock(bufferCS);
+        
+        std::vector<juce::dsp::ProcessContextReplacing<float>> bufferContexts;
+        for ( auto& filterBuffer : filterBuffers )
+        {
+            filterBuffer.clear();
+            filterBuffer = input;
+            auto block = juce::dsp::AudioBlock<float>(filterBuffer);
+            auto context = juce::dsp::ProcessContextReplacing<float>(block);
+            bufferContexts.push_back(context);
+        }
+        
+        const juce::ScopedLock scopedFilterLock(filterCS);
+        
+        // Band 0
+        for ( auto& filter : mbFilters[0] )
+        {
+            filter.process(bufferContexts[0]);
+        }
+        
+        for ( auto band = 1; band < filterBuffers.size(); ++band )
+        {
+            mbFilters[band][0].process(bufferContexts[band]);
+            
+            /*
+            1. if final band we will only have index/filter zero ie. mbFilters[band][0]
+            2. if not final band, we need to copy the buffer that's been processed by filter 0 to the next buffer BEFORE the remaining filters process it
+            3. then process the current buffer with the remaining filters for this band
+            */
+            
+            if ( band != filterBuffers.size() )
+            {
+                filterBuffers[band + 1] = filterBuffers[band];
+                
+                for ( auto filter = 1; filter < mbFilters[band].size(); ++filter )
+                {
+                    mbFilters[band][filter].process(bufferContexts[band]);
+                }
+            }
+        }
+    }
+    
     Buffer& getFilteredBuffer(size_t bandNum);
     size_t getBufferCount() const;
 private:
