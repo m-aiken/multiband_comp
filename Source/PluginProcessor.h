@@ -44,7 +44,33 @@ struct FilterSequence
         prepared = true;
     }
     
-    void updateFilterCutoffs(const std::vector<float>& xoverFreqs);
+    void updateFilterCutoffs(const std::vector<float>& xoverFreqs)
+    {
+        const juce::ScopedLock scopedFilterLock(filterCS);
+        
+        if ( xoverFreqs == currentXoverFreqs )
+            return;
+        
+        currentXoverFreqs = xoverFreqs;
+        
+        jassert( xoverFreqs.size() == mbFilters.size() - 1 );
+        
+        for ( auto i = 0; i < mbFilters[0].size(); ++i )
+        {
+            mbFilters[0][i].setCutoffFrequency(xoverFreqs[i]);
+        }
+        
+        for ( auto bandNum = 1; bandNum < mbFilters.size(); ++bandNum )
+        {
+            auto& band = mbFilters[bandNum];
+            
+            for ( auto filterIdx = 0; filterIdx < band.size(); ++filterIdx )
+            {
+                band[filterIdx].setCutoffFrequency(xoverFreqs[filterIdx + bandNum - 1]);
+            }
+        }
+    }
+    
     void process(const Buffer& input);
     Buffer& getFilteredBuffer(size_t bandNum);
     size_t getBufferCount() const;
