@@ -99,7 +99,7 @@ struct FilterSequence
             filter.process(bufferContexts[0]);
         }
         
-        for ( auto band = 1; band < filterBuffers.size(); ++band )
+        for ( auto band = 1; band < getBufferCount(); ++band )
         {
             mbFilters[band][0].process(bufferContexts[band]);
             
@@ -109,7 +109,7 @@ struct FilterSequence
             3. then process the current buffer with the remaining filters for this band
             */
             
-            if ( band != filterBuffers.size() )
+            if ( band != getBufferCount() )
             {
                 filterBuffers[band + 1] = filterBuffers[band];
                 
@@ -121,8 +121,17 @@ struct FilterSequence
         }
     }
     
-    Buffer& getFilteredBuffer(size_t bandNum);
-    size_t getBufferCount() const;
+    Buffer& getFilteredBuffer(size_t bandNum)
+    {
+        jassert( bandNum < getBufferCount() );
+        return filterBuffers[bandNum];
+    }
+    
+    size_t getBufferCount() const
+    {
+        return filterBuffers.size();
+    }
+    
 private:
     void createBuffers(size_t numBands);
     static std::vector<Buffer> createBuffers(size_t numBuffers,
