@@ -14,6 +14,60 @@
 #define MAX_BANDS 7
 
 //==============================================================================
+template<typename FloatType>
+struct FilterSequence
+{
+    using Filter = juce::dsp::LinkwitzRileyFilter<float>;
+    using Buffer = juce::AudioBuffer<float>;
+    
+    void createBuffersAndFilters(size_t numBands)
+    {
+        createBuffers(numBands);
+        createFilters(numBands);
+    }
+    
+    void prepare(juce::dsp::ProcessSpec spec)
+    {
+        prepared = false;
+        
+        numChannels = spec.numChannels;
+        numSamples = spec.maximumBlockSize;
+        
+        for ( auto& band : mbFilters )
+        {
+            for ( auto& filter : band )
+            {
+                filter.prepare(spec);
+            }
+        }
+        
+        prepared = true;
+    }
+    
+    void updateFilterCutoffs(const std::vector<float>& xoverFreqs);
+    void process(const Buffer& input);
+    Buffer& getFilteredBuffer(size_t bandNum);
+    size_t getBufferCount() const;
+private:
+    void createBuffers(size_t numBands);
+    static std::vector<Buffer> createBuffers(size_t numBuffers,
+                                             int numChannels,
+                                             int numSamples);
+                                             
+    void createFilters(size_t numBands);
+    static std::vector<Filter> createFilterSequence(size_t bandNum,
+                                                    size_t numBands);
+                                                    
+    std::vector<std::vector<Filter>> mbFilters;
+    std::vector<Buffer> filterBuffers;
+    std::vector<float> currentXoverFreqs;
+    int numChannels { 2 };
+    int numSamples { 512 };
+    juce::CriticalSection filterCS, bufferCS;
+    bool prepared { false };
+};
+
+//==============================================================================
 namespace Params
 {
 
