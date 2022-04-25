@@ -12,6 +12,7 @@
 
 #define MIN_BANDS 0
 #define MAX_BANDS 7
+#define DISPLAY_FILTER_CONFIGURATIONS true
 
 //==============================================================================
 template<typename FloatType>
@@ -69,6 +70,39 @@ struct FilterSequence
                 band[filterIdx].setCutoffFrequency(xoverFreqs[filterIdx + bandNum - 1]);
             }
         }
+        
+#if DISPLAY_FILTER_CONFIGURATIONS == true
+        juce::String filterBandStr("Filter Cutoffs:\n");
+        
+        for ( auto i = 0; i < mbFilters.size(); ++i )
+        {
+            filterBandStr += "Band[" + juce::String(i) + "]:";
+            
+            for ( auto j = 0; j < mbFilters[i].size(); ++j )
+            {
+                switch (mbFilters[i][j].getType())
+                {
+                    case juce::dsp::LinkwitzRileyFilterType::lowpass:
+                        filterBandStr += " LP ";
+                        break;
+                    case juce::dsp::LinkwitzRileyFilterType::highpass:
+                        filterBandStr += " HP ";
+                        break;
+                    case juce::dsp::LinkwitzRileyFilterType::allpass:
+                        filterBandStr += " AP ";
+                        break;
+                    default:
+                        break;
+                }
+                
+                filterBandStr += juce::String(mbFilters[i][j].getCutoffFrequency());
+            }
+            
+            filterBandStr += "/n";
+        }
+        
+        DBG(filterBandStr);
+#endif
     }
     
     void process(const Buffer& input)
@@ -158,6 +192,36 @@ private:
         
         const juce::ScopedLock scopedFilterLock(filterCS);
         mbFilters = filterBands;
+        
+#if DISPLAY_FILTER_CONFIGURATIONS == true
+        juce::String filterBandStr("Created Filters:\n");
+        
+        for ( auto i = 0; i < filterBands.size(); ++i )
+        {
+            filterBandStr += "Band[" + juce::String(i) + "]:";
+            
+            for ( auto j = 0; j < filterBands[i].size(); ++j )
+            {
+                switch (filterBands[i][j].getType())
+                {
+                    case juce::dsp::LinkwitzRileyFilterType::lowpass:
+                        filterBandStr += " LP";
+                        break;
+                    case juce::dsp::LinkwitzRileyFilterType::highpass:
+                        filterBandStr += " HP";
+                        break;
+                    case juce::dsp::LinkwitzRileyFilterType::allpass:
+                        filterBandStr += " AP";
+                        break;
+                    default:
+                        break;
+                }
+            }
+            
+            filterBandStr += "/n";
+        }
+        DBG(filterBandStr);
+#endif
     }
     
     static std::vector<Filter> createFilterSequence(size_t bandNum, size_t numBands)
