@@ -408,6 +408,7 @@ public:
     void updateBands();
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    static void addBandControls(juce::AudioProcessorValueTreeState::ParameterLayout& layout, const int& bandNum);
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     

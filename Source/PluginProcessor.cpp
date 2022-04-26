@@ -442,132 +442,11 @@ void PFMProject12AudioProcessor::setStateInformation (const void* data, int size
 juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::createParameterLayout()
 {
     juce::AudioProcessorValueTreeState::ParameterLayout layout;
-    
-    auto attackRange = juce::NormalisableRange<float>(5.f, 250.f, 1.f, 1.f);
-    auto releaseRange = juce::NormalisableRange<float>(5.f, 500.f, 1.f, 1.f);
-    auto thresholdRange = juce::NormalisableRange<float>(-60.f, 12.f, 1.f, 1.f);
-    auto makeupGainRange = juce::NormalisableRange<float>(0.f, 24.f, 1.f, 1.f);
-    
-    auto ratioChoices = std::vector<double>{ 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 20, 50, 100 };
-    juce::StringArray choicesStringArray;
-    for ( auto& choice : ratioChoices )
-    {
-        choicesStringArray.add( juce::String(choice, 1) );
-    }
-    
-    //==============================================================================
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(0),
-                                                           Params::getAttackParamName(0),
-                                                           attackRange,
-                                                           50.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(0),
-                                                           Params::getReleaseParamName(0),
-                                                           releaseRange,
-                                                           250.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(0),
-                                                           Params::getThresholdParamName(0),
-                                                           thresholdRange,
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(0),
-                                                           Params::getGainParamName(0),
-                                                           makeupGainRange,
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(0),
-                                                            Params::getRatioParamName(0),
-                                                            choicesStringArray,
-                                                            2)); // 3:1 ratio set as default
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(0),
-                                                          Params::getBypassParamName(0),
-                                                          false));
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(0),
-                                                          Params::getSoloParamName(0),
-                                                          false));
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(0),
-                                                          Params::getMuteParamName(0),
-                                                          false));
-    
-    //==============================================================================
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(1),
-                                                           Params::getAttackParamName(1),
-                                                           attackRange,
-                                                           50.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(1),
-                                                           Params::getReleaseParamName(1),
-                                                           releaseRange,
-                                                           250.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(1),
-                                                           Params::getThresholdParamName(1),
-                                                           thresholdRange,
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(1),
-                                                           Params::getGainParamName(1),
-                                                           makeupGainRange,
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(1),
-                                                            Params::getRatioParamName(1),
-                                                            choicesStringArray,
-                                                            2)); // 3:1 ratio set as default
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(1),
-                                                          Params::getBypassParamName(1),
-                                                          false));
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(1),
-                                                          Params::getSoloParamName(1),
-                                                          false));
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(1),
-                                                          Params::getMuteParamName(1),
-                                                          false));
-    
-    //==============================================================================
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(2),
-                                                           Params::getAttackParamName(2),
-                                                           attackRange,
-                                                           50.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(2),
-                                                           Params::getReleaseParamName(2),
-                                                           releaseRange,
-                                                           250.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(2),
-                                                           Params::getThresholdParamName(2),
-                                                           thresholdRange,
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(2),
-                                                           Params::getGainParamName(2),
-                                                           makeupGainRange,
-                                                           0.f));
-    
-    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(2),
-                                                            Params::getRatioParamName(2),
-                                                            choicesStringArray,
-                                                            2)); // 3:1 ratio set as default
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(2),
-                                                          Params::getBypassParamName(2),
-                                                          false));
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(2),
-                                                          Params::getSoloParamName(2),
-                                                          false));
-    
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(2),
-                                                          Params::getMuteParamName(2),
-                                                          false));
+
+    addBandControls(layout, 0);
+    addBandControls(layout, 1);
+    addBandControls(layout, 2);
+    addBandControls(layout, 3);
     
     //==============================================================================
     layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(0, 1),
@@ -581,6 +460,59 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                            2000.f));
     
     return layout;
+}
+
+void PFMProject12AudioProcessor::addBandControls(juce::AudioProcessorValueTreeState::ParameterLayout& layout, const int& bandNum)
+{
+    auto attackRange = juce::NormalisableRange<float>(5.f, 250.f, 1.f, 1.f);
+    auto releaseRange = juce::NormalisableRange<float>(5.f, 500.f, 1.f, 1.f);
+    auto thresholdRange = juce::NormalisableRange<float>(-60.f, 12.f, 1.f, 1.f);
+    auto makeupGainRange = juce::NormalisableRange<float>(0.f, 24.f, 1.f, 1.f);
+    
+    auto ratioChoices = std::vector<double>{ 1.5, 2, 3, 4, 5, 6, 7, 8, 10, 20, 50, 100 };
+    juce::StringArray choicesStringArray;
+    for ( auto& choice : ratioChoices )
+    {
+        choicesStringArray.add( juce::String(choice, 1) );
+    }
+    
+    //==============================================================================
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(bandNum),
+                                                           Params::getAttackParamName(bandNum),
+                                                           attackRange,
+                                                           50.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(bandNum),
+                                                           Params::getReleaseParamName(bandNum),
+                                                           releaseRange,
+                                                           250.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(bandNum),
+                                                           Params::getThresholdParamName(bandNum),
+                                                           thresholdRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(bandNum),
+                                                           Params::getGainParamName(bandNum),
+                                                           makeupGainRange,
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(bandNum),
+                                                            Params::getRatioParamName(bandNum),
+                                                            choicesStringArray,
+                                                            2)); // 3:1 ratio set as default
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(bandNum),
+                                                          Params::getBypassParamName(bandNum),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(bandNum),
+                                                          Params::getSoloParamName(bandNum),
+                                                          false));
+    
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(bandNum),
+                                                          Params::getMuteParamName(bandNum),
+                                                          false));
 }
 
 //==============================================================================
