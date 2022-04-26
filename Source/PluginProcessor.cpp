@@ -200,7 +200,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     // TEST
     filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
     filterSequence.prepare(spec);
-    filterSequence.updateFilterCutoffs(crossoverFrequencies);
+    auto testCrossovers = createTestCrossovers(numBands->getCurrentChoiceName().getIntValue());
+    filterSequence.updateFilterCutoffs(testCrossovers);
     // END TEST
     
     /*
@@ -272,10 +273,10 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     if ( numBands->getCurrentChoiceName().getIntValue() != numBandsLastSelected )
     {
 //        DBG("changed!");
-//        filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
-        filterSequence.createBuffersAndFilters(4);
+        filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
         filterSequence.prepare(spec);
-        filterSequence.updateFilterCutoffs(crossoverFrequencies);
+        auto testCrossovers = createTestCrossovers(numBands->getCurrentChoiceName().getIntValue());
+        filterSequence.updateFilterCutoffs(testCrossovers);
         
 //        juce::String numFilterBuffers(filterSequence.getBufferCount());
 //        DBG(numFilterBuffers);
@@ -285,7 +286,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     filterSequence.process(buffer);
     
-    for ( auto i = 0; i < compressors.size(); ++i )
+    for ( auto i = 0; i < numBands->getCurrentChoiceName().getIntValue(); ++i )
     {
         compressors[i].process(filterSequence.getFilteredBuffer(i));
     }
@@ -293,9 +294,9 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     buffer.clear();
     
     bool bandsAreSoloed = false;
-    for ( auto& comp : compressors )
+    for ( auto i = 0; i < numBands->getCurrentChoiceName().getIntValue(); ++i )
     {
-        if ( comp.solo->get() )
+        if ( compressors[i].solo->get() )
         {
             bandsAreSoloed = true;
             break;
@@ -304,7 +305,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     if ( bandsAreSoloed )
     {
-        for ( auto i = 0; i < compressors.size(); ++i )
+        for ( auto i = 0; i < numBands->getCurrentChoiceName().getIntValue(); ++i )
         {
             if ( compressors[i].solo->get() )
             {
@@ -314,7 +315,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     }
     else
     {
-        for ( auto i = 0; i < compressors.size(); ++i )
+        for ( auto i = 0; i < numBands->getCurrentChoiceName().getIntValue(); ++i )
         {
             if ( !compressors[i].mute->get() )
             {
@@ -432,6 +433,27 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         addBand(buffer, apBuffer);
     }
     */
+}
+
+std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const int& numBands)
+{
+    std::vector<float> crossovers;
+    float interval = 20000.f / numBands;
+    float crossover = interval;
+    for ( auto i = 0; i < numBands - 1; ++i )
+    {
+        crossovers.push_back(crossover);
+        crossover += interval;
+    }
+    /*
+    juce::String str;
+    for ( auto& xOver : crossovers )
+    {
+        str += " " + juce::String(xOver);
+    }
+    DBG(str);
+    */
+    return crossovers;
 }
 
 void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source)

@@ -56,27 +56,21 @@ struct FilterSequence
         
         jassert( xoverFreqs.size() == mbFilters.size() - 1 );
         
-        for ( auto i = 0; i < mbFilters[0].size(); ++i )
+        for ( auto band = 0; band < mbFilters.size(); ++band )
         {
-            mbFilters[0][i].setCutoffFrequency(xoverFreqs[i]);
-        }
-        
-        for ( auto bandNum = 1; bandNum < mbFilters.size(); ++bandNum )
-        {
-            auto& band = mbFilters[bandNum];
-            
-            for ( auto filterIdx = 0; filterIdx < band.size(); ++filterIdx )
+            auto offset = xoverFreqs.size() - mbFilters[band].size();
+            for ( auto i = 0; i < mbFilters[band].size(); ++i)
             {
-                band[filterIdx].setCutoffFrequency(xoverFreqs[filterIdx + bandNum - 1]);
+                mbFilters[band][i].setCutoffFrequency(xoverFreqs[i+offset]);
             }
         }
         
 #if DISPLAY_FILTER_CONFIGURATIONS == true
-        juce::String filterBandStr("Filter Cutoffs:\n");
-        
+        juce::String cutoffsTitle("Filter Cutoffs:");
+        DBG(cutoffsTitle);
         for ( auto i = 0; i < mbFilters.size(); ++i )
         {
-            filterBandStr += "Band[" + juce::String(i) + "]:";
+            juce::String filterBandStr("Band[" + juce::String(i) + "]:");
             
             for ( auto j = 0; j < mbFilters[i].size(); ++j )
             {
@@ -98,10 +92,8 @@ struct FilterSequence
                 filterBandStr += juce::String(mbFilters[i][j].getCutoffFrequency());
             }
             
-            filterBandStr += "/n";
+            DBG(filterBandStr);
         }
-        
-        DBG(filterBandStr);
 #endif
     }
     
@@ -194,11 +186,11 @@ private:
         mbFilters = filterBands;
         
 #if DISPLAY_FILTER_CONFIGURATIONS == true
-        juce::String filterBandStr("Created Filters:\n");
-        
+        juce::String createdTitle("Created Filters:");
+        DBG(createdTitle);
         for ( auto i = 0; i < filterBands.size(); ++i )
         {
-            filterBandStr += "Band[" + juce::String(i) + "]:";
+            juce::String filterBandStr("Band[" + juce::String(i) + "]:");
             
             for ( auto j = 0; j < filterBands[i].size(); ++j )
             {
@@ -218,9 +210,8 @@ private:
                 }
             }
             
-            filterBandStr += "/n";
+            DBG(filterBandStr);
         }
-        DBG(filterBandStr);
 #endif
     }
     
@@ -411,6 +402,8 @@ public:
     static void addBandControls(juce::AudioProcessorValueTreeState::ParameterLayout& layout, const int& bandNum);
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
+    
+    std::vector<float> createTestCrossovers(const int& numBands);
     
 private:
     std::array<CompressorBand, 4> compressors;
