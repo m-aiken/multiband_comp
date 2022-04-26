@@ -90,47 +90,30 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
         target = param;
     };
     
-    assignFloatParam(lowBand.attack,  Params::getAttackParamName(0));
-    assignFloatParam(midBand.attack,  Params::getAttackParamName(1));
-    assignFloatParam(highBand.attack, Params::getAttackParamName(2));
+    for ( auto i = 0; i < compressors.size(); ++i )
+    {
+        assignFloatParam  (compressors[i].attack,     Params::getAttackParamName    (i));
+        assignFloatParam  (compressors[i].release,    Params::getReleaseParamName   (i));
+        assignFloatParam  (compressors[i].threshold,  Params::getThresholdParamName (i));
+        assignFloatParam  (compressors[i].makeupGain, Params::getGainParamName      (i));
+        assignChoiceParam (compressors[i].ratio,      Params::getRatioParamName     (i));
+        assignBoolParam   (compressors[i].bypassed,   Params::getBypassParamName    (i));
+        assignBoolParam   (compressors[i].solo,       Params::getSoloParamName      (i));
+        assignBoolParam   (compressors[i].mute,       Params::getMuteParamName      (i));
+    }
     
-    assignFloatParam(lowBand.release,  Params::getReleaseParamName(0));
-    assignFloatParam(midBand.release,  Params::getReleaseParamName(1));
-    assignFloatParam(highBand.release, Params::getReleaseParamName(2));
+    assignChoiceParam(numBands, "NumBands");
+    numBandsLastSelected = numBands->getCurrentChoiceName().getIntValue();
     
-    assignFloatParam(lowBand.threshold,  Params::getThresholdParamName(0));
-    assignFloatParam(midBand.threshold,  Params::getThresholdParamName(1));
-    assignFloatParam(highBand.threshold, Params::getThresholdParamName(2));
-    
-    assignFloatParam(lowBand.makeupGain,  Params::getGainParamName(0));
-    assignFloatParam(midBand.makeupGain,  Params::getGainParamName(1));
-    assignFloatParam(highBand.makeupGain, Params::getGainParamName(2));
-    
-    assignChoiceParam(lowBand.ratio,  Params::getRatioParamName(0));
-    assignChoiceParam(midBand.ratio,  Params::getRatioParamName(1));
-    assignChoiceParam(highBand.ratio, Params::getRatioParamName(2));
-    
-    assignBoolParam(lowBand.bypassed,  Params::getBypassParamName(0));
-    assignBoolParam(midBand.bypassed,  Params::getBypassParamName(1));
-    assignBoolParam(highBand.bypassed, Params::getBypassParamName(2));
-    
-    assignBoolParam(lowBand.solo,  Params::getSoloParamName(0));
-    assignBoolParam(midBand.solo,  Params::getSoloParamName(1));
-    assignBoolParam(highBand.solo, Params::getSoloParamName(2));
-    
-    assignBoolParam(lowBand.mute,  Params::getMuteParamName(0));
-    assignBoolParam(midBand.mute,  Params::getMuteParamName(1));
-    assignBoolParam(highBand.mute, Params::getMuteParamName(2));
-    
-    assignFloatParam(lowMidCrossover,  Params::getCrossoverParamName(0, 1));
-    assignFloatParam(midHighCrossover, Params::getCrossoverParamName(1, 2));
-    
+//    assignFloatParam(lowMidCrossover,  Params::getCrossoverParamName(0, 1));
+//    assignFloatParam(midHighCrossover, Params::getCrossoverParamName(1, 2));
+    /*
     LP1.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP1.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
     AP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
     LP2.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
     HP2.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
-
+    */
 //    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 //    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 }
@@ -204,7 +187,7 @@ void PFMProject12AudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::dsp::ProcessSpec spec;
+//    juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
@@ -214,6 +197,13 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         comp.prepare(spec);
     }
     
+    // TEST
+    filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
+    filterSequence.prepare(spec);
+    filterSequence.updateFilterCutoffs(crossoverFrequencies);
+    // END TEST
+    
+    /*
     LP1.prepare(spec);
     HP1.prepare(spec);
     AP2.prepare(spec);
@@ -224,7 +214,7 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     {
         fBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     }
-
+    */
 //    invAP1.prepare(spec);
 //    invAP2.prepare(spec);
 //    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
@@ -277,14 +267,72 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
+    updateBands();
+    
+    if ( numBands->getCurrentChoiceName().getIntValue() != numBandsLastSelected )
+    {
+//        DBG("changed!");
+//        filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
+        filterSequence.createBuffersAndFilters(4);
+        filterSequence.prepare(spec);
+        filterSequence.updateFilterCutoffs(crossoverFrequencies);
+        
+//        juce::String numFilterBuffers(filterSequence.getBufferCount());
+//        DBG(numFilterBuffers);
+        
+        numBandsLastSelected = numBands->getCurrentChoiceName().getIntValue();
+    }
+    
+    filterSequence.process(buffer);
+    
+    for ( auto i = 0; i < compressors.size(); ++i )
+    {
+        compressors[i].process(filterSequence.getFilteredBuffer(i));
+    }
+    
+    buffer.clear();
+    
+    bool bandsAreSoloed = false;
+    for ( auto& comp : compressors )
+    {
+        if ( comp.solo->get() )
+        {
+            bandsAreSoloed = true;
+            break;
+        }
+    }
+    
+    if ( bandsAreSoloed )
+    {
+        for ( auto i = 0; i < compressors.size(); ++i )
+        {
+            if ( compressors[i].solo->get() )
+            {
+                addBand(buffer, filterSequence.getFilteredBuffer(i));
+            }
+        }
+    }
+    else
+    {
+        for ( auto i = 0; i < compressors.size(); ++i )
+        {
+            if ( !compressors[i].mute->get() )
+            {
+                addBand(buffer, filterSequence.getFilteredBuffer(i));
+            }
+        }
+    }
+    
+//    DBG(numBands->getCurrentChoiceName().getIntValue());
+    /*
     for ( auto& fBuffer : filterBuffers )
     {
         fBuffer = buffer;
     }
-    
+    */
 //    apBuffer = buffer;
     
-    updateBands();
+    //updateBands();
     
     /*
     Filter network
@@ -293,7 +341,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     HP1 -> LP2;         /-----\         bandpass between xf0 and xf1
        \-> HP2;               /------   HP tuned to xf1
     */
-        
+    /*
     // process filterBuffers[0] - LP1 --> AP2
     auto fb0Block = juce::dsp::AudioBlock<float>(filterBuffers[0]);
     auto fb0Ctx = juce::dsp::ProcessContextReplacing<float>(fb0Block);
@@ -315,14 +363,15 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     auto fb2Block = juce::dsp::AudioBlock<float>(filterBuffers[2]);
     auto fb2Ctx = juce::dsp::ProcessContextReplacing<float>(fb2Block);
     HP2.process(fb2Ctx);
-    
+    */
+    /*
     for ( auto i = 0; i < compressors.size(); ++i )
     {
         compressors[i].process(filterBuffers[i]);
     }
-    
-    buffer.clear();
-    
+    */
+    //buffer.clear();
+    /*
     bool bandsAreSoloed = false;
     for ( auto& comp : compressors )
     {
@@ -332,7 +381,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             break;
         }
     }
-    
+    */
+    /*
     if ( bandsAreSoloed )
     {
         for ( auto i = 0; i < compressors.size(); ++i )
@@ -353,7 +403,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             }
         }
     }
-    
+    */
     /*
     // test with an inverted allpass filter, it should cancel the phase of the post-filtered signal
      
@@ -400,7 +450,7 @@ void PFMProject12AudioProcessor::updateBands()
         comp.updateGain();
         comp.updateBypassState();
     }
-    
+    /*
     auto crossoverFreq0 = lowMidCrossover->get();
     auto crossoverFreq1 = midHighCrossover->get();
     
@@ -409,6 +459,7 @@ void PFMProject12AudioProcessor::updateBands()
     AP2.setCutoffFrequency(crossoverFreq1);
     LP2.setCutoffFrequency(crossoverFreq1);
     HP2.setCutoffFrequency(crossoverFreq1);
+    */
 }
 
 //==============================================================================
@@ -448,6 +499,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     addBandControls(layout, 2);
     addBandControls(layout, 3);
     
+    layout.add(std::make_unique<juce::AudioParameterChoice>("NumBands",
+                                                            "Number Of Bands",
+                                                            juce::StringArray{ "1", "2", "3", "4" },
+                                                            3)); // 4 set as default
+    
+    /*
     //==============================================================================
     layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(0, 1),
                                                            Params::getCrossoverParamName(0, 1),
@@ -458,7 +515,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                            Params::getCrossoverParamName(1, 2),
                                                            juce::NormalisableRange<float>(1000.f, 20000.f, 1.f, 1.f),
                                                            2000.f));
-    
+    */
     return layout;
 }
 

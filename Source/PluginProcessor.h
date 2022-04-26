@@ -27,7 +27,7 @@ struct FilterSequence
         createFilters(numBands);
     }
     
-    void prepare(juce::dsp::ProcessSpec spec)
+    void prepare(juce::dsp::ProcessSpec& spec)
     {
         prepared = false;
         
@@ -413,11 +413,16 @@ public:
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
 private:
-    std::array<CompressorBand, 3> compressors;
-    CompressorBand& lowBand = compressors[0];
-    CompressorBand& midBand = compressors[1];
-    CompressorBand& highBand = compressors[2];
+    std::array<CompressorBand, 4> compressors;
     
+    FilterSequence<float> filterSequence;
+    std::vector<float> crossoverFrequencies { 500.f, 1500.f, 1500.f };
+    
+    juce::dsp::ProcessSpec spec;
+    
+    int numBandsLastSelected = 4;
+    juce::AudioParameterChoice* numBands { nullptr };
+    /*
     juce::AudioParameterFloat* lowMidCrossover { nullptr };
     juce::AudioParameterFloat* midHighCrossover { nullptr };
     
@@ -426,7 +431,7 @@ private:
                                                HP2;
     
     std::array<juce::AudioBuffer<float>, 3> filterBuffers;
-    
+    */
 //    juce::dsp::LinkwitzRileyFilter<float> invAP1, invAP2;
 //    juce::AudioBuffer<float> apBuffer;
     
