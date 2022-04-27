@@ -271,9 +271,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         auto testCrossovers = createTestCrossovers(numBands->getCurrentChoiceName().getIntValue());
         filterSequence.updateFilterCutoffs(testCrossovers);
         
-//        juce::String numFilterBuffers(filterSequence.getBufferCount());
-//        DBG(numFilterBuffers);
-        
         numBandsLastSelected = numBands->getCurrentChoiceName().getIntValue();
     }
     
