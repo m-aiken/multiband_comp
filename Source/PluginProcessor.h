@@ -56,10 +56,10 @@ struct FilterSequence
         
         jassert( xoverFreqs.size() == mbFilters.size() - 1 );
         
-        for ( auto band = 0; band < mbFilters.size(); ++band )
+        for ( size_t band = 0; band < mbFilters.size(); ++band )
         {
             auto offset = xoverFreqs.size() - mbFilters[band].size();
-            for ( auto i = 0; i < mbFilters[band].size(); ++i)
+            for ( size_t i = 0; i < mbFilters[band].size(); ++i)
             {
                 mbFilters[band][i].setCutoffFrequency(xoverFreqs[i+offset]);
             }
@@ -68,11 +68,11 @@ struct FilterSequence
 #if DISPLAY_FILTER_CONFIGURATIONS == true
         juce::String cutoffsTitle("Filter Cutoffs:");
         DBG(cutoffsTitle);
-        for ( auto i = 0; i < mbFilters.size(); ++i )
+        for ( size_t i = 0; i < mbFilters.size(); ++i )
         {
             juce::String filterBandStr("Band[" + juce::String(i) + "]:");
             
-            for ( auto j = 0; j < mbFilters[i].size(); ++j )
+            for ( size_t j = 0; j < mbFilters[i].size(); ++j )
             {
                 switch (mbFilters[i][j].getType())
                 {
@@ -102,41 +102,42 @@ struct FilterSequence
         jassert( prepared );
         const juce::ScopedLock scopedBufferLock(bufferCS);
         
-        std::vector<juce::dsp::ProcessContextReplacing<float>> bufferContexts;
         for ( auto& filterBuffer : filterBuffers )
         {
             filterBuffer.clear();
             filterBuffer = input;
-            auto block = juce::dsp::AudioBlock<float>(filterBuffer);
-            auto context = juce::dsp::ProcessContextReplacing<float>(block);
-            bufferContexts.push_back(context);
         }
         
         const juce::ScopedLock scopedFilterLock(filterCS);
         
-        // Band 0
-        for ( auto& filter : mbFilters[0] )
+        for ( size_t i = 0; i < filterBuffers.size(); ++i )
         {
-            filter.process(bufferContexts[0]);
-        }
-        
-        for ( auto band = 1; band < getBufferCount(); ++band )
-        {
-            mbFilters[band][0].process(bufferContexts[band]);
+            auto block = juce::dsp::AudioBlock<float>(filterBuffers[i]);
+            auto context = juce::dsp::ProcessContextReplacing<float>(block);
             
-            /*
-            1. if final band we will only have index/filter zero ie. mbFilters[band][0]
-            2. if not final band, we need to copy the buffer that's been processed by filter 0 to the next buffer BEFORE the remaining filters process it
-            3. then process the current buffer with the remaining filters for this band
-            */
-            
-            if ( band != getBufferCount() )
+            if ( i == 0 )
             {
-                filterBuffers[band + 1] = filterBuffers[band];
-                
-                for ( auto filter = 1; filter < mbFilters[band].size(); ++filter )
+                for ( auto& filter : mbFilters[i] )
                 {
-                    mbFilters[band][filter].process(bufferContexts[band]);
+                    filter.process(context);
+                }
+            }
+            else
+            {
+                mbFilters[i][0].process(context);
+                
+                // 1. if final band we will only have index/filter zero ie. mbFilters[i][0]
+                // 2. if not final band, we need to copy the buffer that's been processed by filter 0 to the next buffer BEFORE the remaining filters process it
+                // 3. then process the current buffer with the remaining filters for this band
+                
+                if ( i != getBufferCount() - 1 )
+                {
+                    filterBuffers[i + 1] = filterBuffers[i];
+                    
+                    for ( size_t j = 1; j < mbFilters[i].size(); ++j )
+                    {
+                        mbFilters[i][j].process(context);
+                    }
                 }
             }
         }
@@ -158,13 +159,14 @@ private:
     {
         auto buffers = createBuffers(numBands, numChannels, numSamples);
         const juce::ScopedLock scopedBufferLock(bufferCS);
-        filterBuffers = buffers;
+        
+        std::swap(filterBuffers, buffers);
     }
     
     static std::vector<Buffer> createBuffers(size_t numBuffers, int numChannels, int numSamples)
     {
         std::vector<Buffer> buffers;
-        for ( auto i = 0; i < numBuffers; ++i )
+        for ( size_t i = 0; i < numBuffers; ++i )
         {
             Buffer b;
             b.setSize(numChannels, numSamples, false, true, true);
@@ -176,23 +178,24 @@ private:
     void createFilters(size_t numBands)
     {
         std::vector<std::vector<Filter>> filterBands;
-        for ( auto i = 0; i < numBands; ++i )
+        for ( size_t i = 0; i < numBands; ++i )
         {
             auto band = createFilterSequence(i, numBands);
             filterBands.push_back(band);
         }
         
         const juce::ScopedLock scopedFilterLock(filterCS);
-        mbFilters = filterBands;
+
+        std::swap(mbFilters, filterBands);
         
 #if DISPLAY_FILTER_CONFIGURATIONS == true
         juce::String createdTitle("Created Filters:");
         DBG(createdTitle);
-        for ( auto i = 0; i < filterBands.size(); ++i )
+        for ( size_t i = 0; i < filterBands.size(); ++i )
         {
             juce::String filterBandStr("Band[" + juce::String(i) + "]:");
             
-            for ( auto j = 0; j < filterBands[i].size(); ++j )
+            for ( size_t j = 0; j < filterBands[i].size(); ++j )
             {
                 switch (filterBands[i][j].getType())
                 {
@@ -406,25 +409,18 @@ public:
     std::vector<float> createTestCrossovers(const int& numBands);
     
 private:
-    std::array<CompressorBand, 4> compressors;
+    std::array<CompressorBand, 8> compressors;
     
     FilterSequence<float> filterSequence;
-    std::vector<float> crossoverFrequencies { 500.f, 1500.f, 1500.f };
     
     juce::dsp::ProcessSpec spec;
     
-    int numBandsLastSelected = 4;
+    int numBandsLastSelected = 3;
     juce::AudioParameterChoice* numBands { nullptr };
-    /*
-    juce::AudioParameterFloat* lowMidCrossover { nullptr };
-    juce::AudioParameterFloat* midHighCrossover { nullptr };
     
-    juce::dsp::LinkwitzRileyFilter<float> LP1, AP2,
-                                          HP1, LP2,
-                                               HP2;
+//    juce::AudioParameterFloat* lowMidCrossover { nullptr };
+//    juce::AudioParameterFloat* midHighCrossover { nullptr };
     
-    std::array<juce::AudioBuffer<float>, 3> filterBuffers;
-    */
 //    juce::dsp::LinkwitzRileyFilter<float> invAP1, invAP2;
 //    juce::AudioBuffer<float> apBuffer;
     

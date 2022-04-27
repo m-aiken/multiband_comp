@@ -105,15 +105,22 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     assignChoiceParam(numBands, "NumBands");
     numBandsLastSelected = numBands->getCurrentChoiceName().getIntValue();
     
+    /*
+    FilterSequence<float> fSeqTest;
+    spec.numChannels = getTotalNumOutputChannels();
+    spec.sampleRate = getSampleRate();
+    spec.maximumBlockSize = getBlockSize();
+    fSeqTest.prepare(spec);
+    auto numB = 8;
+    fSeqTest.createBuffersAndFilters(numB);
+    auto testCrossovers = createTestCrossovers(numB);
+    fSeqTest.updateFilterCutoffs(testCrossovers);
+    jassertfalse;
+    */
+    
 //    assignFloatParam(lowMidCrossover,  Params::getCrossoverParamName(0, 1));
 //    assignFloatParam(midHighCrossover, Params::getCrossoverParamName(1, 2));
-    /*
-    LP1.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
-    HP1.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
-    AP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
-    LP2.setType(juce::dsp::LinkwitzRileyFilterType::lowpass);
-    HP2.setType(juce::dsp::LinkwitzRileyFilterType::highpass);
-    */
+    
 //    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 //    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 }
@@ -187,7 +194,6 @@ void PFMProject12AudioProcessor::changeProgramName (int index, const juce::Strin
 //==============================================================================
 void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-//    juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
@@ -197,28 +203,16 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         comp.prepare(spec);
     }
     
-    // TEST
     filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
     filterSequence.prepare(spec);
     auto testCrossovers = createTestCrossovers(numBands->getCurrentChoiceName().getIntValue());
     filterSequence.updateFilterCutoffs(testCrossovers);
-    // END TEST
     
     /*
-    LP1.prepare(spec);
-    HP1.prepare(spec);
-    AP2.prepare(spec);
-    LP2.prepare(spec);
-    HP2.prepare(spec);
-    
-    for ( auto& fBuffer : filterBuffers )
-    {
-        fBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
-    }
+    invAP1.prepare(spec);
+    invAP2.prepare(spec);
+    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     */
-//    invAP1.prepare(spec);
-//    invAP2.prepare(spec);
-//    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
 }
 
 void PFMProject12AudioProcessor::releaseResources()
@@ -272,7 +266,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     if ( numBands->getCurrentChoiceName().getIntValue() != numBandsLastSelected )
     {
-//        DBG("changed!");
         filterSequence.createBuffersAndFilters(numBands->getCurrentChoiceName().getIntValue());
         filterSequence.prepare(spec);
         auto testCrossovers = createTestCrossovers(numBands->getCurrentChoiceName().getIntValue());
@@ -324,87 +317,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     }
     
-//    DBG(numBands->getCurrentChoiceName().getIntValue());
-    /*
-    for ( auto& fBuffer : filterBuffers )
-    {
-        fBuffer = buffer;
-    }
-    */
 //    apBuffer = buffer;
     
-    //updateBands();
-    
-    /*
-    Filter network
-    xf0    xf1         xf0    xf1
-    LP1 -> AP2    ------\               LP tuned to xf0
-    HP1 -> LP2;         /-----\         bandpass between xf0 and xf1
-       \-> HP2;               /------   HP tuned to xf1
-    */
-    /*
-    // process filterBuffers[0] - LP1 --> AP2
-    auto fb0Block = juce::dsp::AudioBlock<float>(filterBuffers[0]);
-    auto fb0Ctx = juce::dsp::ProcessContextReplacing<float>(fb0Block);
-    LP1.process(fb0Ctx);
-    AP2.process(fb0Ctx);
-    
-    // process filterBuffers[1] - HP1 --> LP2
-    auto fb1Block = juce::dsp::AudioBlock<float>(filterBuffers[1]);
-    auto fb1Ctx = juce::dsp::ProcessContextReplacing<float>(fb1Block);
-    HP1.process(fb1Ctx);
-    
-    // the buffer HP1 has just processed filterBuffers[1] needs to be copied to filterBuffers[2] BEFORE LP2 processes it
-    filterBuffers[2] = filterBuffers[1];
-    
-    // resume processing filterBuffers[1]
-    LP2.process(fb1Ctx);
-    
-    // process filterBuffers[2] - (already processed by HP1) --> HP2
-    auto fb2Block = juce::dsp::AudioBlock<float>(filterBuffers[2]);
-    auto fb2Ctx = juce::dsp::ProcessContextReplacing<float>(fb2Block);
-    HP2.process(fb2Ctx);
-    */
-    /*
-    for ( auto i = 0; i < compressors.size(); ++i )
-    {
-        compressors[i].process(filterBuffers[i]);
-    }
-    */
-    //buffer.clear();
-    /*
-    bool bandsAreSoloed = false;
-    for ( auto& comp : compressors )
-    {
-        if ( comp.solo->get() )
-        {
-            bandsAreSoloed = true;
-            break;
-        }
-    }
-    */
-    /*
-    if ( bandsAreSoloed )
-    {
-        for ( auto i = 0; i < compressors.size(); ++i )
-        {
-            if ( compressors[i].solo->get() )
-            {
-                addBand(buffer, filterBuffers[i]);
-            }
-        }
-    }
-    else
-    {
-        for ( auto i = 0; i < compressors.size(); ++i )
-        {
-            if ( !compressors[i].mute->get() )
-            {
-                addBand(buffer, filterBuffers[i]);
-            }
-        }
-    }
-    */
     /*
     // test with an inverted allpass filter, it should cancel the phase of the post-filtered signal
      
@@ -438,7 +352,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const int& numBands)
 {
     std::vector<float> crossovers;
-    float interval = 20000.f / numBands;
+    float interval = 8000.f / numBands;
     float crossover = interval;
     for ( auto i = 0; i < numBands - 1; ++i )
     {
@@ -475,12 +389,6 @@ void PFMProject12AudioProcessor::updateBands()
     /*
     auto crossoverFreq0 = lowMidCrossover->get();
     auto crossoverFreq1 = midHighCrossover->get();
-    
-    LP1.setCutoffFrequency(crossoverFreq0);
-    HP1.setCutoffFrequency(crossoverFreq0);
-    AP2.setCutoffFrequency(crossoverFreq1);
-    LP2.setCutoffFrequency(crossoverFreq1);
-    HP2.setCutoffFrequency(crossoverFreq1);
     */
 }
 
@@ -520,11 +428,15 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     addBandControls(layout, 1);
     addBandControls(layout, 2);
     addBandControls(layout, 3);
+    addBandControls(layout, 4);
+    addBandControls(layout, 5);
+    addBandControls(layout, 6);
+    addBandControls(layout, 7);
     
     layout.add(std::make_unique<juce::AudioParameterChoice>("NumBands",
                                                             "Number Of Bands",
-                                                            juce::StringArray{ "1", "2", "3", "4" },
-                                                            3)); // 4 set as default
+                                                            juce::StringArray{ "2", "3", "4", "5", "6", "7", "8" },
+                                                            1)); // 3 set as default
     
     /*
     //==============================================================================
