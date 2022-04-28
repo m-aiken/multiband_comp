@@ -184,10 +184,6 @@ private:
             filterBands.push_back(band);
         }
         
-        const juce::ScopedLock scopedFilterLock(filterCS);
-
-        std::swap(mbFilters, filterBands);
-        
 #if DISPLAY_FILTER_CONFIGURATIONS == true
         juce::String createdTitle("Created Filters:");
         DBG(createdTitle);
@@ -216,6 +212,10 @@ private:
             DBG(filterBandStr);
         }
 #endif
+        
+        const juce::ScopedLock scopedFilterLock(filterCS);
+
+        std::swap(mbFilters, filterBands);
     }
     
     static std::vector<Filter> createFilterSequence(size_t bandNum, size_t numBands)
