@@ -13,6 +13,24 @@
 #define MIN_BANDS 0
 #define MAX_BANDS 7
 #define DISPLAY_FILTER_CONFIGURATIONS true
+#define TEST_FILTER_NETWORK true
+
+//==============================================================================
+struct InvertedNetwork
+{
+    void resize(size_t numBands);
+    void updateCutoffs(std::vector<float> xoverFreqs);
+    const juce::AudioBuffer<float>& getProcessedBuffer();
+    void process(const juce::AudioBuffer<float>& inputBuffer);
+    void invert();
+    void prepare(const juce::dsp::ProcessSpec& spec);
+private:
+    std::vector<juce::dsp::LinkwitzRileyFilter<float>> allpassFilters;
+    juce::AudioBuffer<float> buffer;
+    juce::dsp::ProcessSpec currentSpec {44100.0, 512, 2};
+        
+    void prepareInternal();
+};
 
 //==============================================================================
 template<typename FloatType>
@@ -418,11 +436,9 @@ private:
     int numBandsLastSelected = 3;
     juce::AudioParameterChoice* numBands { nullptr };
     
-//    juce::AudioParameterFloat* lowMidCrossover { nullptr };
-//    juce::AudioParameterFloat* midHighCrossover { nullptr };
-    
-//    juce::dsp::LinkwitzRileyFilter<float> invAP1, invAP2;
-//    juce::AudioBuffer<float> apBuffer;
+#if TEST_FILTER_NETWORK
+    InvertedNetwork invertedNetwork;
+#endif
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessor)
