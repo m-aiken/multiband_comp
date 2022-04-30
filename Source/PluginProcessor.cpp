@@ -56,10 +56,7 @@ void InvertedNetwork::invert()
 
 void InvertedNetwork::prepare(const juce::dsp::ProcessSpec& spec)
 {
-    currentSpec.sampleRate = spec.sampleRate;
-    currentSpec.maximumBlockSize = spec.maximumBlockSize;
-    currentSpec.numChannels = spec.numChannels;
-    
+    currentSpec = spec;
     prepareInternal();
 }
 
