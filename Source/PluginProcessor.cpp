@@ -14,7 +14,7 @@
 void InvertedNetwork::resize(size_t numBands)
 {
     allpassFilters.clear();
-    allpassFilters.assign(numBands, juce::dsp::LinkwitzRileyFilter<float>());
+    allpassFilters.assign(numBands - 1, juce::dsp::LinkwitzRileyFilter<float>());
     for ( auto& filter : allpassFilters )
     {
         filter.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
@@ -182,12 +182,6 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     fSeqTest.updateFilterCutoffs(testCrossovers);
     jassertfalse;
     */
-    
-//    assignFloatParam(lowMidCrossover,  Params::getCrossoverParamName(0, 1));
-//    assignFloatParam(midHighCrossover, Params::getCrossoverParamName(1, 2));
-    
-//    invAP1.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
-//    invAP2.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -277,14 +271,9 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     numBandsLastSelected = numBandsCurrentSelection;
     
 #if TEST_FILTER_NETWORK
-    invertedNetwork.resize(numBandsCurrentSelection - 1);
+    invertedNetwork.resize(numBandsCurrentSelection);
     invertedNetwork.prepare(spec);
 #endif
-    /*
-    invAP1.prepare(spec);
-    invAP2.prepare(spec);
-    apBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
-    */
 }
 
 void PFMProject12AudioProcessor::releaseResources()
@@ -348,7 +337,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         numBandsLastSelected = numBandsCurrentSelection;
         
 #if TEST_FILTER_NETWORK
-        invertedNetwork.resize(numBandsCurrentSelection - 1);
+        invertedNetwork.resize(numBandsCurrentSelection);
         invertedNetwork.updateCutoffs(testCrossovers);
 #endif
     }
@@ -404,37 +393,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         addBand(buffer, invertedNetwork.getProcessedBuffer());
     }
 #endif
-    
-//    apBuffer = buffer;
-    
-    /*
-    // test with an inverted allpass filter, it should cancel the phase of the post-filtered signal
-     
-    auto numChannels = buffer.getNumChannels();
-    auto numSamples = buffer.getNumSamples();
-    
-    if ( bandOne.bypassed->get() )
-    {
-        auto crossoverFreq0 = lowMidCrossover->get();
-        auto crossoverFreq1 = midHighCrossover->get();
-     
-        invAP1.setCutoffFrequency(crossoverFreq0);
-        invAP2.setCutoffFrequency(crossoverFreq1);
-        
-        auto invApBlock = juce::dsp::AudioBlock<float>(apBuffer);
-        auto invApCtx = juce::dsp::ProcessContextReplacing<float>(invApBlock);
-        
-        invAP1.process(invApCtx);
-        invAP2.process(invApCtx);
-        
-        for ( auto i = 0; i < numChannels; ++i )
-        {
-            juce::FloatVectorOperations::multiply(apBuffer.getWritePointer(i), -1.f, numSamples);
-        }
-        
-        addBand(buffer, apBuffer);
-    }
-    */
 }
 
 std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const int& numBands)
@@ -474,10 +432,6 @@ void PFMProject12AudioProcessor::updateBands()
         comp.updateGain();
         comp.updateBypassState();
     }
-    /*
-    auto crossoverFreq0 = lowMidCrossover->get();
-    auto crossoverFreq1 = midHighCrossover->get();
-    */
 }
 
 //==============================================================================

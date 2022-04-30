@@ -439,11 +439,6 @@ private:
 #if TEST_FILTER_NETWORK
     InvertedNetwork invertedNetwork;
 #endif
-//    juce::AudioParameterFloat* lowMidCrossover { nullptr };
-//    juce::AudioParameterFloat* midHighCrossover { nullptr };
-    
-//    juce::dsp::LinkwitzRileyFilter<float> invAP1, invAP2;
-//    juce::AudioBuffer<float> apBuffer;
     
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessor)
