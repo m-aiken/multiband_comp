@@ -10,6 +10,71 @@
 #include "PluginEditor.h"
 
 //==============================================================================
+
+void InvertedNetwork::resize(size_t numBands)
+{
+    allpassFilters.clear();
+    allpassFilters.assign(numBands, juce::dsp::LinkwitzRileyFilter<float>());
+    for ( auto& filter : allpassFilters )
+    {
+        filter.setType(juce::dsp::LinkwitzRileyFilterType::allpass);
+    }
+    prepareInternal();
+}
+
+void InvertedNetwork::updateCutoffs(std::vector<float> xoverFreqs)
+{
+    jassert( xoverFreqs.size() == allpassFilters.size() );
+    
+    for ( size_t i = 0; i < xoverFreqs.size(); ++i )
+    {
+        allpassFilters[i].setCutoffFrequency(xoverFreqs[i]);
+    }
+}
+
+const juce::AudioBuffer<float>& InvertedNetwork::getProcessedBuffer() { return buffer; }
+
+void InvertedNetwork::process(const juce::AudioBuffer<float>& inputBuffer)
+{
+    buffer = inputBuffer;
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    for ( auto& filter : allpassFilters )
+    {
+        filter.process(context);
+    }
+}
+
+void InvertedNetwork::invert()
+{
+    auto numSamples = buffer.getNumSamples();
+    for ( auto i = 0; i < buffer.getNumChannels(); ++i )
+    {
+        juce::FloatVectorOperations::multiply(buffer.getWritePointer(i), -1.f, numSamples);
+    }
+}
+
+void InvertedNetwork::prepare(const juce::dsp::ProcessSpec& spec)
+{
+    currentSpec.sampleRate = spec.sampleRate;
+    currentSpec.maximumBlockSize = spec.maximumBlockSize;
+    currentSpec.numChannels = spec.numChannels;
+    
+    prepareInternal();
+}
+
+void InvertedNetwork::prepareInternal()
+{
+    for ( auto& filter : allpassFilters )
+    {
+        filter.prepare(currentSpec);
+    }
+    
+    buffer.setSize(currentSpec.numChannels, currentSpec.maximumBlockSize, false, true, true);
+    buffer.clear();
+}
+
+//==============================================================================
 void CompressorBand::prepare(juce::dsp::ProcessSpec& spec)
 {
     compressor.prepare(spec);
@@ -210,6 +275,11 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     filterSequence.updateFilterCutoffs(testCrossovers);
     
     numBandsLastSelected = numBandsCurrentSelection;
+    
+#if TEST_FILTER_NETWORK
+    invertedNetwork.resize(numBandsCurrentSelection - 1);
+    invertedNetwork.prepare(spec);
+#endif
     /*
     invAP1.prepare(spec);
     invAP2.prepare(spec);
@@ -276,9 +346,18 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         filterSequence.updateFilterCutoffs(testCrossovers);
         
         numBandsLastSelected = numBandsCurrentSelection;
+        
+#if TEST_FILTER_NETWORK
+        invertedNetwork.resize(numBandsCurrentSelection - 1);
+        invertedNetwork.updateCutoffs(testCrossovers);
+#endif
     }
     
     filterSequence.process(buffer);
+    
+#if TEST_FILTER_NETWORK
+    invertedNetwork.process(buffer);
+#endif
     
     for ( auto i = 0; i < numBandsCurrentSelection; ++i )
     {
@@ -317,6 +396,14 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             }
         }
     }
+    
+#if TEST_FILTER_NETWORK
+    if ( apvts.getParameter(Params::getBypassParamName(0))->getValue() > 0.5f )
+    {
+        invertedNetwork.invert();
+        addBand(buffer, invertedNetwork.getProcessedBuffer());
+    }
+#endif
     
 //    apBuffer = buffer;
     
