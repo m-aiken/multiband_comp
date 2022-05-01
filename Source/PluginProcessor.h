@@ -59,8 +59,8 @@ struct Fifo
         {
             if constexpr( IsRefCountedObject<T>::value )
             {
-                auto tCopyForRefCount = t;
-                jassert( tCopyForRefCount.getReferenceCount() > 1 );
+                auto refCountHelper = buffers[write.startIndex1];
+                jassert( buffers[write.startIndex1].getReferenceCount() > 1 );
                 buffers[write.startIndex1] = t;
             }
             else
