@@ -16,6 +16,90 @@
 #define TEST_FILTER_NETWORK true
 
 //==============================================================================
+template<typename T>
+struct IsRefCountedObject : std::false_type { };
+
+template<typename T>
+struct IsRefCountedObject<juce::ReferenceCountedObjectPtr<T>> : std::true_type { };
+
+template<typename T, size_t Size>
+struct Fifo
+{
+    size_t getSize() const noexcept
+    {
+        return Size;
+    }
+    
+    // used when T is AudioBuffer<float>
+    void prepare(int numSamples, int numChannels)
+    {
+        static_assert( std::is_same<T, juce::AudioBuffer<float>>::value == true );
+        for ( auto& buffer : buffers)
+        {
+            buffer.setSize(numChannels, numSamples, false, true, true);
+            buffer.clear();
+        }
+    }
+    
+    // used when T is std::vector<float>
+    void prepare(size_t numElements)
+    {
+        static_assert( std::is_same<T, std::vector<float>>::value == true );
+        for ( auto& buffer : buffers)
+        {
+            buffer.clear();
+            buffer.resize(numElements, 0);
+        }
+    }
+    
+    bool push(const T& t)
+    {
+        auto write = fifo.write(1);
+        if ( write.blockSize1 > 1 )
+        {
+            if constexpr( IsRefCountedObject<T>::value )
+            {
+                auto tCopyForRefCount = t;
+                jassert( tCopyForRefCount.getReferenceCount() > 1 );
+                buffers[write.startIndex1] = t;
+            }
+            else
+            {
+                buffers[write.startIndex1] = t;
+            }
+            
+            return true;
+        }
+        return false;
+    }
+    
+    bool pull(T& t)
+    {
+        auto read = fifo.read(1);
+        if ( read.blockSize1 > 1 )
+        {
+            t = buffers[read.startIndex1];
+            return true;
+        }
+        return false;
+    }
+    
+    int getNumAvailableForReading() const
+    {
+        return fifo.getNumReady();
+    }
+    
+    int getAvailableSpace() const
+    {
+        return fifo.getFreeSpace();
+    }
+    
+private:
+    juce::AbstractFifo fifo { Size };
+    std::array<T, Size> buffers;
+};
+
+//==============================================================================
 struct InvertedNetwork
 {
     void resize(size_t numBands);
