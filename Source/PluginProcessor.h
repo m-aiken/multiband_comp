@@ -55,7 +55,7 @@ struct Fifo
     bool push(const T& t)
     {
         auto write = fifo.write(1);
-        if ( write.blockSize1 > 1 )
+        if ( write.blockSize1 > 0 )
         {
             if constexpr( IsRefCountedObject<T>::value )
             {
@@ -76,7 +76,7 @@ struct Fifo
     bool pull(T& t)
     {
         auto read = fifo.read(1);
-        if ( read.blockSize1 > 1 )
+        if ( read.blockSize1 > 0 )
         {
             t = buffers[read.startIndex1];
             return true;
