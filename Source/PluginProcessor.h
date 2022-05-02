@@ -111,45 +111,36 @@ struct Fifo
                 std::swap(t, buffers[idx]);
                 jassert( buffers[idx] == nullptr );
             }
-            else
+            else if constexpr( IsRefCountedArray<T>::value )
             {
-                if constexpr( IsRefCountedArray<T>::value )
+                std::swap(t, buffers[idx]);
+                jassert( buffers[idx].size() == 0 );
+            }
+            else if constexpr( std::is_same<T, std::vector<float>>::value == true )
+            {
+                if ( t.size() < buffers[idx].size() )
                 {
-                    std::swap(t, buffers[idx]);
-                    jassert( buffers[idx].size() == 0 );
+                    buffers[idx] = t;
                 }
                 else
                 {
-                    if constexpr( std::is_same<T, std::vector<float>>::value == true )
-                    {
-                        if ( t.size() < buffers[idx].size() )
-                        {
-                            buffers[idx] = t;
-                        }
-                        else
-                        {
-                            std::swap(t, buffers[idx]);
-                        }
-                    }
-                    else
-                    {
-                        if constexpr( std::is_same<T, juce::AudioBuffer<float>>::value == true )
-                        {
-                            if ( t.getNumSamples() < buffers[idx].getNumSamples() )
-                            {
-                                buffers[idx] = t;
-                            }
-                            else
-                            {
-                                std::swap(t, buffers[idx]);
-                            }
-                        }
-                        else
-                        {
-                            std::swap(t, buffers[idx]);
-                        }
-                    }
+                    std::swap(t, buffers[idx]);
                 }
+            }
+            else if constexpr( std::is_same<T, juce::AudioBuffer<float>>::value == true )
+            {
+                if ( t.getNumSamples() < buffers[idx].getNumSamples() )
+                {
+                    buffers[idx] = t;
+                }
+                else
+                {
+                    std::swap(t, buffers[idx]);
+                }
+            }
+            else
+            {
+                std::swap(t, buffers[idx]);
             }
         }
     }
