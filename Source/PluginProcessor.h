@@ -173,7 +173,7 @@ struct ReleasePool : juce::Timer
         {
             if ( fifo.push(ptr) )
             {
-                objectPushedToFifo.set(true);
+                pushedToFifoSuccessfully.set(true);
             }
             else
             {
@@ -184,7 +184,7 @@ struct ReleasePool : juce::Timer
     
     void timerCallback() override
     {
-        if ( objectPushedToFifo.compareAndSetBool(true, true) )
+        if ( pushedToFifoSuccessfully.compareAndSetBool(true, true) )
         {
             Ptr ptrForDeletionPool;
             while ( fifo.pull(ptrForDeletionPool) )
@@ -225,7 +225,7 @@ private:
     
     std::vector<Ptr> deletionPool;
     Fifo<Ptr, 200> fifo;
-    juce::Atomic<bool> objectPushedToFifo;
+    juce::Atomic<bool> pushedToFifoSuccessfully;
 };
 
 //==============================================================================
