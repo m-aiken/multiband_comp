@@ -182,7 +182,7 @@ struct ReleasePool : juce::Timer
         {
             if ( fifo.push(ptr) )
             {
-                objectPushedToFifo = true;
+                objectPushedToFifo.set(true);
             }
             else
             {
@@ -193,7 +193,7 @@ struct ReleasePool : juce::Timer
     
     void timerCallback() override
     {
-        if ( objectPushedToFifo )
+        if ( objectPushedToFifo.compareAndSetBool(true, true) )
         {
             Ptr ptrForDeletionPool;
             while ( fifo.pull(ptrForDeletionPool) )
