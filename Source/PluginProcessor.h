@@ -17,10 +17,16 @@
 
 //==============================================================================
 template<typename T>
-struct IsRefCountedObject : std::false_type { };
+struct IsRefCountedObjectPtr : std::false_type { };
 
 template<typename T>
-struct IsRefCountedObject<juce::ReferenceCountedObjectPtr<T>> : std::true_type { };
+struct IsRefCountedObjectPtr<juce::ReferenceCountedObjectPtr<T>> : std::true_type { };
+
+template<typename T>
+struct IsRefCountedArray : std::false_type { };
+
+template<typename T>
+struct IsRefCountedArray<juce::ReferenceCountedArray<T>> : std::true_type { };
 
 template<typename T, size_t Size>
 struct Fifo
@@ -57,7 +63,7 @@ struct Fifo
         auto write = fifo.write(1);
         if ( write.blockSize1 > 0 )
         {
-            if constexpr( IsRefCountedObject<T>::value )
+            if constexpr( IsRefCountedObjectPtr<T>::value )
             {
                 auto refCountHelper = buffers[write.startIndex1];
                 jassert( buffers[write.startIndex1].getReferenceCount() > 1 );
@@ -94,9 +100,132 @@ struct Fifo
         return fifo.getFreeSpace();
     }
     
+    void exchange(T&& t)
+    {
+        auto read = fifo.read(1);
+        if ( read.blockSize1 > 0 )
+        {
+            auto idx = read.startIndex1;
+            if constexpr( IsRefCountedObjectPtr<T>::value )
+            {
+                std::swap(t, buffers[idx]);
+                jassert( buffers[idx] == nullptr );
+            }
+            else if constexpr( IsRefCountedArray<T>::value )
+            {
+                std::swap(t, buffers[idx]);
+                jassert( buffers[idx].size() == 0 );
+            }
+            else if constexpr( std::is_same<T, std::vector<float>>::value == true )
+            {
+                if ( t.size() < buffers[idx].size() )
+                {
+                    buffers[idx] = t;
+                }
+                else
+                {
+                    std::swap(t, buffers[idx]);
+                }
+            }
+            else if constexpr( std::is_same<T, juce::AudioBuffer<float>>::value == true )
+            {
+                if ( t.getNumSamples() < buffers[idx].getNumSamples() )
+                {
+                    buffers[idx] = t;
+                }
+                else
+                {
+                    std::swap(t, buffers[idx]);
+                }
+            }
+            else
+            {
+                std::swap(t, buffers[idx]);
+            }
+        }
+    }
+    
 private:
     juce::AbstractFifo fifo { Size };
     std::array<T, Size> buffers;
+};
+
+//==============================================================================
+template<typename ReferenceCountedType>
+struct ReleasePool : juce::Timer
+{
+    using Ptr = juce::ReferenceCountedObjectPtr<ReferenceCountedType>;
+
+    ReleasePool()
+    {
+        deletionPool.clear();
+        deletionPool.resize(0);
+        startTimer(2000);
+    }
+    
+    void add(Ptr ptr)
+    {
+        if ( juce::MessageManager::getInstance()->isThisTheMessageThread() )
+        {
+            addIfNotAlreadyThere(ptr);
+        }
+        else
+        {
+            if ( fifo.push(ptr) )
+            {
+                pushedToFifoSuccessfully.set(true);
+            }
+            else
+            {
+                jassertfalse;
+            }
+        }
+    }
+    
+    void timerCallback() override
+    {
+        if ( pushedToFifoSuccessfully.compareAndSetBool(false, true) )
+        {
+            Ptr ptrForDeletionPool;
+            while ( fifo.pull(ptrForDeletionPool) )
+            {
+                if ( ptrForDeletionPool != nullptr )
+                {
+                    addIfNotAlreadyThere(ptrForDeletionPool);
+                    ptrForDeletionPool = nullptr;
+                }
+            }
+        }
+        /*
+        erase-remove idiom:
+        
+        - std::remove_if
+        --- swaps elements inside the vector in order
+        --- puts all elements that don't match the predicate towards the beginning of the container
+        --- if the predicate (lambda) returns true, that element will be placed at the end of the vector
+        --- remove_if then returns an iterator which points to the first element that matches the predicate (an iterator to the first element to be removed)
+        
+        - std::vector::erase
+        --- erases the range starting from the returned iterator to the end of the vector, such that all elements that match the predicate are removed
+        
+        */
+        auto eraseStartIdx = std::remove_if(deletionPool.begin(), deletionPool.end(), [](auto i){ return i.getReferenceCount() <= 1; });
+        deletionPool.erase(eraseStartIdx, deletionPool.end());
+    }
+    
+private:
+    void addIfNotAlreadyThere(Ptr ptr)
+    {
+        auto idxInDeletionPool = std::find_if(deletionPool.begin(), deletionPool.end(), [ptr](auto i){ return i == ptr; });
+        if ( idxInDeletionPool == deletionPool.end() ) // not found
+        {
+            deletionPool.push_back(ptr);
+        }
+    }
+    
+    std::vector<Ptr> deletionPool;
+    Fifo<Ptr, 200> fifo;
+    juce::Atomic<bool> pushedToFifoSuccessfully { false };
 };
 
 //==============================================================================
