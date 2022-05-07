@@ -68,7 +68,7 @@ struct Fifo
             if constexpr( IsRefCountedObjectPtr<T>::value )
             {
                 auto refCountHelper = buffers[write.startIndex1];
-                jassert( buffers[write.startIndex1].getReferenceCount() > 1 );
+                jassert( buffers[write.startIndex1]->getReferenceCount() > 1 );
                 buffers[write.startIndex1] = t;
             }
             else
@@ -211,7 +211,7 @@ struct ReleasePool : juce::Timer
         --- erases the range starting from the returned iterator to the end of the vector, such that all elements that match the predicate are removed
         
         */
-        auto eraseStartIdx = std::remove_if(deletionPool.begin(), deletionPool.end(), [](auto i){ return i.getReferenceCount() <= 1; });
+        auto eraseStartIdx = std::remove_if(deletionPool.begin(), deletionPool.end(), [](auto i){ return i->getReferenceCount() <= 1; });
         deletionPool.erase(eraseStartIdx, deletionPool.end());
     }
     
@@ -249,7 +249,7 @@ private:
 
 //==============================================================================
 template<typename FloatType>
-struct FilterSequence
+struct FilterSequence : juce::ReferenceCountedObject
 {
     using Ptr = juce::ReferenceCountedObjectPtr<FilterSequence>;
     using Filter = juce::dsp::LinkwitzRileyFilter<float>;
@@ -536,14 +536,14 @@ private:
     juce::Atomic<bool> sequenceRequested { false };
     
     ReleasePool<Sequence>& releasePool;
-    Fifo<typename Sequence::Ptr, 64> sequenceFifo;
+    Fifo<typename Sequence::Ptr, 20> sequenceFifo;
     
     void createSequence(size_t numBands)
     {
-        typename Sequence::Ptr sequencePtr;
-        releasePool.add(sequencePtr);
-        sequencePtr->createBuffersAndFilters(numBands);
-        sequenceFifo.push(sequencePtr);
+        typename Sequence::Ptr sequence = new Sequence();
+        releasePool.add(sequence);
+        sequence->createBuffersAndFilters(numBands);
+        sequenceFifo.push(sequence);
     }
 };
 
@@ -611,7 +611,7 @@ inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
 {
     jassert(lowBandNum < highBandNum);
     jassert(lowBandNum >= MIN_BAND_NUM);
-    jassert(highBandNum < MAX_BAND_NUM);
+    jassert(highBandNum <= MAX_BAND_NUM);
     jassert(highBandNum - lowBandNum == 1);
     
     juce::String str;
