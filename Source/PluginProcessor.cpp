@@ -165,20 +165,6 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     }
     
     assignChoiceParam(numBands, "NumBands");
-    numBandsLastSelected = numBands->getCurrentChoiceName().getIntValue();
-    
-    /*
-    FilterSequence<float> fSeqTest;
-    spec.numChannels = getTotalNumOutputChannels();
-    spec.sampleRate = getSampleRate();
-    spec.maximumBlockSize = getBlockSize();
-    fSeqTest.prepare(spec);
-    auto numB = 8;
-    fSeqTest.createBuffersAndFilters(numB);
-    auto testCrossovers = createTestCrossovers(numB);
-    fSeqTest.updateFilterCutoffs(testCrossovers);
-    jassertfalse;
-    */
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -259,17 +245,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         comp.prepare(spec);
     }
     
-    auto numBandsCurrentSelection = numBands->getCurrentChoiceName().getIntValue();
-    /*
-    filterSequence.createBuffersAndFilters(numBandsCurrentSelection);
-    filterSequence.prepare(spec);
-    auto testCrossovers = createTestCrossovers(numBandsCurrentSelection);
-    filterSequence.updateFilterCutoffs(testCrossovers);
-    */
-    numBandsLastSelected = numBandsCurrentSelection;
-    
 #if TEST_FILTER_NETWORK
-    invertedNetwork.resize(numBandsCurrentSelection);
+    invertedNetwork.resize(numBands->getCurrentChoiceName().getIntValue());
     invertedNetwork.prepare(spec);
 #endif
 }
@@ -323,30 +300,18 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     updateBands();
     
-    auto numBandsCurrentSelection = numBands->getCurrentChoiceName().getIntValue();
-    /*
-    if ( numBandsCurrentSelection != numBandsLastSelected )
-    {
-        filterSequence.createBuffersAndFilters(numBandsCurrentSelection);
-        filterSequence.prepare(spec);
-        auto testCrossovers = createTestCrossovers(numBandsCurrentSelection);
-        filterSequence.updateFilterCutoffs(testCrossovers);
-        
-        numBandsLastSelected = numBandsCurrentSelection;
-        
 #if TEST_FILTER_NETWORK
-        invertedNetwork.resize(numBandsCurrentSelection);
-        invertedNetwork.updateCutoffs(testCrossovers);
+    invertedNetwork.resize(currentNumberOfBands);
+    invertedNetwork.updateCutoffs(createTestCrossovers(currentNumberOfBands));
 #endif
-    }
+
+    activeFilterSequence->process(buffer);
     
-    filterSequence.process(buffer);
-    */
 #if TEST_FILTER_NETWORK
     invertedNetwork.process(buffer);
 #endif
     
-    for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+    for ( auto i = 0; i < currentNumberOfBands; ++i )
     {
         compressors[i].process(activeFilterSequence->getFilteredBuffer(i));
     }
@@ -354,7 +319,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     buffer.clear();
     
     bool bandsAreSoloed = false;
-    for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+    for ( auto i = 0; i < currentNumberOfBands; ++i )
     {
         if ( compressors[i].solo->get() )
         {
@@ -365,7 +330,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     if ( bandsAreSoloed )
     {
-        for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+        for ( auto i = 0; i < currentNumberOfBands; ++i )
         {
             if ( compressors[i].solo->get() )
             {
@@ -375,7 +340,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     }
     else
     {
-        for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+        for ( auto i = 0; i < currentNumberOfBands; ++i )
         {
             if ( !compressors[i].mute->get() )
             {
@@ -383,45 +348,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
             }
         }
     }
-    /*
-    for ( auto i = 0; i < numBandsCurrentSelection; ++i )
-    {
-        compressors[i].process(filterSequence.getFilteredBuffer(i));
-    }
     
-    buffer.clear();
-    
-    bool bandsAreSoloed = false;
-    for ( auto i = 0; i < numBandsCurrentSelection; ++i )
-    {
-        if ( compressors[i].solo->get() )
-        {
-            bandsAreSoloed = true;
-            break;
-        }
-    }
-    
-    if ( bandsAreSoloed )
-    {
-        for ( auto i = 0; i < numBandsCurrentSelection; ++i )
-        {
-            if ( compressors[i].solo->get() )
-            {
-                addBand(buffer, filterSequence.getFilteredBuffer(i));
-            }
-        }
-    }
-    else
-    {
-        for ( auto i = 0; i < numBandsCurrentSelection; ++i )
-        {
-            if ( !compressors[i].mute->get() )
-            {
-                addBand(buffer, filterSequence.getFilteredBuffer(i));
-            }
-        }
-    }
-    */
 #if TEST_FILTER_NETWORK
     if ( apvts.getParameter(Params::getBypassParamName(0))->getValue() > 0.5f )
     {
@@ -431,7 +358,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 #endif
 }
 
-std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const int& numBands)
+std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const size_t& numBands)
 {
     std::vector<float> crossovers;
     float interval = 8000.f / numBands;
@@ -473,33 +400,34 @@ void PFMProject12AudioProcessor::updateBands()
     
     auto afSequence = activeFilterSequence;
     
+    /*
     std::vector<float> xoverFreqs;
     for ( auto i = 0; i < afSequence->getBufferCount() - 1; ++i )
     {
         auto freq = apvts.getParameter(Params::getCrossoverParamName(i, i+1))->getValue();
         xoverFreqs.push_back(freq);
     }
-    
+    */
+    auto xoverFreqs = createTestCrossovers(currentNumberOfBands);
     afSequence->updateFilterCutoffs(xoverFreqs);
 }
 
 void PFMProject12AudioProcessor::updateNumberOfBands()
 {
-    auto numBandsCurrentSelection = numBands->getCurrentChoiceName().getIntValue();
-    if ( numBandsCurrentSelection != activeFilterSequence->getBufferCount() )
+    size_t currentSelection = numBands->getCurrentChoiceName().getIntValue();
+    if ( currentSelection != currentNumberOfBands )
     {
-        filterCreator.requestSequence(numBandsCurrentSelection);
+        filterCreator.requestSequence(currentSelection);
     }
     
     Sequence<float>::Ptr newSequence;
     
     if ( filterCreator.getSequence(newSequence) )
     {
-        auto bufferCount = newSequence->getBufferCount();
         newSequence->prepare(spec);
         releasePool.add(activeFilterSequence);
         activeFilterSequence = newSequence;
-        currentNumberOfBands = numBandsCurrentSelection;
+        currentNumberOfBands = currentSelection;
     }
 }
 

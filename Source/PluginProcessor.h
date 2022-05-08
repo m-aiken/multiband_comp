@@ -15,7 +15,7 @@
 #define DISPLAY_FILTER_CONFIGURATIONS true
 #define TEST_FILTER_NETWORK true
 
-#define NUM_BANDS 8
+#define NUM_BANDS 3
 
 //==============================================================================
 template<typename T>
@@ -67,8 +67,11 @@ struct Fifo
         {
             if constexpr( IsRefCountedObjectPtr<T>::value )
             {
-                auto refCountHelper = buffers[write.startIndex1];
-                jassert( buffers[write.startIndex1]->getReferenceCount() > 1 );
+                if ( buffers[write.startIndex1] != nullptr )
+                {
+                    auto refCountHelper = buffers[write.startIndex1];
+                    jassert( buffers[write.startIndex1]->getReferenceCount() > 1 );
+                }
                 buffers[write.startIndex1] = t;
             }
             else
@@ -160,8 +163,8 @@ struct ReleasePool : juce::Timer
 
     ReleasePool()
     {
-        deletionPool.clear();
         deletionPool.resize(0);
+        deletionPool.clear();
         startTimer(2000);
     }
     
@@ -179,7 +182,7 @@ struct ReleasePool : juce::Timer
             }
             else
             {
-                jassertfalse;
+                pushedToFifoSuccessfully.set(false);
             }
         }
     }
@@ -218,7 +221,7 @@ struct ReleasePool : juce::Timer
 private:
     void addIfNotAlreadyThere(Ptr ptr)
     {
-        auto idxInDeletionPool = std::find_if(deletionPool.begin(), deletionPool.end(), [ptr](auto i){ return i == ptr; });
+        auto idxInDeletionPool = std::find_if(deletionPool.begin(), deletionPool.end(), [ptr](const auto& i){ return i.get() == ptr.get(); });
         if ( idxInDeletionPool == deletionPool.end() ) // not found
         {
             deletionPool.push_back(ptr);
@@ -226,7 +229,7 @@ private:
     }
     
     std::vector<Ptr> deletionPool;
-    Fifo<Ptr, 200> fifo;
+    Fifo<Ptr, 512> fifo;
     juce::Atomic<bool> pushedToFifoSuccessfully { false };
 };
 
@@ -515,6 +518,7 @@ struct FilterCreator : juce::Thread
             if ( sequenceRequested.get() )
             {
                 createSequence(numBandsToMake.get());
+                sequenceRequested.set(false);
             }
             wait(10);
         }
@@ -532,7 +536,7 @@ struct FilterCreator : juce::Thread
     }
     
 private:
-    juce::Atomic<size_t> numBandsToMake { NUM_BANDS };
+    juce::Atomic<size_t> numBandsToMake { 3 };
     juce::Atomic<bool> sequenceRequested { false };
     
     ReleasePool<Sequence>& releasePool;
@@ -700,21 +704,18 @@ public:
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
-    std::vector<float> createTestCrossovers(const int& numBands);
+    std::vector<float> createTestCrossovers(const size_t& numBands);
     
 private:
     std::array<CompressorBand, 8> compressors;
     
     ReleasePool<FilterSequence<float>> releasePool;
     FilterCreator<float> filterCreator { releasePool };
-    
-//    FilterSequence<float> filterSequence;
     FilterSequence<float>::Ptr activeFilterSequence;
     size_t currentNumberOfBands = -1;
     
     juce::dsp::ProcessSpec spec;
     
-    int numBandsLastSelected = 3;
     juce::AudioParameterChoice* numBands { nullptr };
     
 #if TEST_FILTER_NETWORK
