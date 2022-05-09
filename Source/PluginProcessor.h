@@ -65,20 +65,17 @@ struct Fifo
         auto write = fifo.write(1);
         if ( write.blockSize1 > 0 )
         {
+            size_t index = static_cast<size_t>(write.startIndex1);
             if constexpr( IsRefCountedObjectPtr<T>::value )
             {
-                if ( buffers[write.startIndex1] != nullptr )
-                {
-                    auto refCountHelper = buffers[write.startIndex1];
-                    jassert( buffers[write.startIndex1]->getReferenceCount() > 1 );
-                }
-                buffers[write.startIndex1] = t;
+                T old = buffers[index];
+                buffers[index] = t;
+                jassert( old.get() == nullptr || old->getReferenceCount() > 1 );
             }
             else
             {
-                buffers[write.startIndex1] = t;
+                buffers[index] = t;
             }
-            
             return true;
         }
         return false;
@@ -182,7 +179,7 @@ struct ReleasePool : juce::Timer
             }
             else
             {
-                pushedToFifoSuccessfully.set(false);
+                jassertfalse;
             }
         }
     }
@@ -221,7 +218,7 @@ struct ReleasePool : juce::Timer
 private:
     void addIfNotAlreadyThere(Ptr ptr)
     {
-        auto idxInDeletionPool = std::find_if(deletionPool.begin(), deletionPool.end(), [ptr](const auto& i){ return i.get() == ptr.get(); });
+        auto idxInDeletionPool = std::find_if(deletionPool.begin(), deletionPool.end(), [ptr](auto i){ return i == ptr; });
         if ( idxInDeletionPool == deletionPool.end() ) // not found
         {
             deletionPool.push_back(ptr);
@@ -515,10 +512,9 @@ struct FilterCreator : juce::Thread
     {
         while ( !threadShouldExit() )
         {
-            if ( sequenceRequested.get() )
+            if ( sequenceRequested.compareAndSetBool(false, true) )
             {
                 createSequence(numBandsToMake.get());
-                sequenceRequested.set(false);
             }
             wait(10);
         }
