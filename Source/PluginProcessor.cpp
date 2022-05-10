@@ -165,20 +165,6 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     }
     
     assignChoiceParam(numBands, "NumBands");
-    numBandsLastSelected = numBands->getCurrentChoiceName().getIntValue();
-    
-    /*
-    FilterSequence<float> fSeqTest;
-    spec.numChannels = getTotalNumOutputChannels();
-    spec.sampleRate = getSampleRate();
-    spec.maximumBlockSize = getBlockSize();
-    fSeqTest.prepare(spec);
-    auto numB = 8;
-    fSeqTest.createBuffersAndFilters(numB);
-    auto testCrossovers = createTestCrossovers(numB);
-    fSeqTest.updateFilterCutoffs(testCrossovers);
-    jassertfalse;
-    */
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -259,16 +245,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         comp.prepare(spec);
     }
     
-    auto numBandsCurrentSelection = numBands->getCurrentChoiceName().getIntValue();
-    filterSequence.createBuffersAndFilters(numBandsCurrentSelection);
-    filterSequence.prepare(spec);
-    auto testCrossovers = createTestCrossovers(numBandsCurrentSelection);
-    filterSequence.updateFilterCutoffs(testCrossovers);
-    
-    numBandsLastSelected = numBandsCurrentSelection;
-    
 #if TEST_FILTER_NETWORK
-    invertedNetwork.resize(numBandsCurrentSelection);
+    invertedNetwork.resize(numBands->getCurrentChoiceName().getIntValue());
     invertedNetwork.prepare(spec);
 #endif
 }
@@ -322,38 +300,26 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     updateBands();
     
-    auto numBandsCurrentSelection = numBands->getCurrentChoiceName().getIntValue();
-    
-    if ( numBandsCurrentSelection != numBandsLastSelected )
-    {
-        filterSequence.createBuffersAndFilters(numBandsCurrentSelection);
-        filterSequence.prepare(spec);
-        auto testCrossovers = createTestCrossovers(numBandsCurrentSelection);
-        filterSequence.updateFilterCutoffs(testCrossovers);
-        
-        numBandsLastSelected = numBandsCurrentSelection;
-        
 #if TEST_FILTER_NETWORK
-        invertedNetwork.resize(numBandsCurrentSelection);
-        invertedNetwork.updateCutoffs(testCrossovers);
+    invertedNetwork.resize(currentNumberOfBands);
+    invertedNetwork.updateCutoffs(createTestCrossovers(currentNumberOfBands));
 #endif
-    }
-    
-    filterSequence.process(buffer);
+
+    activeFilterSequence->process(buffer);
     
 #if TEST_FILTER_NETWORK
     invertedNetwork.process(buffer);
 #endif
     
-    for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+    for ( auto i = 0; i < currentNumberOfBands; ++i )
     {
-        compressors[i].process(filterSequence.getFilteredBuffer(i));
+        compressors[i].process(activeFilterSequence->getFilteredBuffer(i));
     }
     
     buffer.clear();
     
     bool bandsAreSoloed = false;
-    for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+    for ( auto i = 0; i < currentNumberOfBands; ++i )
     {
         if ( compressors[i].solo->get() )
         {
@@ -364,21 +330,21 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     if ( bandsAreSoloed )
     {
-        for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+        for ( auto i = 0; i < currentNumberOfBands; ++i )
         {
             if ( compressors[i].solo->get() )
             {
-                addBand(buffer, filterSequence.getFilteredBuffer(i));
+                addBand(buffer, activeFilterSequence->getFilteredBuffer(i));
             }
         }
     }
     else
     {
-        for ( auto i = 0; i < numBandsCurrentSelection; ++i )
+        for ( auto i = 0; i < currentNumberOfBands; ++i )
         {
             if ( !compressors[i].mute->get() )
             {
-                addBand(buffer, filterSequence.getFilteredBuffer(i));
+                addBand(buffer, activeFilterSequence->getFilteredBuffer(i));
             }
         }
     }
@@ -392,7 +358,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 #endif
 }
 
-std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const int& numBands)
+std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const size_t& numBands)
 {
     std::vector<float> crossovers;
     float interval = 8000.f / numBands;
@@ -428,6 +394,40 @@ void PFMProject12AudioProcessor::updateBands()
         comp.updateCompressor();
         comp.updateGain();
         comp.updateBypassState();
+    }
+    
+    updateNumberOfBands();
+    
+    auto afSequence = activeFilterSequence;
+    
+    /*
+    std::vector<float> xoverFreqs;
+    for ( auto i = 0; i < afSequence->getBufferCount() - 1; ++i )
+    {
+        auto freq = apvts.getParameter(Params::getCrossoverParamName(i, i+1))->getValue();
+        xoverFreqs.push_back(freq);
+    }
+    */
+    auto xoverFreqs = createTestCrossovers(currentNumberOfBands);
+    afSequence->updateFilterCutoffs(xoverFreqs);
+}
+
+void PFMProject12AudioProcessor::updateNumberOfBands()
+{
+    size_t currentSelection = numBands->getCurrentChoiceName().getIntValue();
+    if ( currentSelection != currentNumberOfBands )
+    {
+        filterCreator.requestSequence(currentSelection);
+    }
+    
+    Sequence<float>::Ptr newSequence;
+    
+    if ( filterCreator.getSequence(newSequence) )
+    {
+        newSequence->prepare(spec);
+        releasePool.add(activeFilterSequence);
+        activeFilterSequence = newSequence;
+        currentNumberOfBands = currentSelection;
     }
 }
 
@@ -477,18 +477,43 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                             juce::StringArray{ "2", "3", "4", "5", "6", "7", "8" },
                                                             1)); // 3 set as default
     
-    /*
+    
     //==============================================================================
     layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(0, 1),
                                                            Params::getCrossoverParamName(0, 1),
                                                            juce::NormalisableRange<float>(20.f, 999.f, 1.f, 1.f),
-                                                           400.f));
+                                                           500.f));
     
     layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(1, 2),
                                                            Params::getCrossoverParamName(1, 2),
-                                                           juce::NormalisableRange<float>(1000.f, 20000.f, 1.f, 1.f),
-                                                           2000.f));
-    */
+                                                           juce::NormalisableRange<float>(1000.f, 1999.f, 1.f, 1.f),
+                                                           1500.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(2, 3),
+                                                           Params::getCrossoverParamName(2, 3),
+                                                           juce::NormalisableRange<float>(2000.f, 2999.f, 1.f, 1.f),
+                                                           2500.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(3, 4),
+                                                           Params::getCrossoverParamName(3, 4),
+                                                           juce::NormalisableRange<float>(3000.f, 4999.f, 1.f, 1.f),
+                                                           4000.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(4, 5),
+                                                           Params::getCrossoverParamName(4, 5),
+                                                           juce::NormalisableRange<float>(5000.f, 7999.f, 1.f, 1.f),
+                                                           6500.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(5, 6),
+                                                           Params::getCrossoverParamName(5, 6),
+                                                           juce::NormalisableRange<float>(8000.f, 11999.f, 1.f, 1.f),
+                                                           10000.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getCrossoverParamName(6, 7),
+                                                           Params::getCrossoverParamName(6, 7),
+                                                           juce::NormalisableRange<float>(12000.f, 20000.f, 1.f, 1.f),
+                                                           14000.f));
+    
     return layout;
 }
 
