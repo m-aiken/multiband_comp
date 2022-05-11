@@ -16,6 +16,8 @@
 #define TEST_FILTER_NETWORK true
 
 #define NUM_BANDS 3
+#define MIN_FREQUENCY 20.f
+#define MAX_FREQUENCY 20000.f
 
 //==============================================================================
 template<typename T>
@@ -646,6 +648,34 @@ private:
     
     juce::dsp::Compressor<float> compressor;
     juce::dsp::Gain<float> gain;
+};
+
+//==============================================================================
+struct AudioParameterFloatWithResettableDefaultValue : juce::AudioParameterFloat
+{
+    AudioParameterFloatWithResettableDefaultValue(const juce::String& parameterID,
+                                                  const juce::String& parameterName,
+                                                  juce::NormalisableRange<float> normalisableRange,
+                                                  float defaultValue)
+    : juce::AudioParameterFloat(parameterID, parameterName, normalisableRange, defaultValue)
+    {
+        setDefaultValue(defaultValue);
+    }
+    
+    ~AudioParameterFloatWithResettableDefaultValue() override = default;
+    
+    inline float getDefaultValue() const override
+    {
+        return ( getNormalisableRange().convertTo0to1(resettableDefaultValue.get()) );
+    }
+    
+    inline void setDefaultValue(float newValue)
+    {
+        resettableDefaultValue.set( getNormalisableRange().snapToLegalValue(newValue) );
+    }
+    
+private:
+    juce::Atomic<float> resettableDefaultValue;
 };
 
 //==============================================================================
