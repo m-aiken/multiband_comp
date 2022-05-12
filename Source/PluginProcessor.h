@@ -18,6 +18,7 @@
 #define NUM_BANDS 3
 #define MIN_FREQUENCY 20.f
 #define MAX_FREQUENCY 20000.f
+#define MAX_BANDS 8
 
 //==============================================================================
 template<typename T>
@@ -727,6 +728,7 @@ public:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     static void addBandControls(juce::AudioProcessorValueTreeState::ParameterLayout& layout, const int& bandNum);
+    inline static std::vector<float> getDefaultCenterFrequencies(size_t numBands);
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
