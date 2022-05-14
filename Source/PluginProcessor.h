@@ -10,12 +10,14 @@
 
 #include <JuceHeader.h>
 
-#define MIN_BAND_NUM 0
-#define MAX_BAND_NUM 7
 #define DISPLAY_FILTER_CONFIGURATIONS true
 #define TEST_FILTER_NETWORK true
 
-#define NUM_BANDS 3
+#define MIN_FREQUENCY 20.f
+#define MAX_FREQUENCY 20000.f
+#define MAX_BANDS 8
+#define MIN_BAND_NUM 0
+#define MAX_BAND_NUM 7
 
 //==============================================================================
 template<typename T>
@@ -532,7 +534,7 @@ struct FilterCreator : juce::Thread
     }
     
 private:
-    juce::Atomic<size_t> numBandsToMake { 3 };
+    juce::Atomic<size_t> numBandsToMake { MAX_BANDS };
     juce::Atomic<bool> sequenceRequested { false };
     
     ReleasePool<Sequence>& releasePool;
@@ -649,6 +651,34 @@ private:
 };
 
 //==============================================================================
+struct AudioParameterFloatWithResettableDefaultValue : juce::AudioParameterFloat
+{
+    AudioParameterFloatWithResettableDefaultValue(const juce::String& parameterID,
+                                                  const juce::String& parameterName,
+                                                  juce::NormalisableRange<float> normalisableRange,
+                                                  float defaultValue)
+    : juce::AudioParameterFloat(parameterID, parameterName, normalisableRange, defaultValue)
+    {
+        setDefaultValue(defaultValue);
+    }
+    
+    ~AudioParameterFloatWithResettableDefaultValue() override = default;
+    
+    inline float getDefaultValue() const override
+    {
+        return ( getNormalisableRange().convertTo0to1(resettableDefaultValue.get()) );
+    }
+    
+    inline void setDefaultValue(float newValue)
+    {
+        resettableDefaultValue.set( getNormalisableRange().snapToLegalValue(newValue) );
+    }
+    
+private:
+    juce::Atomic<float> resettableDefaultValue;
+};
+
+//==============================================================================
 /**
 */
 class PFMProject12AudioProcessor  : public juce::AudioProcessor
@@ -698,12 +728,15 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     static void addBandControls(juce::AudioProcessorValueTreeState::ParameterLayout& layout, const int& bandNum);
     
+    inline static std::vector<float> getDefaultCenterFrequencies(size_t numBands);
+    void updateDefaultCenterFrequencies(size_t numBands);
+    
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
     std::vector<float> createTestCrossovers(const size_t& numBands);
     
 private:
-    std::array<CompressorBand, 8> compressors;
+    std::array<CompressorBand, MAX_BANDS> compressors;
     
     ReleasePool<FilterSequence<float>> releasePool;
     FilterCreator<float> filterCreator { releasePool };
