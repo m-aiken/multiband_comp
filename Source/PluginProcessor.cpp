@@ -544,7 +544,7 @@ std::vector<float> PFMProject12AudioProcessor::getDefaultCenterFrequencies(size_
 
     for ( auto i = 0; i < centerFrequencies.size(); ++i )
     {
-        centerFrequencies[i] = std::floor( juce::mapToLog10(juce::jmap<float>(i+1, 0, numBands, 0.f, 1.f), MIN_FREQUENCY, MAX_FREQUENCY) );
+        centerFrequencies[i] = std::round( juce::mapToLog10(juce::jmap<float>(i+1, 0, numBands, 0.f, 1.f), MIN_FREQUENCY, MAX_FREQUENCY) );
     }
     
     return centerFrequencies;
