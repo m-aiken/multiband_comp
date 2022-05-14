@@ -15,7 +15,7 @@
 #define DISPLAY_FILTER_CONFIGURATIONS true
 #define TEST_FILTER_NETWORK true
 
-#define NUM_BANDS 3
+//#define NUM_BANDS 8
 #define MIN_FREQUENCY 20.f
 #define MAX_FREQUENCY 20000.f
 #define MAX_BANDS 8
@@ -535,7 +535,7 @@ struct FilterCreator : juce::Thread
     }
     
 private:
-    juce::Atomic<size_t> numBandsToMake { 3 };
+    juce::Atomic<size_t> numBandsToMake { MAX_BANDS };
     juce::Atomic<bool> sequenceRequested { false };
     
     ReleasePool<Sequence>& releasePool;
@@ -728,14 +728,16 @@ public:
 
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     static void addBandControls(juce::AudioProcessorValueTreeState::ParameterLayout& layout, const int& bandNum);
+    
     inline static std::vector<float> getDefaultCenterFrequencies(size_t numBands);
+    void updateDefaultCenterFrequencies(size_t numBands);
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
     
     std::vector<float> createTestCrossovers(const size_t& numBands);
     
 private:
-    std::array<CompressorBand, 8> compressors;
+    std::array<CompressorBand, MAX_BANDS> compressors;
     
     ReleasePool<FilterSequence<float>> releasePool;
     FilterCreator<float> filterCreator { releasePool };

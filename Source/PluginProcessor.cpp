@@ -246,7 +246,7 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     }
     
 #if TEST_FILTER_NETWORK
-    invertedNetwork.resize(numBands->getCurrentChoiceName().getIntValue());
+    invertedNetwork.resize(MAX_BANDS);
     invertedNetwork.prepare(spec);
 #endif
 }
@@ -302,7 +302,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
 #if TEST_FILTER_NETWORK
     invertedNetwork.resize(currentNumberOfBands);
-    invertedNetwork.updateCutoffs(createTestCrossovers(currentNumberOfBands));
+    invertedNetwork.updateCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
 #endif
 
     activeFilterSequence->process(buffer);
@@ -389,6 +389,8 @@ void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const
 
 void PFMProject12AudioProcessor::updateBands()
 {
+    updateNumberOfBands();
+    
     for ( auto& comp : compressors )
     {
         comp.updateCompressor();
@@ -396,20 +398,8 @@ void PFMProject12AudioProcessor::updateBands()
         comp.updateBypassState();
     }
     
-    updateNumberOfBands();
-    
     auto afSequence = activeFilterSequence;
-    
-    /*
-    std::vector<float> xoverFreqs;
-    for ( auto i = 0; i < afSequence->getBufferCount() - 1; ++i )
-    {
-        auto freq = apvts.getParameter(Params::getCrossoverParamName(i, i+1))->getValue();
-        xoverFreqs.push_back(freq);
-    }
-    */
-    auto xoverFreqs = createTestCrossovers(currentNumberOfBands);
-    afSequence->updateFilterCutoffs(xoverFreqs);
+    afSequence->updateFilterCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
 }
 
 void PFMProject12AudioProcessor::updateNumberOfBands()
@@ -424,6 +414,7 @@ void PFMProject12AudioProcessor::updateNumberOfBands()
     
     if ( filterCreator.getSequence(newSequence) )
     {
+        updateDefaultCenterFrequencies(newSequence->getBufferCount());
         newSequence->prepare(spec);
         releasePool.add(activeFilterSequence);
         activeFilterSequence = newSequence;
@@ -475,68 +466,20 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     layout.add(std::make_unique<juce::AudioParameterChoice>("NumBands",
                                                             "Number Of Bands",
                                                             juce::StringArray{ "2", "3", "4", "5", "6", "7", "8" },
-                                                            1)); // 3 set as default
+                                                            6)); // 8 set as default
     
     
     //==============================================================================
     
     auto defaultCenterFreqs = getDefaultCenterFrequencies(MAX_BANDS);
     
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(0, 1),
-                                                                               Params::getCrossoverParamName(0, 1),
-                                                                               juce::NormalisableRange<float>(MIN_FREQUENCY,
-                                                                                                              defaultCenterFreqs[1] - defaultCenterFreqs[0],
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[0]));
-    
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(1, 2),
-                                                                               Params::getCrossoverParamName(1, 2),
-                                                                               juce::NormalisableRange<float>(defaultCenterFreqs[1] - defaultCenterFreqs[0],
-                                                                                                              defaultCenterFreqs[2] - defaultCenterFreqs[1],
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[1]));
-    
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(2, 3),
-                                                                               Params::getCrossoverParamName(2, 3),
-                                                                               juce::NormalisableRange<float>(defaultCenterFreqs[2] - defaultCenterFreqs[1],
-                                                                                                              defaultCenterFreqs[3] - defaultCenterFreqs[2],
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[2]));
-    
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(3, 4),
-                                                                               Params::getCrossoverParamName(3, 4),
-                                                                               juce::NormalisableRange<float>(defaultCenterFreqs[3] - defaultCenterFreqs[2],
-                                                                                                              defaultCenterFreqs[4] - defaultCenterFreqs[3],
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[3]));
-    
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(4, 5),
-                                                                               Params::getCrossoverParamName(4, 5),
-                                                                               juce::NormalisableRange<float>(defaultCenterFreqs[4] - defaultCenterFreqs[3],
-                                                                                                              defaultCenterFreqs[5] - defaultCenterFreqs[4],
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[4]));
-    
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(5, 6),
-                                                                               Params::getCrossoverParamName(5, 6),
-                                                                               juce::NormalisableRange<float>(defaultCenterFreqs[5] - defaultCenterFreqs[4],
-                                                                                                              defaultCenterFreqs[6] - defaultCenterFreqs[5],
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[5]));
-    
-    layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(6, 7),
-                                                                               Params::getCrossoverParamName(6, 7),
-                                                                               juce::NormalisableRange<float>(defaultCenterFreqs[6] - defaultCenterFreqs[5],
-                                                                                                              MAX_FREQUENCY,
-                                                                                                              1.f,
-                                                                                                              1.f),
-                                                                               defaultCenterFreqs[6]));
+    for ( auto i = 0; i < defaultCenterFreqs.size(); ++i )
+    {
+        layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(i, i+1),
+                                                                                   Params::getCrossoverParamName(i, i+1),
+                                                                                   juce::NormalisableRange<float>(MIN_FREQUENCY, MAX_FREQUENCY, 1.f, 1.f),
+                                                                                   defaultCenterFreqs[i]));
+    }
     
     return layout;
 }
@@ -599,12 +542,26 @@ std::vector<float> PFMProject12AudioProcessor::getDefaultCenterFrequencies(size_
     jassert( numBands > 1 );
     std::vector<float> centerFrequencies(numBands - 1);
 
-    for ( auto i = 1; i <= numBands; ++i )
+    for ( auto i = 0; i < centerFrequencies.size(); ++i )
     {
-        centerFrequencies[i-1] = juce::mapToLog10(juce::jmap<float>(i, 0, numBands, 0.f, 1.f), MIN_FREQUENCY, MAX_FREQUENCY);
+        centerFrequencies[i] = std::floor( juce::mapToLog10(juce::jmap<float>(i+1, 0, numBands, 0.f, 1.f), MIN_FREQUENCY, MAX_FREQUENCY) );
     }
     
     return centerFrequencies;
+}
+
+void PFMProject12AudioProcessor::updateDefaultCenterFrequencies(size_t numBands)
+{
+    auto defaultFreqs = getDefaultCenterFrequencies(numBands);
+    for ( auto i = 0; i < defaultFreqs.size(); ++i )
+    {
+        auto param = dynamic_cast<AudioParameterFloatWithResettableDefaultValue*>(apvts.getParameter(Params::getCrossoverParamName(i, i+1)));
+        jassert(param != nullptr);
+        param->setDefaultValue(defaultFreqs[i]);
+        param->beginChangeGesture();
+        param->setValueNotifyingHost(juce::jmap<float>(defaultFreqs[i], param->range.start, param->range.end, 0.f, 1.f));
+        param->endChangeGesture();
+    }
 }
 
 //==============================================================================
