@@ -621,6 +621,44 @@ inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
     return str;
 }
 
+enum class Names
+{
+    Processing_Mode
+};
+
+inline const std::map<Names, juce::String>& getParams()
+{
+    static std::map<Names, juce::String> params =
+    {
+        { Names::Processing_Mode, "Processing Mode" }
+    };
+    
+    return params;
+}
+
+enum class ProcessingMode
+{
+    Stereo,
+    Left,
+    Right,
+    Mid,
+    Side
+};
+
+inline const std::map<ProcessingMode, juce::String>& getProcessingModes()
+{
+    static std::map<ProcessingMode, juce::String> modes =
+    {
+        { ProcessingMode::Stereo, "Stereo" },
+        { ProcessingMode::Left,   "Left" },
+        { ProcessingMode::Right,  "Right" },
+        { ProcessingMode::Mid,    "Mid" },
+        { ProcessingMode::Side,   "Side" }
+    };
+    
+    return modes;
+}
+
 }
 
 //==============================================================================
