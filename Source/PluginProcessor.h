@@ -11,7 +11,7 @@
 #include <JuceHeader.h>
 
 #define DISPLAY_FILTER_CONFIGURATIONS true
-#define TEST_FILTER_NETWORK true
+#define TEST_FILTER_NETWORK false
 
 #define MIN_FREQUENCY 20.f
 #define MAX_FREQUENCY 20000.f
@@ -759,6 +759,43 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     
+    template<typename BufferType>
+    void handleProcessingMode(int mode, BufferType& buffer, int numSamples, size_t bandNum)
+    {
+        switch (mode) {
+            case static_cast<int>(Params::ProcessingMode::Stereo):
+            {
+                addBand(buffer, activeFilterSequence->getFilteredBuffer(bandNum));
+                break;
+            }
+            case static_cast<int>(Params::ProcessingMode::Left):
+            case static_cast<int>(Params::ProcessingMode::Right):
+            {
+                addBand(buffer, leftMidBuffers[bandNum]);
+                addBand(buffer, rightSideBuffers[bandNum]);
+                break;
+            }
+            case static_cast<int>(Params::ProcessingMode::Mid):
+            case static_cast<int>(Params::ProcessingMode::Side):
+            {
+                const auto* M = leftMidBuffers[bandNum].getReadPointer(0);
+                const auto* S = rightSideBuffers[bandNum].getReadPointer(1);
+                auto* L = buffer.getWritePointer(0);
+                auto* R = buffer.getWritePointer(1);
+                
+                for ( auto sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )
+                {
+                    L[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] + S[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
+                    R[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] - S[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
+                }
+                
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    
     void addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source);
     void updateBands();
     void updateNumberOfBands();
@@ -784,6 +821,10 @@ private:
     juce::dsp::ProcessSpec spec;
     
     juce::AudioParameterChoice* numBands { nullptr };
+    juce::AudioParameterChoice* processingMode { nullptr };
+    
+    std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
+    std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
     
 #if TEST_FILTER_NETWORK
     InvertedNetwork invertedNetwork;

@@ -165,6 +165,9 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     }
     
     assignChoiceParam(numBands, "NumBands");
+    
+    const auto& params = Params::getParams();
+    assignChoiceParam(processingMode, params.at(Params::Names::Processing_Mode));
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -245,6 +248,16 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         comp.prepare(spec);
     }
     
+    for ( auto& lmBuffer : leftMidBuffers )
+    {
+        lmBuffer.setSize(1, samplesPerBlock, false, true, true);
+    }
+    
+    for ( auto& rsBuffer : rightSideBuffers )
+    {
+        rsBuffer.setSize(1, samplesPerBlock, false, true, true);
+    }
+    
 #if TEST_FILTER_NETWORK
     invertedNetwork.resize(MAX_BANDS);
     invertedNetwork.prepare(spec);
@@ -311,15 +324,67 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     invertedNetwork.process(buffer);
 #endif
     
+    auto mode = processingMode->getCurrentChoiceName().getIntValue();
     for ( auto i = 0; i < currentNumberOfBands; ++i )
     {
-        compressors[i].process(activeFilterSequence->getFilteredBuffer(i));
+        auto& source = activeFilterSequence->getFilteredBuffer(i);
+        const auto& sourceNumSamples = source.getNumSamples();
+        
+        switch (mode)
+        {
+            case static_cast<int>(Params::ProcessingMode::Stereo):
+            {
+                compressors[i].process(source);
+                break;
+            }
+            case static_cast<int>(Params::ProcessingMode::Left):
+            case static_cast<int>(Params::ProcessingMode::Right):
+            {
+                leftMidBuffers[i].clear();
+                rightSideBuffers[i].clear();
+                
+                leftMidBuffers[i].copyFrom(0, 0, source, 0, 0, sourceNumSamples);
+                rightSideBuffers[i].copyFrom(0, 0, source, 1, 0, sourceNumSamples);
+                
+                if ( mode == static_cast<int>(Params::ProcessingMode::Left) )
+                    compressors[i].process(leftMidBuffers[i]);
+                else
+                    compressors[i].process(rightSideBuffers[i]);
+                
+                break;
+            }
+            case static_cast<int>(Params::ProcessingMode::Mid):
+            case static_cast<int>(Params::ProcessingMode::Side):
+            {
+                const auto* L = source.getReadPointer(0);
+                const auto* R = source.getReadPointer(1);
+                auto* M = leftMidBuffers[i].getWritePointer(0);
+                auto* S = rightSideBuffers[i].getWritePointer(1);
+                
+                for ( auto sampleIdx = 0; sampleIdx < sourceNumSamples; ++sampleIdx )
+                {
+                    M[sampleIdx] = juce::jlimit(-1.f, 1.f, (L[sampleIdx] + R[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
+                    S[sampleIdx] = juce::jlimit(-1.f, 1.f, (L[sampleIdx] - R[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
+                }
+                
+                if ( mode == static_cast<int>(Params::ProcessingMode::Mid) )
+                    compressors[i].process(leftMidBuffers[i]);
+                else
+                    compressors[i].process(rightSideBuffers[i]);
+                
+                break;
+            }
+            default:
+                break;
+        }
     }
     
     buffer.clear();
     
+    const auto& afsBufferCount = activeFilterSequence->getBufferCount();
+    const auto& bufferNumSamples = buffer.getNumSamples();
     bool bandsAreSoloed = false;
-    for ( auto i = 0; i < currentNumberOfBands; ++i )
+    for ( auto i = 0; i < afsBufferCount; ++i )
     {
         if ( compressors[i].solo->get() )
         {
@@ -330,21 +395,21 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     if ( bandsAreSoloed )
     {
-        for ( auto i = 0; i < currentNumberOfBands; ++i )
+        for ( auto i = 0; i < afsBufferCount; ++i )
         {
             if ( compressors[i].solo->get() )
             {
-                addBand(buffer, activeFilterSequence->getFilteredBuffer(i));
+                handleProcessingMode(mode, buffer, bufferNumSamples, i);
             }
         }
     }
     else
     {
-        for ( auto i = 0; i < currentNumberOfBands; ++i )
+        for ( auto i = 0; i < afsBufferCount; ++i )
         {
             if ( !compressors[i].mute->get() )
             {
-                addBand(buffer, activeFilterSequence->getFilteredBuffer(i));
+                handleProcessingMode(mode, buffer, bufferNumSamples, i);
             }
         }
     }
@@ -480,6 +545,23 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                                                    juce::NormalisableRange<float>(MIN_FREQUENCY, MAX_FREQUENCY, 1.f, 1.f),
                                                                                    defaultCenterFreqs[i]));
     }
+    
+    //==============================================================================
+    
+    juce::StringArray processingModes;
+    const auto& modes = Params::getProcessingModes();
+    for ( auto mode : modes )
+    {
+        processingModes.add(mode.second);
+    }
+    
+    const auto& params = Params::getParams();
+    layout.add(std::make_unique<juce::AudioParameterChoice>(params.at(Params::Names::Processing_Mode),
+                                                            params.at(Params::Names::Processing_Mode),
+                                                            processingModes,
+                                                            static_cast<int>(Params::ProcessingMode::Stereo)));
+    
+    //==============================================================================
     
     return layout;
 }
