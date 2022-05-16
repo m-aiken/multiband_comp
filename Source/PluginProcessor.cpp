@@ -324,7 +324,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     invertedNetwork.process(buffer);
 #endif
     
-    auto mode = processingMode->getCurrentChoiceName().getIntValue();
+    auto mode = processingMode->getIndex();
+    
     for ( auto i = 0; i < currentNumberOfBands; ++i )
     {
         auto& source = activeFilterSequence->getFilteredBuffer(i);
