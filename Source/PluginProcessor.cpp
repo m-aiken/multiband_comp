@@ -251,11 +251,13 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     for ( auto& lmBuffer : leftMidBuffers )
     {
         lmBuffer.setSize(1, samplesPerBlock, false, true, true);
+        lmBuffer.clear();
     }
     
     for ( auto& rsBuffer : rightSideBuffers )
     {
         rsBuffer.setSize(1, samplesPerBlock, false, true, true);
+        rsBuffer.clear();
     }
     
 #if TEST_FILTER_NETWORK
