@@ -779,7 +779,7 @@ public:
             case static_cast<int>(Params::ProcessingMode::Side):
             {
                 const auto* M = leftMidBuffers[bandNum].getReadPointer(0);
-                const auto* S = rightSideBuffers[bandNum].getReadPointer(1);
+                const auto* S = rightSideBuffers[bandNum].getReadPointer(0);
                 auto* L = buffer.getWritePointer(0);
                 auto* R = buffer.getWritePointer(1);
                 

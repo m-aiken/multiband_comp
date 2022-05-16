@@ -360,7 +360,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 const auto* L = source.getReadPointer(0);
                 const auto* R = source.getReadPointer(1);
                 auto* M = leftMidBuffers[i].getWritePointer(0);
-                auto* S = rightSideBuffers[i].getWritePointer(1);
+                auto* S = rightSideBuffers[i].getWritePointer(0);
                 
                 for ( auto sampleIdx = 0; sampleIdx < sourceNumSamples; ++sampleIdx )
                 {
