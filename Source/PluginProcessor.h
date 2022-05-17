@@ -762,7 +762,8 @@ public:
     template<typename BufferType>
     void handleProcessingMode(int mode, BufferType& buffer, int numSamples, size_t bandNum)
     {
-        switch (mode) {
+        switch (mode)
+        {
             case static_cast<int>(Params::ProcessingMode::Stereo):
             {
                 addBand(buffer, activeFilterSequence->getFilteredBuffer(bandNum));
@@ -771,8 +772,8 @@ public:
             case static_cast<int>(Params::ProcessingMode::Left):
             case static_cast<int>(Params::ProcessingMode::Right):
             {
-                addBand(buffer, leftMidBuffers[bandNum]);
-                addBand(buffer, rightSideBuffers[bandNum]);
+                buffer.addFrom(0, 0, leftMidBuffers[bandNum], 0, 0, leftMidBuffers[bandNum].getNumSamples());
+                buffer.addFrom(1, 0, rightSideBuffers[bandNum], 0, 0, rightSideBuffers[bandNum].getNumSamples());
                 break;
             }
             case static_cast<int>(Params::ProcessingMode::Mid):
