@@ -828,7 +828,7 @@ private:
     std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
     std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
     
-    float minusThreeDb = juce::Decibels::decibelsToGain(-3.f);
+    const float minusThreeDb = juce::Decibels::decibelsToGain(-3.f);
     
 #if TEST_FILTER_NETWORK
     InvertedNetwork invertedNetwork;
