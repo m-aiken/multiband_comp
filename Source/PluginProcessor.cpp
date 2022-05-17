@@ -366,8 +366,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 
                 for ( auto sampleIdx = 0; sampleIdx < sourceNumSamples; ++sampleIdx )
                 {
-                    M[sampleIdx] = juce::jlimit(-1.f, 1.f, (L[sampleIdx] + R[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
-                    S[sampleIdx] = juce::jlimit(-1.f, 1.f, (L[sampleIdx] - R[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
+                    M[sampleIdx] = juce::jlimit(-1.f, 1.f, (L[sampleIdx] + R[sampleIdx]) * minusThreeDb);
+                    S[sampleIdx] = juce::jlimit(-1.f, 1.f, (L[sampleIdx] - R[sampleIdx]) * minusThreeDb);
                 }
                 
                 if ( mode == static_cast<int>(Params::ProcessingMode::Mid) )

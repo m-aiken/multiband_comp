@@ -787,8 +787,8 @@ public:
                 
                 for ( auto sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )
                 {
-                    L[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] + S[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
-                    R[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] - S[sampleIdx]) * juce::Decibels::decibelsToGain(-3.f));
+                    L[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] + S[sampleIdx]) * minusThreeDb);
+                    R[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] - S[sampleIdx]) * minusThreeDb);
                 }
                 
                 break;
@@ -827,6 +827,8 @@ private:
     
     std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
     std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
+    
+    float minusThreeDb = juce::Decibels::decibelsToGain(-3.f);
     
 #if TEST_FILTER_NETWORK
     InvertedNetwork invertedNetwork;
