@@ -772,16 +772,15 @@ public:
             case static_cast<int>(Params::ProcessingMode::Left):
             case static_cast<int>(Params::ProcessingMode::Right):
             {
-                // addBand helper fn not applicable here. lmBuffer and rsBuffer are mono so they'd both be added to the left channel if using addBand
-                buffer.addFrom(0, 0, leftMidBuffers[bandNum], 0, 0, leftMidBuffers[bandNum].getNumSamples());
-                buffer.addFrom(1, 0, rightSideBuffers[bandNum], 0, 0, rightSideBuffers[bandNum].getNumSamples());
+                addBand(buffer, leftMidBuffers[bandNum]);
+                addBand(buffer, rightSideBuffers[bandNum]);
                 break;
             }
             case static_cast<int>(Params::ProcessingMode::Mid):
             case static_cast<int>(Params::ProcessingMode::Side):
             {
                 const auto* M = leftMidBuffers[bandNum].getReadPointer(0);
-                const auto* S = rightSideBuffers[bandNum].getReadPointer(0);
+                const auto* S = rightSideBuffers[bandNum].getReadPointer(1);
                 auto* L = buffer.getWritePointer(0);
                 auto* R = buffer.getWritePointer(1);
                 

@@ -250,13 +250,13 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     
     for ( auto& lmBuffer : leftMidBuffers )
     {
-        lmBuffer.setSize(1, samplesPerBlock, false, true, true);
+        lmBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock, false, true, true);
         lmBuffer.clear();
     }
     
     for ( auto& rsBuffer : rightSideBuffers )
     {
-        rsBuffer.setSize(1, samplesPerBlock, false, true, true);
+        rsBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock, false, true, true);
         rsBuffer.clear();
     }
     
@@ -347,7 +347,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 rightSideBuffers[i].clear();
                 
                 leftMidBuffers[i].copyFrom(0, 0, source, 0, 0, sourceNumSamples);
-                rightSideBuffers[i].copyFrom(0, 0, source, 1, 0, sourceNumSamples);
+                rightSideBuffers[i].copyFrom(1, 0, source, 1, 0, sourceNumSamples);
                 
                 if ( mode == static_cast<int>(Params::ProcessingMode::Left) )
                     compressors[i].process(leftMidBuffers[i]);
@@ -362,7 +362,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 const auto* L = source.getReadPointer(0);
                 const auto* R = source.getReadPointer(1);
                 auto* M = leftMidBuffers[i].getWritePointer(0);
-                auto* S = rightSideBuffers[i].getWritePointer(0);
+                auto* S = rightSideBuffers[i].getWritePointer(1);
                 
                 for ( auto sampleIdx = 0; sampleIdx < sourceNumSamples; ++sampleIdx )
                 {
