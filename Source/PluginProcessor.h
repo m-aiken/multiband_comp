@@ -11,7 +11,7 @@
 #include <JuceHeader.h>
 
 #define DISPLAY_FILTER_CONFIGURATIONS true
-#define TEST_FILTER_NETWORK true
+#define TEST_FILTER_NETWORK false
 
 #define MIN_FREQUENCY 20.f
 #define MAX_FREQUENCY 20000.f
@@ -621,6 +621,44 @@ inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
     return str;
 }
 
+enum class Names
+{
+    Processing_Mode
+};
+
+inline const std::map<Names, juce::String>& getParams()
+{
+    static std::map<Names, juce::String> params =
+    {
+        { Names::Processing_Mode, "Processing Mode" }
+    };
+    
+    return params;
+}
+
+enum class ProcessingMode
+{
+    Stereo,
+    Left,
+    Right,
+    Mid,
+    Side
+};
+
+inline const std::map<ProcessingMode, juce::String>& getProcessingModes()
+{
+    static std::map<ProcessingMode, juce::String> modes =
+    {
+        { ProcessingMode::Stereo, "Stereo" },
+        { ProcessingMode::Left,   "Left" },
+        { ProcessingMode::Right,  "Right" },
+        { ProcessingMode::Mid,    "Mid" },
+        { ProcessingMode::Side,   "Side" }
+    };
+    
+    return modes;
+}
+
 }
 
 //==============================================================================
@@ -721,6 +759,45 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     
+    template<typename BufferType>
+    void handleProcessingMode(int mode, BufferType& buffer, int numSamples, size_t bandNum)
+    {
+        switch (mode)
+        {
+            case static_cast<int>(Params::ProcessingMode::Stereo):
+            {
+                addBand(buffer, activeFilterSequence->getFilteredBuffer(bandNum));
+                break;
+            }
+            case static_cast<int>(Params::ProcessingMode::Left):
+            case static_cast<int>(Params::ProcessingMode::Right):
+            {
+                // addBand helper fn not applicable here. lmBuffer and rsBuffer are mono so they'd both be added to the left channel if using addBand
+                buffer.addFrom(0, 0, leftMidBuffers[bandNum], 0, 0, leftMidBuffers[bandNum].getNumSamples());
+                buffer.addFrom(1, 0, rightSideBuffers[bandNum], 0, 0, rightSideBuffers[bandNum].getNumSamples());
+                break;
+            }
+            case static_cast<int>(Params::ProcessingMode::Mid):
+            case static_cast<int>(Params::ProcessingMode::Side):
+            {
+                const auto* M = leftMidBuffers[bandNum].getReadPointer(0);
+                const auto* S = rightSideBuffers[bandNum].getReadPointer(0);
+                auto* L = buffer.getWritePointer(0);
+                auto* R = buffer.getWritePointer(1);
+                
+                for ( auto sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )
+                {
+                    L[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] + S[sampleIdx]) * minusThreeDb);
+                    R[sampleIdx] += juce::jlimit(-1.f, 1.f, (M[sampleIdx] - S[sampleIdx]) * minusThreeDb);
+                }
+                
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    
     void addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source);
     void updateBands();
     void updateNumberOfBands();
@@ -746,6 +823,12 @@ private:
     juce::dsp::ProcessSpec spec;
     
     juce::AudioParameterChoice* numBands { nullptr };
+    juce::AudioParameterChoice* processingMode { nullptr };
+    
+    std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
+    std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
+    
+    const float minusThreeDb = juce::Decibels::decibelsToGain(-3.f);
     
 #if TEST_FILTER_NETWORK
     InvertedNetwork invertedNetwork;
