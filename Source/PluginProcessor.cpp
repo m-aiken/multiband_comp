@@ -168,6 +168,9 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     
     const auto& params = Params::getParams();
     assignChoiceParam(processingMode, params.at(Params::Names::Processing_Mode));
+    
+    assignFloatParam(gainIn, params.at(Params::Names::Gain_In));
+    assignFloatParam(gainOut, params.at(Params::Names::Gain_Out));
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -260,6 +263,9 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
         rsBuffer.clear();
     }
     
+    inputGain.prepare(spec);
+    outputGain.prepare(spec);
+    
 #if TEST_FILTER_NETWORK
     invertedNetwork.resize(MAX_BANDS);
     invertedNetwork.prepare(spec);
@@ -319,7 +325,9 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     invertedNetwork.resize(currentNumberOfBands);
     invertedNetwork.updateCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
 #endif
-
+    
+    applyGain(buffer, inputGain);
+    
     activeFilterSequence->process(buffer);
     
 #if TEST_FILTER_NETWORK
@@ -417,6 +425,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     }
     
+    applyGain(buffer, outputGain);
+    
 #if TEST_FILTER_NETWORK
     if ( apvts.getParameter(Params::getBypassParamName(0))->getValue() > 0.5f )
     {
@@ -458,6 +468,9 @@ void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const
 void PFMProject12AudioProcessor::updateBands()
 {
     updateNumberOfBands();
+    
+    inputGain.setGainDecibels(gainIn->get());
+    outputGain.setGainDecibels(gainOut->get());
     
     for ( auto& comp : compressors )
     {
@@ -565,6 +578,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                             static_cast<int>(Params::ProcessingMode::Stereo)));
     
     //==============================================================================
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(params.at(Params::Names::Gain_In),
+                                                           params.at(Params::Names::Gain_In),
+                                                           juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(params.at(Params::Names::Gain_Out),
+                                                           params.at(Params::Names::Gain_Out),
+                                                           juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+                                                           0.f));
     
     return layout;
 }

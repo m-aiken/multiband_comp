@@ -623,14 +623,18 @@ inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
 
 enum class Names
 {
-    Processing_Mode
+    Processing_Mode,
+    Gain_In,
+    Gain_Out
 };
 
 inline const std::map<Names, juce::String>& getParams()
 {
     static std::map<Names, juce::String> params =
     {
-        { Names::Processing_Mode, "Processing Mode" }
+        { Names::Processing_Mode, "Processing Mode" },
+        { Names::Gain_In, "Gain In" },
+        { Names::Gain_Out, "Gain Out" }
     };
     
     return params;
@@ -797,6 +801,14 @@ public:
         }
     }
     
+    template<typename T, typename U>
+    void applyGain(T& buffer, U& gainProcessor)
+    {
+        auto block = juce::dsp::AudioBlock<float>(buffer);
+        auto context = juce::dsp::ProcessContextReplacing<float>(block);
+        gainProcessor.process(context);
+    }
+    
     void addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source);
     void updateBands();
     void updateNumberOfBands();
@@ -823,6 +835,10 @@ private:
     
     juce::AudioParameterChoice* numBands { nullptr };
     juce::AudioParameterChoice* processingMode { nullptr };
+    juce::AudioParameterFloat* gainIn { nullptr };
+    juce::AudioParameterFloat* gainOut { nullptr };
+    
+    juce::dsp::Gain<float> inputGain, outputGain;
     
     std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
     std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
