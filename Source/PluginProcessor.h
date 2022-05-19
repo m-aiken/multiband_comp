@@ -623,14 +623,18 @@ inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
 
 enum class Names
 {
-    Processing_Mode
+    Processing_Mode,
+    Gain_In,
+    Gain_Out
 };
 
 inline const std::map<Names, juce::String>& getParams()
 {
     static std::map<Names, juce::String> params =
     {
-        { Names::Processing_Mode, "Processing Mode" }
+        { Names::Processing_Mode, "Processing Mode" },
+        { Names::Gain_In, "Gain In" },
+        { Names::Gain_Out, "Gain Out" }
     };
     
     return params;
@@ -772,16 +776,15 @@ public:
             case static_cast<int>(Params::ProcessingMode::Left):
             case static_cast<int>(Params::ProcessingMode::Right):
             {
-                // addBand helper fn not applicable here. lmBuffer and rsBuffer are mono so they'd both be added to the left channel if using addBand
-                buffer.addFrom(0, 0, leftMidBuffers[bandNum], 0, 0, leftMidBuffers[bandNum].getNumSamples());
-                buffer.addFrom(1, 0, rightSideBuffers[bandNum], 0, 0, rightSideBuffers[bandNum].getNumSamples());
+                addBand(buffer, leftMidBuffers[bandNum]);
+                addBand(buffer, rightSideBuffers[bandNum]);
                 break;
             }
             case static_cast<int>(Params::ProcessingMode::Mid):
             case static_cast<int>(Params::ProcessingMode::Side):
             {
                 const auto* M = leftMidBuffers[bandNum].getReadPointer(0);
-                const auto* S = rightSideBuffers[bandNum].getReadPointer(0);
+                const auto* S = rightSideBuffers[bandNum].getReadPointer(1);
                 auto* L = buffer.getWritePointer(0);
                 auto* R = buffer.getWritePointer(1);
                 
@@ -796,6 +799,14 @@ public:
             default:
                 break;
         }
+    }
+    
+    template<typename T, typename U>
+    void applyGain(T& buffer, U& gainProcessor)
+    {
+        auto block = juce::dsp::AudioBlock<float>(buffer);
+        auto context = juce::dsp::ProcessContextReplacing<float>(block);
+        gainProcessor.process(context);
     }
     
     void addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source);
@@ -824,6 +835,10 @@ private:
     
     juce::AudioParameterChoice* numBands { nullptr };
     juce::AudioParameterChoice* processingMode { nullptr };
+    juce::AudioParameterFloat* gainIn { nullptr };
+    juce::AudioParameterFloat* gainOut { nullptr };
+    
+    juce::dsp::Gain<float> inputGain, outputGain;
     
     std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
     std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;

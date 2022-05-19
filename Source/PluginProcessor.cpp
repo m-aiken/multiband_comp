@@ -168,6 +168,9 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     
     const auto& params = Params::getParams();
     assignChoiceParam(processingMode, params.at(Params::Names::Processing_Mode));
+    
+    assignFloatParam(gainIn, params.at(Params::Names::Gain_In));
+    assignFloatParam(gainOut, params.at(Params::Names::Gain_Out));
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -250,15 +253,18 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     
     for ( auto& lmBuffer : leftMidBuffers )
     {
-        lmBuffer.setSize(1, samplesPerBlock, false, true, true);
+        lmBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock, false, true, true);
         lmBuffer.clear();
     }
     
     for ( auto& rsBuffer : rightSideBuffers )
     {
-        rsBuffer.setSize(1, samplesPerBlock, false, true, true);
+        rsBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock, false, true, true);
         rsBuffer.clear();
     }
+    
+    inputGain.prepare(spec);
+    outputGain.prepare(spec);
     
 #if TEST_FILTER_NETWORK
     invertedNetwork.resize(MAX_BANDS);
@@ -319,7 +325,9 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     invertedNetwork.resize(currentNumberOfBands);
     invertedNetwork.updateCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
 #endif
-
+    
+    applyGain(buffer, inputGain);
+    
     activeFilterSequence->process(buffer);
     
 #if TEST_FILTER_NETWORK
@@ -347,7 +355,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 rightSideBuffers[i].clear();
                 
                 leftMidBuffers[i].copyFrom(0, 0, source, 0, 0, sourceNumSamples);
-                rightSideBuffers[i].copyFrom(0, 0, source, 1, 0, sourceNumSamples);
+                rightSideBuffers[i].copyFrom(1, 0, source, 1, 0, sourceNumSamples);
                 
                 if ( mode == static_cast<int>(Params::ProcessingMode::Left) )
                     compressors[i].process(leftMidBuffers[i]);
@@ -362,7 +370,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                 const auto* L = source.getReadPointer(0);
                 const auto* R = source.getReadPointer(1);
                 auto* M = leftMidBuffers[i].getWritePointer(0);
-                auto* S = rightSideBuffers[i].getWritePointer(0);
+                auto* S = rightSideBuffers[i].getWritePointer(1);
                 
                 for ( auto sampleIdx = 0; sampleIdx < sourceNumSamples; ++sampleIdx )
                 {
@@ -417,6 +425,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         }
     }
     
+    applyGain(buffer, outputGain);
+    
 #if TEST_FILTER_NETWORK
     if ( apvts.getParameter(Params::getBypassParamName(0))->getValue() > 0.5f )
     {
@@ -458,6 +468,9 @@ void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const
 void PFMProject12AudioProcessor::updateBands()
 {
     updateNumberOfBands();
+    
+    inputGain.setGainDecibels(gainIn->get());
+    outputGain.setGainDecibels(gainOut->get());
     
     for ( auto& comp : compressors )
     {
@@ -565,6 +578,16 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                             static_cast<int>(Params::ProcessingMode::Stereo)));
     
     //==============================================================================
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(params.at(Params::Names::Gain_In),
+                                                           params.at(Params::Names::Gain_In),
+                                                           juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+                                                           0.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>(params.at(Params::Names::Gain_Out),
+                                                           params.at(Params::Names::Gain_Out),
+                                                           juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+                                                           0.f));
     
     return layout;
 }
