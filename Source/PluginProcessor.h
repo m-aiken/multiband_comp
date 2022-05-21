@@ -721,6 +721,56 @@ private:
 };
 
 //==============================================================================
+template<typename FloatType>
+struct Decibel
+{
+    Decibel() { }
+    Decibel(const FloatType& val) : mFloatValue(val) { }
+    
+    // rule of 3: copy constructor, assignment copy operator, destructor
+    Decibel(const Decibel& other) : mFloatValue(other.mFloatValue) { }
+    Decibel& operator=(const Decibel& other) { mFloatValue = other.mFloatValue; return *this; }
+    ~Decibel() { }
+    
+    Decibel& operator+=(const Decibel& other) { mFloatValue += other.mFloatValue; return *this; }
+    Decibel& operator-=(const Decibel& other) { mFloatValue -= other.mFloatValue; return *this; }
+    Decibel& operator*=(const Decibel& other) { mFloatValue *= other.mFloatValue; return *this; }
+    Decibel& operator/=(const Decibel& other)
+    {
+        if ( other.mFloatValue != 0 )
+            mFloatValue /= other.mFloatValue;
+        
+        return *this;
+    }
+    
+    friend FloatType operator+(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue + d2.mFloatValue; }
+    friend FloatType operator-(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue - d2.mFloatValue; }
+    friend FloatType operator*(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue * d2.mFloatValue; }
+    friend FloatType operator/(const Decibel& d1, const Decibel& d2)
+    {
+        if ( d2.mFloatValue == 0 )
+            return d1.mFloatValue;
+        
+        return d1.mFloatValue / d2.mFloatValue;
+    }
+    
+    friend bool operator==(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue == d2.mFloatValue; }
+    friend bool operator!=(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue != d2.mFloatValue; }
+    friend bool operator> (const Decibel& d1, const Decibel& d2) { return d1.mFloatValue  > d2.mFloatValue; }
+    friend bool operator< (const Decibel& d1, const Decibel& d2) { return d1.mFloatValue  < d2.mFloatValue; }
+    friend bool operator>=(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue >= d2.mFloatValue; }
+    friend bool operator<=(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue <= d2.mFloatValue; }
+    
+    FloatType getGain() const { return juce::Decibels::decibelsToGain(mFloatValue); }
+    FloatType getDb()   const { return mFloatValue; }
+    
+    void setGain(FloatType g) const { mFloatValue = juce::Decibels::gainToDecibels(g); }
+    void setDb(FloatType db)  const { mFloatValue = db; }
+private:
+    FloatType mFloatValue;
+};
+
+//==============================================================================
 /**
 */
 class PFMProject12AudioProcessor  : public juce::AudioProcessor
