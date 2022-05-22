@@ -266,6 +266,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     inputGain.prepare(spec);
     outputGain.prepare(spec);
     
+    guiFifo.prepare(samplesPerBlock, getTotalNumOutputChannels());
+    
 #if TEST_FILTER_NETWORK
     invertedNetwork.resize(MAX_BANDS);
     invertedNetwork.prepare(spec);
@@ -427,6 +429,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     applyGain(buffer, outputGain);
     
+    guiFifo.push(buffer);
+    
 #if TEST_FILTER_NETWORK
     if ( apvts.getParameter(Params::getBypassParamName(0))->getValue() > 0.5f )
     {
@@ -511,8 +515,8 @@ bool PFMProject12AudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* PFMProject12AudioProcessor::createEditor()
 {
-//    return new PFMProject12AudioProcessorEditor (*this);
-    return new juce::GenericAudioProcessorEditor(*this);
+    return new PFMProject12AudioProcessorEditor (*this);
+//    return new juce::GenericAudioProcessorEditor(*this);
 }
 
 //==============================================================================

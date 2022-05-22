@@ -873,6 +873,8 @@ public:
     
     std::vector<float> createTestCrossovers(const size_t& numBands);
     
+    Fifo<juce::AudioBuffer<float>, 20> guiFifo;
+    
 private:
     std::array<CompressorBand, MAX_BANDS> compressors;
     
