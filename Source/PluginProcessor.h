@@ -725,49 +725,49 @@ template<typename FloatType>
 struct Decibel
 {
     Decibel() { }
-    Decibel(const FloatType& val) : mFloatValue(val) { }
+    Decibel(const FloatType& val) : floatVal(val) { }
     
     // rule of 3: copy constructor, assignment copy operator, destructor
-    Decibel(const Decibel& other) : mFloatValue(other.mFloatValue) { }
-    Decibel& operator=(const Decibel& other) { mFloatValue = other.mFloatValue; return *this; }
+    Decibel(const Decibel& other) : floatVal(other.floatVal) { }
+    Decibel& operator=(const Decibel& other) { floatVal = other.floatVal; return *this; }
     ~Decibel() { }
     
-    Decibel& operator+=(const Decibel& other) { mFloatValue += other.mFloatValue; return *this; }
-    Decibel& operator-=(const Decibel& other) { mFloatValue -= other.mFloatValue; return *this; }
-    Decibel& operator*=(const Decibel& other) { mFloatValue *= other.mFloatValue; return *this; }
+    Decibel& operator+=(const Decibel& other) { floatVal += other.floatVal; return *this; }
+    Decibel& operator-=(const Decibel& other) { floatVal -= other.floatVal; return *this; }
+    Decibel& operator*=(const Decibel& other) { floatVal *= other.floatVal; return *this; }
     Decibel& operator/=(const Decibel& other)
     {
-        if ( other.mFloatValue != 0 )
-            mFloatValue /= other.mFloatValue;
+        if ( other.floatVal != 0 )
+            floatVal /= other.floatVal;
         
         return *this;
     }
     
-    friend FloatType operator+(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue + d2.mFloatValue; }
-    friend FloatType operator-(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue - d2.mFloatValue; }
-    friend FloatType operator*(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue * d2.mFloatValue; }
+    friend FloatType operator+(const Decibel& d1, const Decibel& d2) { return d1.floatVal + d2.floatVal; }
+    friend FloatType operator-(const Decibel& d1, const Decibel& d2) { return d1.floatVal - d2.floatVal; }
+    friend FloatType operator*(const Decibel& d1, const Decibel& d2) { return d1.floatVal * d2.floatVal; }
     friend FloatType operator/(const Decibel& d1, const Decibel& d2)
     {
-        if ( d2.mFloatValue == 0 )
-            return d1.mFloatValue;
+        if ( d2.floatVal == 0 )
+            return d1.floatVal;
         
-        return d1.mFloatValue / d2.mFloatValue;
+        return d1.floatVal / d2.floatVal;
     }
     
-    friend bool operator==(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue == d2.mFloatValue; }
-    friend bool operator!=(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue != d2.mFloatValue; }
-    friend bool operator> (const Decibel& d1, const Decibel& d2) { return d1.mFloatValue  > d2.mFloatValue; }
-    friend bool operator< (const Decibel& d1, const Decibel& d2) { return d1.mFloatValue  < d2.mFloatValue; }
-    friend bool operator>=(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue >= d2.mFloatValue; }
-    friend bool operator<=(const Decibel& d1, const Decibel& d2) { return d1.mFloatValue <= d2.mFloatValue; }
+    friend bool operator==(const Decibel& d1, const Decibel& d2) { return d1.floatVal == d2.floatVal; }
+    friend bool operator!=(const Decibel& d1, const Decibel& d2) { return d1.floatVal != d2.floatVal; }
+    friend bool operator> (const Decibel& d1, const Decibel& d2) { return d1.floatVal  > d2.floatVal; }
+    friend bool operator< (const Decibel& d1, const Decibel& d2) { return d1.floatVal  < d2.floatVal; }
+    friend bool operator>=(const Decibel& d1, const Decibel& d2) { return d1.floatVal >= d2.floatVal; }
+    friend bool operator<=(const Decibel& d1, const Decibel& d2) { return d1.floatVal <= d2.floatVal; }
     
-    FloatType getGain() const { return juce::Decibels::decibelsToGain(mFloatValue); }
-    FloatType getDb()   const { return mFloatValue; }
+    FloatType getGain() const { return juce::Decibels::decibelsToGain(floatVal); }
+    FloatType getDb()   const { return floatVal; }
     
-    void setGain(FloatType g) const { mFloatValue = juce::Decibels::gainToDecibels(g); }
-    void setDb(FloatType db)  const { mFloatValue = db; }
+    void setGain(FloatType g) const { floatVal = juce::Decibels::gainToDecibels(g); }
+    void setDb(FloatType db)  const { floatVal = db; }
 private:
-    FloatType mFloatValue;
+    FloatType floatVal;
 };
 
 //==============================================================================
