@@ -12,7 +12,6 @@
 //==============================================================================
 void DbScale::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::white);
     g.drawImage(bkgd, getLocalBounds().toFloat());
 }
 
@@ -130,6 +129,13 @@ void PFMProject12AudioProcessorEditor::resized()
                     padding,                             // y
                     padding,                             // width
                     bounds.getHeight() - (padding * 2)); // height
+    
+#if USE_TEST_OSC
+    meter.setBounds(padding,
+                    JUCE_LIVE_CONSTANT(padding),
+                    padding,
+                    bounds.getHeight() - (padding * 2));
+#endif
     
     dbScale.setBounds(meter.getRight(),
                       meter.getY() - (padding / 2),
