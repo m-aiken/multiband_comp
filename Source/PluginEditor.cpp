@@ -10,6 +10,75 @@
 #include "PluginEditor.h"
 
 //==============================================================================
+void DbScale::paint(juce::Graphics& g)
+{
+    g.drawImage(bkgd, getLocalBounds().toFloat());
+}
+
+void DbScale::buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb)
+{
+    jassert( minDb < maxDb );
+    
+    auto bounds = getLocalBounds();
+    if ( bounds.isEmpty() )
+        return;
+    
+    auto scaleFactor = juce::Desktop::getInstance().getGlobalScaleFactor();
+    
+    bkgd = juce::Image(juce::Image::PixelFormat::RGB,
+                       bounds.getWidth() * scaleFactor,
+                       bounds.getHeight() * scaleFactor,
+                       true);
+    
+    juce::Graphics g(bkgd);
+    g.addTransform(juce::AffineTransform::scale(scaleFactor));
+    
+    auto ticks = getTicks(dbDivision, meterBounds, minDb, maxDb);
+    auto boundsX = bounds.getX();
+    auto boundsWidth = bounds.getWidth();
+    auto textHeight = 12;
+    auto meterY = meterBounds.getY();
+    
+    for ( auto i = 0; i < ticks.size(); ++i )
+    {
+        auto dbString = juce::String(ticks[i].db);
+        
+        g.drawFittedText((ticks[i].db > 0 ? '+' + dbString : dbString), // text
+                         boundsX,                                       // x
+                         ticks[i].y + meterY - (textHeight / 2),        // y
+                         boundsWidth,                                   // width
+                         textHeight,                                    // height
+                         juce::Justification::centred,                  // justification
+                         1);                                            // max num lines
+    }
+}
+
+std::vector<Tick> DbScale::getTicks(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb)
+{
+    if ( minDb > maxDb )
+    {
+        std::swap(minDb, maxDb);
+    }
+    
+    auto numTicks = (maxDb - minDb) / dbDivision;
+    
+    std::vector<Tick> ticks;
+    ticks.reserve(numTicks);
+    
+    auto meterHeight = meterBounds.getHeight();
+    
+    for ( auto db = minDb; db <= maxDb; db += dbDivision )
+    {
+        Tick tick;
+        tick.db = db;
+        tick.y = juce::jmap<int>(db, NEGATIVE_INFINITY, MAX_DECIBELS, meterHeight, 0);
+        ticks.emplace_back(tick);
+    }
+    
+    return ticks;
+}
+
+//==============================================================================
 void Meter::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
@@ -34,6 +103,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
     addAndMakeVisible(meter);
+    addAndMakeVisible(dbScale);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(600, 400);
@@ -57,10 +127,25 @@ void PFMProject12AudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
     auto padding = bounds.getWidth() / 20;
+    
     meter.setBounds(padding,                             // x
                     padding,                             // y
-                    padding * 2,                         // width
+                    padding,                             // width
                     bounds.getHeight() - (padding * 2)); // height
+    
+#if USE_TEST_OSC
+    meter.setBounds(padding,
+                    JUCE_LIVE_CONSTANT(padding),
+                    padding,
+                    JUCE_LIVE_CONSTANT(bounds.getHeight() - (padding * 2)));
+#endif
+    
+    dbScale.setBounds(meter.getRight(),
+                      0,
+                      padding,
+                      getHeight());
+    
+    dbScale.buildBackgroundImage(6, meter.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()

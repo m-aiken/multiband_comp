@@ -268,6 +268,14 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     
     guiFifo.prepare(samplesPerBlock, getTotalNumOutputChannels());
     
+#if USE_TEST_OSC
+    testOsc.prepare(spec);
+    testOsc.initialise([](float f) { return std::sin(f); });
+    testOsc.setFrequency(440);
+    
+    testGain.prepare(spec);
+#endif
+    
 #if TEST_FILTER_NETWORK
     invertedNetwork.resize(MAX_BANDS);
     invertedNetwork.prepare(spec);
@@ -429,7 +437,29 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     applyGain(buffer, outputGain);
     
+#if USE_TEST_OSC
+    buffer.clear();
+    for ( int sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )
+    {
+        auto newVal = testOsc.processSample(buffer.getSample(0, sampleIdx));
+            
+        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
+        {
+            buffer.setSample(channel, sampleIdx, newVal);
+        }
+    }
+    
+    testGain.setGainDecibels(JUCE_LIVE_CONSTANT(0));
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    testGain.process(context);
+#endif
+    
     guiFifo.push(buffer);
+    
+#if USE_TEST_OSC
+    buffer.clear();
+#endif
     
 #if TEST_FILTER_NETWORK
     if ( apvts.getParameter(Params::getBypassParamName(0))->getValue() > 0.5f )

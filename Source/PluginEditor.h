@@ -15,6 +15,23 @@
 #define MAX_DECIBELS 12.f
 
 //==============================================================================
+struct Tick
+{
+    float db { 0.f };
+    int y { 0 };
+};
+
+struct DbScale : juce::Component
+{
+    ~DbScale() override = default;
+    void paint(juce::Graphics& g) override;
+    void buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb);
+    static std::vector<Tick> getTicks(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb);
+private:
+    juce::Image bkgd;
+};
+
+//==============================================================================
 struct Meter : juce::Component
 {
     void paint(juce::Graphics& g) override;
@@ -46,6 +63,7 @@ private:
     juce::AudioBuffer<float> buffer;
     
     Meter meter;
+    DbScale dbScale;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };

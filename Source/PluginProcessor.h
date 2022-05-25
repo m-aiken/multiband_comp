@@ -10,8 +10,9 @@
 
 #include <JuceHeader.h>
 
-#define DISPLAY_FILTER_CONFIGURATIONS true
+#define DISPLAY_FILTER_CONFIGURATIONS false
 #define TEST_FILTER_NETWORK false
+#define USE_TEST_OSC false
 
 #define MIN_FREQUENCY 20.f
 #define MAX_FREQUENCY 20000.f
@@ -896,6 +897,11 @@ private:
     std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
     
     const float minusThreeDb = juce::Decibels::decibelsToGain(-3.f);
+    
+#if USE_TEST_OSC
+    juce::dsp::Oscillator<float> testOsc;
+    juce::dsp::Gain<float> testGain;
+#endif
     
 #if TEST_FILTER_NETWORK
     InvertedNetwork invertedNetwork;
