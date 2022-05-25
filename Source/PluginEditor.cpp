@@ -15,7 +15,7 @@ void DbScale::paint(juce::Graphics& g)
     g.drawImage(bkgd, getLocalBounds().toFloat());
 }
 
-void DbScale::buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb, int yOffset)
+void DbScale::buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb)
 {
     jassert( minDb < maxDb );
     
@@ -37,6 +37,7 @@ void DbScale::buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBou
     auto boundsX = bounds.getX();
     auto boundsWidth = bounds.getWidth();
     auto textHeight = 12;
+    auto meterY = meterBounds.getY();
     
     for ( auto i = 0; i < ticks.size(); ++i )
     {
@@ -44,7 +45,7 @@ void DbScale::buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBou
         
         g.drawFittedText((ticks[i].db > 0 ? '+' + dbString : dbString), // text
                          boundsX,                                       // x
-                         ticks[i].y + yOffset - (textHeight / 2),       // y
+                         ticks[i].y + meterY - (textHeight / 2),        // y
                          boundsWidth,                                   // width
                          textHeight,                                    // height
                          juce::Justification::centred,                  // justification
@@ -64,11 +65,13 @@ std::vector<Tick> DbScale::getTicks(int dbDivision, juce::Rectangle<int> meterBo
     std::vector<Tick> ticks;
     ticks.reserve(numTicks);
     
+    auto meterHeight = meterBounds.getHeight();
+    
     for ( auto db = minDb; db <= maxDb; db += dbDivision )
     {
         Tick tick;
         tick.db = db;
-        tick.y = juce::jmap<int>(db, NEGATIVE_INFINITY, MAX_DECIBELS, meterBounds.getHeight(), 0);
+        tick.y = juce::jmap<int>(db, NEGATIVE_INFINITY, MAX_DECIBELS, meterHeight, 0);
         ticks.emplace_back(tick);
     }
     
@@ -134,15 +137,15 @@ void PFMProject12AudioProcessorEditor::resized()
     meter.setBounds(padding,
                     JUCE_LIVE_CONSTANT(padding),
                     padding,
-                    bounds.getHeight() - (padding * 2));
+                    JUCE_LIVE_CONSTANT(bounds.getHeight() - (padding * 2)));
 #endif
     
     dbScale.setBounds(meter.getRight(),
-                      meter.getY() - (padding / 2),
+                      0,
                       padding,
-                      meter.getHeight() + padding);
+                      getHeight());
     
-    dbScale.buildBackgroundImage(6, meter.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS, padding / 2);
+    dbScale.buildBackgroundImage(6, meter.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
