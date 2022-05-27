@@ -10,6 +10,38 @@
 #include "PluginEditor.h"
 
 //==============================================================================
+DecayingValueHolder::DecayingValueHolder()
+{
+    decayRatePerFrame = 3.f;
+    startTimerHz(60);
+}
+
+void DecayingValueHolder::updateHeldValue(const float& input)
+{
+    if ( input > currentValue )
+    {
+        peakTime = getNow();
+        currentValue = input;
+        resetDecayRateMultiplier();
+    }
+}
+
+void DecayingValueHolder::timerCallback()
+{
+    if ( getNow() - peakTime > holdTime )
+    {
+        currentValue -= decayRatePerFrame * decayRateMultiplier;
+        currentValue = juce::jlimit<float>(NEGATIVE_INFINITY, MAX_DECIBELS, currentValue);
+        decayRateMultiplier *= 1.04f;
+        
+        if ( currentValue == NEGATIVE_INFINITY )
+        {
+            resetDecayRateMultiplier();
+        }
+    }
+}
+
+//==============================================================================
 void DbScale::paint(juce::Graphics& g)
 {
     g.drawImage(bkgd, getLocalBounds().toFloat());
@@ -90,11 +122,27 @@ void Meter::paint(juce::Graphics& g)
     
     g.setColour(juce::Colour(143u, 192u, 169u)); // rectangle colour
     g.fillRect(bounds.withHeight(componentHeight * peakScaled).withY(peakScaled));
+    
+    // falling tick
+    g.setColour( fallingTick.isOverThreshold() ? juce::Colours::red : juce::Colours::orange );
+    
+    auto tickValueScaled = juce::jmap<float>(fallingTick.getCurrentValue(),
+                                             NEGATIVE_INFINITY,
+                                             MAX_DECIBELS,
+                                             bounds.getHeight(),
+                                             0);
+            
+    g.drawLine(bounds.getX(),     // startX
+               tickValueScaled,   // startY
+               bounds.getRight(), // endX
+               tickValueScaled,   // endY
+               3.f);              // line thickness
 }
 
-void Meter::update(float dbLevel)
+void Meter::update(const float& dbLevel)
 {
     peakDb = dbLevel;
+    fallingTick.updateHeldValue(dbLevel);
     repaint();
 }
 

@@ -15,6 +15,30 @@
 #define MAX_DECIBELS 12.f
 
 //==============================================================================
+struct DecayingValueHolder : juce::Timer
+{
+    DecayingValueHolder();
+    
+    void updateHeldValue(const float& input);
+    float getCurrentValue() const { return currentValue; }
+    bool isOverThreshold() const { return currentValue > threshold; }
+    void setHoldTime(const int& ms) { holdTime = ms; }
+    void setDecayRate(const float& dbPerSec) { decayRatePerFrame = dbPerSec / 60; }
+    
+    void timerCallback() override;
+private:
+    float currentValue { NEGATIVE_INFINITY };
+    juce::int64 peakTime = getNow();
+    float threshold = 0.f;
+    juce::int64 holdTime = 2000; // 2 seconds
+    float decayRatePerFrame { 0.f };
+    float decayRateMultiplier { 1.f };
+    
+    static juce::int64 getNow() { return juce::Time::currentTimeMillis(); }
+    void resetDecayRateMultiplier() { decayRateMultiplier = 1.f; }
+};
+
+//==============================================================================
 struct Tick
 {
     float db { 0.f };
@@ -34,10 +58,12 @@ private:
 //==============================================================================
 struct Meter : juce::Component
 {
+    Meter() { fallingTick.setDecayRate(3.f); }
     void paint(juce::Graphics& g) override;
-    void update(float dbLevel);
+    void update(const float& dbLevel);
 private:
     float peakDb { NEGATIVE_INFINITY };
+    DecayingValueHolder fallingTick;
 };
 
 //==============================================================================
