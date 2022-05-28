@@ -12,7 +12,7 @@
 //==============================================================================
 DecayingValueHolder::DecayingValueHolder()
 {
-    decayRatePerFrame = 3.f;
+    setDecayRate(3.f);
     startTimerHz(60);
 }
 
