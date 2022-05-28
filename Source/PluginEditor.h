@@ -15,6 +15,63 @@
 #define MAX_DECIBELS 12.f
 
 //==============================================================================
+template<typename T>
+struct Averager
+{
+    Averager(size_t numElements, T initialValue)
+    {
+        resize(numElements, initialValue);
+    }
+    
+    void resize(size_t numElements, T initialValue)
+    {
+        elements.resize(numElements);
+        clear(initialValue);
+    }
+    
+    void clear(T initialValue)
+    {
+        elements.assign(getSize(), initialValue);
+        writeIndex.store(0);
+        sum.store(static_cast<T>(std::accumulate(elements.begin(), elements.end(), 0)));
+        avg.store(sum.load() / getSize());
+    }
+    
+    size_t getSize() const
+    {
+        return elements.size();
+    }
+    
+    void add(T t)
+    {
+        auto idx = writeIndex.load();
+        auto runningTotal = sum.load();
+        
+        runningTotal -= elements[idx];
+        runningTotal += t;
+        
+        elements[idx] = t;
+        
+        idx = (idx + 1) % getSize();
+        
+        sum.store(runningTotal);
+        writeIndex.store(idx);
+        avg.store(sum.load() / getSize());
+    }
+    
+    T getAvg() const
+    {
+        return avg.load();
+    }
+    
+private:
+    std::vector<T> elements;
+    std::atomic<T> avg { T() };
+    std::atomic<size_t> writeIndex = 0;
+    std::atomic<T> sum { 0 };
+};
+
+//==============================================================================
 struct DecayingValueHolder : juce::Timer
 {
     DecayingValueHolder();
@@ -64,6 +121,7 @@ struct Meter : juce::Component
 private:
     float peakDb { NEGATIVE_INFINITY };
     DecayingValueHolder fallingTick;
+    Averager<float> averageMeter{60, NEGATIVE_INFINITY};
 };
 
 //==============================================================================

@@ -12,7 +12,7 @@
 //==============================================================================
 DecayingValueHolder::DecayingValueHolder()
 {
-    decayRatePerFrame = 3.f;
+    setDecayRate(3.f);
     startTimerHz(60);
 }
 
@@ -118,12 +118,36 @@ void Meter::paint(juce::Graphics& g)
     
     g.fillAll(juce::Colour(250u, 243u, 221u)); // background
     
-    auto peakScaled = juce::jmap<float>(peakDb, NEGATIVE_INFINITY, MAX_DECIBELS, componentHeight, 0);
+    // Peak Meter
+    g.setColour(juce::Colour(82u, 182u, 154u));
     
-    g.setColour(juce::Colour(143u, 192u, 169u)); // rectangle colour
-    g.fillRect(bounds.withHeight(componentHeight * peakScaled).withY(peakScaled));
+    auto peakScaled = juce::jmap<float>(peakDb,
+                                        NEGATIVE_INFINITY,
+                                        MAX_DECIBELS,
+                                        componentHeight,
+                                        0);
     
-    // falling tick
+    g.fillRect(bounds
+                .withHeight(componentHeight * peakScaled)
+                .withY(peakScaled));
+    
+    // Average Meter
+    g.setColour(juce::Colour(217u, 237u, 146u));
+    
+    auto averageScaled = juce::jmap<float>(averageMeter.getAvg(),
+                                           NEGATIVE_INFINITY,
+                                           MAX_DECIBELS,
+                                           componentHeight,
+                                           0);
+    
+    auto avgMeterWidth = bounds.getWidth() * 0.6;
+    g.fillRect(bounds
+                .withHeight(componentHeight * averageScaled)
+                .withY(averageScaled)
+                .withWidth(avgMeterWidth)
+                .withX(bounds.getCentreX() - (avgMeterWidth * 0.5)));
+    
+    // Falling Tick
     g.setColour( fallingTick.isOverThreshold() ? juce::Colours::red : juce::Colours::orange );
     
     auto tickValueScaled = juce::jmap<float>(fallingTick.getCurrentValue(),
@@ -143,6 +167,7 @@ void Meter::update(const float& dbLevel)
 {
     peakDb = dbLevel;
     fallingTick.updateHeldValue(dbLevel);
+    averageMeter.add(dbLevel);
     repaint();
 }
 
