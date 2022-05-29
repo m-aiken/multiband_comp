@@ -157,7 +157,7 @@ public:
     
     void timerCallback() override;
     
-    void handleMeterFifos(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter);
+    void handleMeterFifo(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter);
 
 private:
     // This reference is provided as a quick way for your editor to
