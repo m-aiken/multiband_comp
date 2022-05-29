@@ -184,11 +184,11 @@ void Meter::paint(juce::Graphics& g)
     g.drawRect(maxMeterBounds);
 }
 
-void Meter::update(const float& dbLevel)
+void Meter::update(const float& inputPeakDb, const float& inputRmsDb)
 {
-    peakDb = dbLevel;
-    fallingTick.updateHeldValue(dbLevel);
-    averageMeter.add(dbLevel);
+    peakDb = inputPeakDb;
+    fallingTick.updateHeldValue(inputPeakDb);
+    averageMeter.add(inputRmsDb);
     repaint();
 }
 
@@ -230,10 +230,10 @@ void StereoMeter::resized()
     dbScale.buildBackgroundImage(6, meterBoundsForDbScale, NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
-void StereoMeter::update(const float& dbLevelL, const float& dbLevelR)
+void StereoMeter::update(const MeterValues& meterValues)
 {
-    meterL.update(dbLevelL);
-    meterR.update(dbLevelR);
+    meterL.update(meterValues.leftPeakDb.getDb(), meterValues.leftRmsDb.getDb());
+    meterR.update(meterValues.rightPeakDb.getDb(), meterValues.rightRmsDb.getDb());
 }
 
 //==============================================================================
@@ -301,9 +301,6 @@ void PFMProject12AudioProcessorEditor::handleMeterFifo(Fifo<MeterValues, 20>& fi
             
         }
         
-        auto leftChannelPeak = meterValues.leftPeakDb.getDb();
-        auto rightChannelPeak = meterValues.rightPeakDb.getDb();
-        
-        stereoMeter.update(leftChannelPeak, rightChannelPeak);
+        stereoMeter.update(meterValues);
     }
 }

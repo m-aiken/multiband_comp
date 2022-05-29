@@ -121,7 +121,7 @@ struct Meter : juce::Component
     }
     
     void paint(juce::Graphics& g) override;
-    void update(const float& dbLevel);
+    void update(const float& inputPeakDb, const float& inputRmsDb);
     float getMeterProportion() { return meterProportion; }
 private:
     float peakDb { NEGATIVE_INFINITY };
@@ -136,7 +136,7 @@ struct StereoMeter : juce::Component
 {
     StereoMeter();
     void resized() override;
-    void update(const float& dbLevelL, const float& dbLevelR);
+    void update(const MeterValues& meterValues);
 private:
     Meter meterL{"L", 95.f}, meterR{"R", 95.f};
     DbScale dbScale;
