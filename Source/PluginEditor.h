@@ -115,13 +115,18 @@ private:
 //==============================================================================
 struct Meter : juce::Component
 {
-    Meter() { fallingTick.setDecayRate(3.f); }
+    Meter(const juce::String& label) : labelText(label)
+    {
+        fallingTick.setDecayRate(3.f);
+    }
+    
     void paint(juce::Graphics& g) override;
     void update(const float& dbLevel);
 private:
     float peakDb { NEGATIVE_INFINITY };
     DecayingValueHolder fallingTick;
     Averager<float> averageMeter{30, NEGATIVE_INFINITY};
+    juce::String labelText;
 };
 
 //==============================================================================
@@ -131,7 +136,7 @@ struct StereoMeter : juce::Component
     void resized() override;
     void update(const float& dbLevelL, const float& dbLevelR);
 private:
-    Meter meterL, meterR;
+    Meter meterL{"L"}, meterR{"R"};
     DbScale dbScale;
 };
 
@@ -157,8 +162,8 @@ private:
     
     juce::AudioBuffer<float> buffer;
     
-    Meter meter;
-    DbScale dbScale;
+//    Meter meter;
+//    DbScale dbScale;
     
     StereoMeter stereoMeter;
 

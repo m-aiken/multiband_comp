@@ -117,7 +117,9 @@ void Meter::paint(juce::Graphics& g)
     auto componentHeight = bounds.getHeight();
     auto maxMeterHeight = componentHeight * 0.95;
     auto meterBoundsYOffset = componentHeight - maxMeterHeight;
+    
     g.fillAll(juce::Colours::black); // background
+    
     auto maxMeterBounds = juce::Rectangle<int>(0,
                                                meterBoundsYOffset,
                                                bounds.getWidth(),
@@ -167,16 +169,16 @@ void Meter::paint(juce::Graphics& g)
                tickValueScaled,   // endY
                3.f);              // line thickness
     
-    /*
+    
     // L/R label
-    g.drawFittedText(<#const String &text#>,
-                     <#int x#>,
-                     <#int y#>,
-                     <#int width#>,
-                     <#int height#>,
-                     <#Justification justificationFlags#>,
-                     <#int maximumNumberOfLines#>)
-    */
+    g.drawFittedText(labelText,
+                     0,
+                     0,
+                     bounds.getWidth(),
+                     componentHeight - maxMeterHeight,
+                     juce::Justification::centred,
+                     1);
+    
     // Meter bounding box/line
     g.setColour(juce::Colours::white);
     g.drawRect(maxMeterBounds);
