@@ -184,11 +184,11 @@ void Meter::paint(juce::Graphics& g)
     g.drawRect(maxMeterBounds);
 }
 
-void Meter::update(const float& inputPeakDb, const float& inputRmsDb)
+void Meter::update(const float& peakDbLevel, const float& rmsDbLevel)
 {
-    peakDb = inputPeakDb;
-    fallingTick.updateHeldValue(inputPeakDb);
-    averageMeter.add(inputRmsDb);
+    peakDb = peakDbLevel;
+    fallingTick.updateHeldValue(peakDbLevel);
+    averageMeter.add(rmsDbLevel);
     repaint();
 }
 

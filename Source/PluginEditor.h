@@ -115,13 +115,14 @@ private:
 //==============================================================================
 struct Meter : juce::Component
 {
-    Meter(const juce::String& label, const float& meterHeightProportion) : labelText(label), meterProportion(meterHeightProportion)
+    Meter(const juce::String& label, const float& meterHeightProportion)
+        : labelText(label), meterProportion(meterHeightProportion)
     {
         fallingTick.setDecayRate(3.f);
     }
     
     void paint(juce::Graphics& g) override;
-    void update(const float& inputPeakDb, const float& inputRmsDb);
+    void update(const float& peakDbLevel, const float& rmsDbLevel);
     float getMeterProportion() { return meterProportion; }
 private:
     float peakDb { NEGATIVE_INFINITY };
