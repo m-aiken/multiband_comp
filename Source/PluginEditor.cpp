@@ -242,7 +242,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
 {
 //    addAndMakeVisible(meter);
 //    addAndMakeVisible(dbScale);
-    addAndMakeVisible(stereoMeter);
+    addAndMakeVisible(inStereoMeter);
+    addAndMakeVisible(outStereoMeter);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(600, 400);
@@ -265,7 +266,7 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 void PFMProject12AudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    auto padding = bounds.getWidth() / 20;
+    auto padding = bounds.getWidth() / 40;
     /*
     meter.setBounds(padding,                             // x
                     padding,                             // y
@@ -286,11 +287,22 @@ void PFMProject12AudioProcessorEditor::resized()
     
     dbScale.buildBackgroundImage(6, meter.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
     */
-    stereoMeter.setBounds(padding, 0, padding * 2, bounds.getHeight());
+    auto stereoMeterWidth = padding * 4;
+    
+    inStereoMeter.setBounds(padding,             // x
+                            0,                   // y
+                            stereoMeterWidth,    // width
+                            bounds.getHeight()); // height
+    
+    outStereoMeter.setBounds(bounds.getRight() - stereoMeterWidth - padding,
+                             0,
+                             stereoMeterWidth,
+                             bounds.getHeight());
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
 {
+    /*
     if ( audioProcessor.guiFifo.getNumAvailableForReading() > 0 )
     {
         while ( audioProcessor.guiFifo.pull(buffer) )
@@ -304,7 +316,25 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         auto rightChannelMag = buffer.getMagnitude(1, 0, buffer.getNumSamples());
         auto rightChannelDb = juce::Decibels::gainToDecibels(rightChannelMag, NEGATIVE_INFINITY);
         
-//        meter.update(leftChannelDb);
         stereoMeter.update(leftChannelDb, rightChannelDb);
+    }
+    */
+    handleMeterFifos(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
+    handleMeterFifos(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
+}
+
+void PFMProject12AudioProcessorEditor::handleMeterFifos(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter)
+{
+    if ( fifo.getNumAvailableForReading() > 0 )
+    {
+        while ( fifo.pull(meterValues) )
+        {
+            
+        }
+        
+        auto leftChannelPeak = meterValues.leftPeakDb.getDb();
+        auto rightChannelPeak = meterValues.rightPeakDb.getDb();
+        
+        stereoMeter.update(leftChannelPeak, rightChannelPeak);
     }
 }

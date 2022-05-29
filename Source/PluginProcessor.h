@@ -772,6 +772,12 @@ private:
 };
 
 //==============================================================================
+struct MeterValues
+{
+    Decibel<float> leftPeakDb, rightPeakDb, leftRmsDb, rightRmsDb;
+};
+
+//==============================================================================
 /**
 */
 class PFMProject12AudioProcessor  : public juce::AudioProcessor
@@ -813,6 +819,21 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    template<typename T, typename U>
+    void updateMeterFifos(T& fifo, U& buffer)
+    {
+        const auto& bufferNumSamples = buffer.getNumSamples();
+        
+        MeterValues meterValues;
+        
+        meterValues.leftPeakDb = juce::Decibels::gainToDecibels(buffer.getMagnitude(0, 0, bufferNumSamples));
+        meterValues.rightPeakDb = juce::Decibels::gainToDecibels(buffer.getMagnitude(1, 0, bufferNumSamples));
+        meterValues.leftRmsDb = juce::Decibels::gainToDecibels(buffer.getRMSLevel(0, 0, bufferNumSamples));
+        meterValues.rightRmsDb = juce::Decibels::gainToDecibels(buffer.getRMSLevel(1, 0, bufferNumSamples));
+        
+        fifo.push(meterValues);
+    }
     
     template<typename BufferType>
     void handleProcessingMode(int mode, BufferType& buffer, int numSamples, size_t bandNum)
@@ -875,6 +896,8 @@ public:
     std::vector<float> createTestCrossovers(const size_t& numBands);
     
     Fifo<juce::AudioBuffer<float>, 20> guiFifo;
+    
+    Fifo<MeterValues, 20> inMeterValuesFifo, outMeterValuesFifo;
     
 private:
     std::array<CompressorBand, MAX_BANDS> compressors;

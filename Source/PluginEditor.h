@@ -156,6 +156,8 @@ public:
     void resized() override;
     
     void timerCallback() override;
+    
+    void handleMeterFifos(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter);
 
 private:
     // This reference is provided as a quick way for your editor to
@@ -163,11 +165,12 @@ private:
     PFMProject12AudioProcessor& audioProcessor;
     
     juce::AudioBuffer<float> buffer;
+    MeterValues inMeterValues, outMeterValues;
     
 //    Meter meter;
 //    DbScale dbScale;
     
-    StereoMeter stereoMeter;
+    StereoMeter inStereoMeter, outStereoMeter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
