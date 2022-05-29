@@ -115,7 +115,7 @@ void Meter::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
     auto componentHeight = bounds.getHeight();
-    auto maxMeterHeight = componentHeight * 0.95;
+    auto maxMeterHeight = componentHeight * (meterProportion / 100);
     auto meterBoundsYOffset = componentHeight - maxMeterHeight;
     
     g.fillAll(juce::Colours::black); // background
@@ -208,7 +208,7 @@ void StereoMeter::resized()
     
     meterL.setBounds(0,                                   // x
                      padding,                             // y
-                     widthUnit * 2,               // width
+                     widthUnit * 2,                       // width
                      bounds.getHeight() - (padding * 2)); // height
     
     dbScale.setBounds(meterL.getRight(),
@@ -221,7 +221,13 @@ void StereoMeter::resized()
                      widthUnit * 2,
                      bounds.getHeight() - (padding * 2));
     
-    dbScale.buildBackgroundImage(6, meterL.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
+    /*
+    calculate the actual meter bounds so the db scale isn't mapped to a range that includes the label
+    */
+    auto actualMeterHeight = meterL.getHeight() * (meterL.getMeterProportion() / 100); // to remove the label bounds
+    auto meterYOffset = meterL.getHeight() - actualMeterHeight;
+    auto meterBoundsForDbScale = juce::Rectangle<int>(meterL.getBounds()).withHeight(actualMeterHeight).withY(meterL.getY() + meterYOffset);
+    dbScale.buildBackgroundImage(6, meterBoundsForDbScale, NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void StereoMeter::update(const float& dbLevelL, const float& dbLevelR)
