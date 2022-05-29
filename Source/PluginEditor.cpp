@@ -203,7 +203,7 @@ StereoMeter::StereoMeter()
 void StereoMeter::resized()
 {
     auto bounds = getLocalBounds();
-    auto padding = bounds.getWidth() / 2;
+    auto padding = bounds.getHeight() / 20;
     auto widthUnit = bounds.getWidth() / 7;
     
     meterL.setBounds(0,                                   // x
@@ -240,13 +240,11 @@ void StereoMeter::update(const float& dbLevelL, const float& dbLevelR)
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-//    addAndMakeVisible(meter);
-//    addAndMakeVisible(dbScale);
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize(600, 400);
+    setSize(800, 600);
     
     startTimerHz(60);
 }
@@ -267,58 +265,29 @@ void PFMProject12AudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
     auto padding = bounds.getWidth() / 40;
-    /*
-    meter.setBounds(padding,                             // x
-                    padding,                             // y
-                    padding,                             // width
-                    bounds.getHeight() - (padding * 2)); // height
-    
-#if USE_TEST_OSC
-    meter.setBounds(padding,
-                    JUCE_LIVE_CONSTANT(padding),
-                    padding,
-                    JUCE_LIVE_CONSTANT(bounds.getHeight() - (padding * 2)));
-#endif
-    
-    dbScale.setBounds(meter.getRight(),
-                      0,
-                      padding,
-                      getHeight());
-    
-    dbScale.buildBackgroundImage(6, meter.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
-    */
+
     auto stereoMeterWidth = padding * 4;
     
-    inStereoMeter.setBounds(padding,             // x
-                            0,                   // y
-                            stereoMeterWidth,    // width
-                            bounds.getHeight()); // height
+    inStereoMeter.setBounds(padding,                   // x
+                            0,                         // y
+                            stereoMeterWidth,          // width
+                            bounds.getHeight() * 0.8); // height
     
     outStereoMeter.setBounds(bounds.getRight() - stereoMeterWidth - padding,
                              0,
                              stereoMeterWidth,
-                             bounds.getHeight());
+                             bounds.getHeight() * 0.8);
+    
+#if USE_TEST_OSC
+    inStereoMeter.setBounds(padding,
+                            JUCE_LIVE_CONSTANT(0),
+                            stereoMeterWidth,
+                            JUCE_LIVE_CONSTANT(bounds.getHeight() * 0.8));
+#endif
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
 {
-    /*
-    if ( audioProcessor.guiFifo.getNumAvailableForReading() > 0 )
-    {
-        while ( audioProcessor.guiFifo.pull(buffer) )
-        {
-            // do nothing else - just looping through until incomingBuffer = most recent available buffer
-        }
-        
-        auto leftChannelMag = buffer.getMagnitude(0, 0, buffer.getNumSamples());
-        auto leftChannelDb = juce::Decibels::gainToDecibels(leftChannelMag, NEGATIVE_INFINITY);
-        
-        auto rightChannelMag = buffer.getMagnitude(1, 0, buffer.getNumSamples());
-        auto rightChannelDb = juce::Decibels::gainToDecibels(rightChannelMag, NEGATIVE_INFINITY);
-        
-        stereoMeter.update(leftChannelDb, rightChannelDb);
-    }
-    */
     handleMeterFifos(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
     handleMeterFifos(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
 }

@@ -895,7 +895,7 @@ public:
     
     std::vector<float> createTestCrossovers(const size_t& numBands);
     
-    Fifo<juce::AudioBuffer<float>, 20> guiFifo;
+//    Fifo<juce::AudioBuffer<float>, 20> guiFifo;
     
     Fifo<MeterValues, 20> inMeterValuesFifo, outMeterValuesFifo;
     

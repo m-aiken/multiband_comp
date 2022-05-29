@@ -11,8 +11,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-#define NEGATIVE_INFINITY -66.f
-#define MAX_DECIBELS 12.f
+#define NEGATIVE_INFINITY -96.f
+#define MAX_DECIBELS 18.f
 
 //==============================================================================
 template<typename T>
@@ -164,11 +164,8 @@ private:
     // access the processor object that created it.
     PFMProject12AudioProcessor& audioProcessor;
     
-    juce::AudioBuffer<float> buffer;
+//    juce::AudioBuffer<float> buffer;
     MeterValues inMeterValues, outMeterValues;
-    
-//    Meter meter;
-//    DbScale dbScale;
     
     StereoMeter inStereoMeter, outStereoMeter;
 
