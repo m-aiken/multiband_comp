@@ -125,6 +125,17 @@ private:
 };
 
 //==============================================================================
+struct StereoMeter : juce::Component
+{
+    StereoMeter();
+    void resized() override;
+    void update(const float& dbLevelL, const float& dbLevelR);
+private:
+    Meter meterL, meterR;
+    DbScale dbScale;
+};
+
+//==============================================================================
 /**
 */
 class PFMProject12AudioProcessorEditor  : public juce::AudioProcessorEditor, juce::Timer
@@ -148,6 +159,8 @@ private:
     
     Meter meter;
     DbScale dbScale;
+    
+    StereoMeter stereoMeter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
