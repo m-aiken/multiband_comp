@@ -87,7 +87,7 @@ private:
     float currentValue { NEGATIVE_INFINITY };
     juce::int64 peakTime = getNow();
     float threshold = 0.f;
-    juce::int64 holdTime = 2000; // 2 seconds
+    juce::int64 holdTime = 1000; // 1 second
     float decayRatePerFrame { 0.f };
     float decayRateMultiplier { 1.f };
     
@@ -121,7 +121,7 @@ struct Meter : juce::Component
 private:
     float peakDb { NEGATIVE_INFINITY };
     DecayingValueHolder fallingTick;
-    Averager<float> averageMeter{60, NEGATIVE_INFINITY};
+    Averager<float> averageMeter{30, NEGATIVE_INFINITY};
 };
 
 //==============================================================================
