@@ -11,8 +11,8 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-#define NEGATIVE_INFINITY -66.f
-#define MAX_DECIBELS 12.f
+#define NEGATIVE_INFINITY -96.f
+#define MAX_DECIBELS 18.f
 
 //==============================================================================
 template<typename T>
@@ -87,7 +87,7 @@ private:
     float currentValue { NEGATIVE_INFINITY };
     juce::int64 peakTime = getNow();
     float threshold = 0.f;
-    juce::int64 holdTime = 2000; // 2 seconds
+    juce::int64 holdTime = 1000; // 1 second
     float decayRatePerFrame { 0.f };
     float decayRateMultiplier { 1.f };
     
@@ -115,13 +115,32 @@ private:
 //==============================================================================
 struct Meter : juce::Component
 {
-    Meter() { fallingTick.setDecayRate(3.f); }
+    Meter(const juce::String& label, const float& meterHeightProportion)
+        : labelText(label), meterProportion(meterHeightProportion)
+    {
+        fallingTick.setDecayRate(3.f);
+    }
+    
     void paint(juce::Graphics& g) override;
-    void update(const float& dbLevel);
+    void update(const float& peakDbLevel, const float& rmsDbLevel);
+    float getMeterProportion() { return meterProportion; }
 private:
     float peakDb { NEGATIVE_INFINITY };
     DecayingValueHolder fallingTick;
-    Averager<float> averageMeter{60, NEGATIVE_INFINITY};
+    Averager<float> averageMeter{30, NEGATIVE_INFINITY};
+    juce::String labelText;
+    float meterProportion;
+};
+
+//==============================================================================
+struct StereoMeter : juce::Component
+{
+    StereoMeter();
+    void resized() override;
+    void update(const MeterValues& meterValues);
+private:
+    Meter meterL{"L", 95.f}, meterR{"R", 95.f};
+    DbScale dbScale;
 };
 
 //==============================================================================
@@ -138,16 +157,18 @@ public:
     void resized() override;
     
     void timerCallback() override;
+    
+    void handleMeterFifo(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter);
 
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     PFMProject12AudioProcessor& audioProcessor;
     
-    juce::AudioBuffer<float> buffer;
+//    juce::AudioBuffer<float> buffer;
+    MeterValues inMeterValues, outMeterValues;
     
-    Meter meter;
-    DbScale dbScale;
+    StereoMeter inStereoMeter, outStereoMeter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };

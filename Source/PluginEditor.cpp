@@ -115,8 +115,15 @@ void Meter::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
     auto componentHeight = bounds.getHeight();
+    auto maxMeterHeight = componentHeight * (meterProportion / 100);
+    auto meterBoundsYOffset = componentHeight - maxMeterHeight;
     
-    g.fillAll(juce::Colour(250u, 243u, 221u)); // background
+    g.fillAll(juce::Colours::black); // background
+    
+    auto maxMeterBounds = juce::Rectangle<int>(0,
+                                               meterBoundsYOffset,
+                                               bounds.getWidth(),
+                                               maxMeterHeight);
     
     // Peak Meter
     g.setColour(juce::Colour(82u, 182u, 154u));
@@ -125,10 +132,10 @@ void Meter::paint(juce::Graphics& g)
                                         NEGATIVE_INFINITY,
                                         MAX_DECIBELS,
                                         componentHeight,
-                                        0);
+                                        meterBoundsYOffset);
     
-    g.fillRect(bounds
-                .withHeight(componentHeight * peakScaled)
+    g.fillRect(maxMeterBounds
+                .withHeight(maxMeterHeight * peakScaled)
                 .withY(peakScaled));
     
     // Average Meter
@@ -138,48 +145,106 @@ void Meter::paint(juce::Graphics& g)
                                            NEGATIVE_INFINITY,
                                            MAX_DECIBELS,
                                            componentHeight,
-                                           0);
+                                           meterBoundsYOffset);
     
-    auto avgMeterWidth = bounds.getWidth() * 0.6;
-    g.fillRect(bounds
-                .withHeight(componentHeight * averageScaled)
+    auto avgMeterWidth = bounds.getWidth() * 0.5;
+    g.fillRect(maxMeterBounds
+                .withHeight(maxMeterHeight * averageScaled)
                 .withY(averageScaled)
                 .withWidth(avgMeterWidth)
                 .withX(bounds.getCentreX() - (avgMeterWidth * 0.5)));
     
     // Falling Tick
-    g.setColour( fallingTick.isOverThreshold() ? juce::Colours::red : juce::Colours::orange );
+    g.setColour( fallingTick.isOverThreshold() ? juce::Colours::red : juce::Colours::white );
     
     auto tickValueScaled = juce::jmap<float>(fallingTick.getCurrentValue(),
                                              NEGATIVE_INFINITY,
                                              MAX_DECIBELS,
-                                             bounds.getHeight(),
-                                             0);
+                                             componentHeight,
+                                             meterBoundsYOffset);
             
     g.drawLine(bounds.getX(),     // startX
                tickValueScaled,   // startY
                bounds.getRight(), // endX
                tickValueScaled,   // endY
                3.f);              // line thickness
+    
+    
+    // L/R label
+    g.drawFittedText(labelText,
+                     0,
+                     0,
+                     bounds.getWidth(),
+                     componentHeight - maxMeterHeight,
+                     juce::Justification::centred,
+                     1);
+    
+    // Meter bounding box/line
+    g.setColour(juce::Colours::white);
+    g.drawRect(maxMeterBounds);
 }
 
-void Meter::update(const float& dbLevel)
+void Meter::update(const float& peakDbLevel, const float& rmsDbLevel)
 {
-    peakDb = dbLevel;
-    fallingTick.updateHeldValue(dbLevel);
-    averageMeter.add(dbLevel);
+    peakDb = peakDbLevel;
+    fallingTick.updateHeldValue(peakDbLevel);
+    averageMeter.add(rmsDbLevel);
     repaint();
+}
+
+//==============================================================================
+StereoMeter::StereoMeter()
+{
+    addAndMakeVisible(meterL);
+    addAndMakeVisible(meterR);
+    addAndMakeVisible(dbScale);
+}
+
+void StereoMeter::resized()
+{
+    auto bounds = getLocalBounds();
+    auto padding = bounds.getHeight() / 20;
+    auto widthUnit = bounds.getWidth() / 7;
+    
+    meterL.setBounds(0,                                   // x
+                     padding,                             // y
+                     widthUnit * 2,                       // width
+                     bounds.getHeight() - (padding * 2)); // height
+    
+    dbScale.setBounds(meterL.getRight(),
+                      0,
+                      widthUnit * 3,
+                      bounds.getHeight());
+    
+    meterR.setBounds(dbScale.getRight(),
+                     padding,
+                     widthUnit * 2,
+                     bounds.getHeight() - (padding * 2));
+    
+    /*
+    calculate the actual meter bounds so the db scale isn't mapped to a range that includes the label
+    */
+    auto actualMeterHeight = meterL.getHeight() * (meterL.getMeterProportion() / 100); // to remove the label bounds
+    auto meterYOffset = meterL.getHeight() - actualMeterHeight;
+    auto meterBoundsForDbScale = juce::Rectangle<int>(meterL.getBounds()).withHeight(actualMeterHeight).withY(meterL.getY() + meterYOffset);
+    dbScale.buildBackgroundImage(6, meterBoundsForDbScale, NEGATIVE_INFINITY, MAX_DECIBELS);
+}
+
+void StereoMeter::update(const MeterValues& meterValues)
+{
+    meterL.update(meterValues.leftPeakDb.getDb(), meterValues.leftRmsDb.getDb());
+    meterR.update(meterValues.rightPeakDb.getDb(), meterValues.rightRmsDb.getDb());
 }
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    addAndMakeVisible(meter);
-    addAndMakeVisible(dbScale);
+    addAndMakeVisible(inStereoMeter);
+    addAndMakeVisible(outStereoMeter);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize(600, 400);
+    setSize(800, 600);
     
     startTimerHz(60);
 }
@@ -199,39 +264,43 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 void PFMProject12AudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    auto padding = bounds.getWidth() / 20;
+    auto padding = bounds.getWidth() / 40;
+
+    auto stereoMeterWidth = padding * 4;
     
-    meter.setBounds(padding,                             // x
-                    padding,                             // y
-                    padding,                             // width
-                    bounds.getHeight() - (padding * 2)); // height
+    inStereoMeter.setBounds(padding,                   // x
+                            0,                         // y
+                            stereoMeterWidth,          // width
+                            bounds.getHeight() * 0.8); // height
+    
+    outStereoMeter.setBounds(bounds.getRight() - stereoMeterWidth - padding,
+                             0,
+                             stereoMeterWidth,
+                             bounds.getHeight() * 0.8);
     
 #if USE_TEST_OSC
-    meter.setBounds(padding,
-                    JUCE_LIVE_CONSTANT(padding),
-                    padding,
-                    JUCE_LIVE_CONSTANT(bounds.getHeight() - (padding * 2)));
+    inStereoMeter.setBounds(padding,
+                            JUCE_LIVE_CONSTANT(0),
+                            stereoMeterWidth,
+                            JUCE_LIVE_CONSTANT(bounds.getHeight() * 0.8));
 #endif
-    
-    dbScale.setBounds(meter.getRight(),
-                      0,
-                      padding,
-                      getHeight());
-    
-    dbScale.buildBackgroundImage(6, meter.getBounds(), NEGATIVE_INFINITY, MAX_DECIBELS);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
 {
-    if ( audioProcessor.guiFifo.getNumAvailableForReading() > 0 )
+    handleMeterFifo(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
+    handleMeterFifo(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
+}
+
+void PFMProject12AudioProcessorEditor::handleMeterFifo(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter)
+{
+    if ( fifo.getNumAvailableForReading() > 0 )
     {
-        while ( audioProcessor.guiFifo.pull(buffer) )
+        while ( fifo.pull(meterValues) )
         {
-            // do nothing else - just looping through until incomingBuffer = most recent available buffer
+            
         }
         
-        auto leftChannelMag = buffer.getMagnitude(0, 0, buffer.getNumSamples());
-        auto leftChannelDb = juce::Decibels::gainToDecibels(leftChannelMag, NEGATIVE_INFINITY);
-        meter.update(leftChannelDb);
+        stereoMeter.update(meterValues);
     }
 }
