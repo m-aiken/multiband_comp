@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "../Globals.h"
+
 //==============================================================================
 template<typename T>
 struct Averager
@@ -27,10 +29,11 @@ struct Averager
     
     void clear(T initialValue)
     {
-        elements.assign(getSize(), initialValue);
+        auto elementsSize = getSize();
+        elements.assign(elementsSize, initialValue);
         writeIndex.store(0);
         sum.store(static_cast<T>(std::accumulate(elements.begin(), elements.end(), 0)));
-        avg.store(sum.load() / getSize());
+        avg.store(sum.load() / elementsSize);
     }
     
     size_t getSize() const
@@ -40,6 +43,7 @@ struct Averager
     
     void add(T t)
     {
+        auto elementsSize = getSize();
         auto idx = writeIndex.load();
         auto runningTotal = sum.load();
         
@@ -48,21 +52,23 @@ struct Averager
         
         elements[idx] = t;
         
-        idx = (idx + 1) % getSize();
+        idx++;
+        if ( idx >= elementsSize )
+            idx = 0;
         
         sum.store(runningTotal);
         writeIndex.store(idx);
-        avg.store(sum.load() / getSize());
+        avg.store(sum.load() / elementsSize);
     }
     
-    T getAvg() const
+    float getAvg() const
     {
         return avg.load();
     }
     
 private:
     std::vector<T> elements;
-    std::atomic<T> avg { T() };
+    std::atomic<float> avg { Globals::getNegativeInf() };
     std::atomic<size_t> writeIndex = 0;
     std::atomic<T> sum { 0 };
 };
