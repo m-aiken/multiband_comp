@@ -32,10 +32,10 @@ void DecayingValueHolder::timerCallback()
     if ( getNow() - peakTime > holdTime )
     {
         currentValue -= decayRatePerFrame * decayRateMultiplier;
-        currentValue = juce::jlimit<float>(Globals::negativeInf(), Globals::maxDecibels(), currentValue);
+        currentValue = juce::jlimit<float>(Globals::getNegativeInf(), Globals::getMaxDecibels(), currentValue);
         decayRateMultiplier *= 1.04f;
         
-        if ( currentValue == Globals::negativeInf() )
+        if ( currentValue == Globals::getNegativeInf() )
         {
             resetDecayRateMultiplier();
         }

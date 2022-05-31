@@ -23,9 +23,9 @@ struct Meter : juce::Component
     void update(const float& peakDbLevel, const float& rmsDbLevel);
     float getMeterProportion() { return meterProportion; }
 private:
-    float peakDb { Globals::negativeInf() };
+    float peakDb { Globals::getNegativeInf() };
     DecayingValueHolder fallingTick;
-    Averager<float> averageMeter{30, Globals::negativeInf()};
+    Averager<float> averageMeter{30, Globals::getNegativeInf()};
     juce::String labelText;
     float meterProportion;
 };

@@ -15,6 +15,6 @@
 //==============================================================================
 namespace Globals
 {
-inline float maxDecibels() { return 18.f; }
-inline float negativeInf() { return -96.f; }
+inline float getMaxDecibels() { return 18.f; }
+inline float getNegativeInf() { return -96.f; }
 }

@@ -19,7 +19,7 @@
 //==============================================================================
 /**
 */
-class PFMProject12AudioProcessorEditor  : public juce::AudioProcessorEditor, juce::Timer
+class PFMProject12AudioProcessorEditor : public juce::AudioProcessorEditor, juce::Timer
 {
 public:
     PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor&);

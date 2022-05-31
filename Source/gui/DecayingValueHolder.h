@@ -26,7 +26,7 @@ struct DecayingValueHolder : juce::Timer
     
     void timerCallback() override;
 private:
-    float currentValue { Globals::negativeInf() };
+    float currentValue { Globals::getNegativeInf() };
     juce::int64 peakTime = getNow();
     float threshold = 0.f;
     juce::int64 holdTime = 1000; // 1 second

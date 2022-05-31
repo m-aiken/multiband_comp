@@ -46,7 +46,7 @@ void StereoMeter::resized()
     auto actualMeterHeight = meterL.getHeight() * (meterL.getMeterProportion() / 100); // to remove the label bounds
     auto meterYOffset = meterL.getHeight() - actualMeterHeight;
     auto meterBoundsForDbScale = juce::Rectangle<int>(meterL.getBounds()).withHeight(actualMeterHeight).withY(meterL.getY() + meterYOffset);
-    dbScale.buildBackgroundImage(6, meterBoundsForDbScale, Globals::negativeInf(), Globals::maxDecibels());
+    dbScale.buildBackgroundImage(6, meterBoundsForDbScale, Globals::getNegativeInf(), Globals::getMaxDecibels());
 }
 
 void StereoMeter::update(const MeterValues& meterValues)

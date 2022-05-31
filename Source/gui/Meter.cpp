@@ -35,8 +35,8 @@ void Meter::paint(juce::Graphics& g)
     g.setColour(juce::Colour(82u, 182u, 154u));
     
     auto peakScaled = juce::jmap<float>(peakDb,
-                                        Globals::negativeInf(),
-                                        Globals::maxDecibels(),
+                                        Globals::getNegativeInf(),
+                                        Globals::getMaxDecibels(),
                                         componentHeight,
                                         meterBoundsYOffset);
     
@@ -48,8 +48,8 @@ void Meter::paint(juce::Graphics& g)
     g.setColour(juce::Colour(217u, 237u, 146u));
     
     auto averageScaled = juce::jmap<float>(averageMeter.getAvg(),
-                                           Globals::negativeInf(),
-                                           Globals::maxDecibels(),
+                                           Globals::getNegativeInf(),
+                                           Globals::getMaxDecibels(),
                                            componentHeight,
                                            meterBoundsYOffset);
     
@@ -64,8 +64,8 @@ void Meter::paint(juce::Graphics& g)
     g.setColour( fallingTick.isOverThreshold() ? juce::Colours::red : juce::Colours::white );
     
     auto tickValueScaled = juce::jmap<float>(fallingTick.getCurrentValue(),
-                                             Globals::negativeInf(),
-                                             Globals::maxDecibels(),
+                                             Globals::getNegativeInf(),
+                                             Globals::getMaxDecibels(),
                                              componentHeight,
                                              meterBoundsYOffset);
             

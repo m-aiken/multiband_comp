@@ -73,7 +73,7 @@ std::vector<Tick> DbScale::getTicks(int dbDivision, juce::Rectangle<int> meterBo
     {
         Tick tick;
         tick.db = db;
-        tick.y = juce::jmap<int>(db, Globals::negativeInf(), Globals::maxDecibels(), meterHeight, 0);
+        tick.y = juce::jmap<int>(db, Globals::getNegativeInf(), Globals::getMaxDecibels(), meterHeight, 0);
         ticks.emplace_back(tick);
     }
     
