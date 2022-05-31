@@ -61,6 +61,6 @@ void PFMProject12AudioProcessorEditor::resized()
 
 void PFMProject12AudioProcessorEditor::timerCallback()
 {
-    handleMeterFifo<Fifo<MeterValues, 20>>(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
-    handleMeterFifo<Fifo<MeterValues, 20>>(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
+    handleMeterFifo(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
+    handleMeterFifo(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
 }
