@@ -10,10 +10,6 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-
-#define NEGATIVE_INFINITY -96.f
-#define MAX_DECIBELS 18.f
-
 #include "gui/Averager.h"
 #include "gui/DecayingValueHolder.h"
 #include "gui/DbScale.h"
