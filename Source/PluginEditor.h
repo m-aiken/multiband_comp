@@ -31,7 +31,15 @@ public:
     
     void timerCallback() override;
     
-    void handleMeterFifo(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter);
+    template<typename FifoType>
+    void handleMeterFifo(FifoType& fifo, MeterValues& meterValues, StereoMeter& stereoMeter)
+    {
+        if ( fifo.getNumAvailableForReading() > 0 )
+        {
+            while ( fifo.pull(meterValues) ) { }
+            stereoMeter.update(meterValues);
+        }
+    }
 
 private:
     // This reference is provided as a quick way for your editor to

@@ -61,19 +61,6 @@ void PFMProject12AudioProcessorEditor::resized()
 
 void PFMProject12AudioProcessorEditor::timerCallback()
 {
-    handleMeterFifo(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
-    handleMeterFifo(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
-}
-
-void PFMProject12AudioProcessorEditor::handleMeterFifo(Fifo<MeterValues, 20>& fifo, MeterValues& meterValues, StereoMeter& stereoMeter)
-{
-    if ( fifo.getNumAvailableForReading() > 0 )
-    {
-        while ( fifo.pull(meterValues) )
-        {
-            
-        }
-        
-        stereoMeter.update(meterValues);
-    }
+    handleMeterFifo<Fifo<MeterValues, 20>>(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
+    handleMeterFifo<Fifo<MeterValues, 20>>(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
 }
