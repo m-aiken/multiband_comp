@@ -14,7 +14,7 @@
 void RotaryControl::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
-    auto diameter = bounds.getWidth() * 0.7f;
+    auto diameter = bounds.getWidth() * 0.75f;
     auto radius = diameter / 2;
     
     auto startAngle = juce::degreesToRadians(180.f + 45.f);

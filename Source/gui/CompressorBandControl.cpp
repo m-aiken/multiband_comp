@@ -12,6 +12,22 @@
 #include "../Params.h"
 
 //==============================================================================
+Button::Button(const juce::String& buttonText)
+{
+    setLookAndFeel(&lnf);
+    setButtonText(buttonText);
+}
+
+void Button::paint(juce::Graphics& g)
+{
+    getLookAndFeel().drawButtonBackground(g,
+                                          *this,                   // button
+                                          juce::Colours::darkgrey, // colour
+                                          true,                    // draw as highlighted
+                                          false);                  // draw as down
+}
+
+//==============================================================================
 CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts)
     : apvts(_apvts),
       attackAttachment(apvts, Params::getAttackParamName(0), attackRotary),
@@ -36,15 +52,36 @@ void CompressorBandControl::paint(juce::Graphics& g)
 
 void CompressorBandControl::resized()
 {
-    auto bounds = getLocalBounds();
-    auto height = bounds.getHeight();
-    auto rotaryWidth = bounds.getWidth() * 0.2;
+    juce::Grid grid;
     
-    attackRotary.setBounds     (0,                           0, rotaryWidth, height);
-    releaseRotary.setBounds    (attackRotary.getRight(),     0, rotaryWidth, height);
-    thresholdRotary.setBounds  (releaseRotary.getRight(),    0, rotaryWidth, height);
-    makeupGainRotary.setBounds (thresholdRotary.getRight(),  0, rotaryWidth, height);
-    ratioRotary.setBounds      (makeupGainRotary.getRight(), 0, rotaryWidth, height);
+    using Track = juce::Grid::TrackInfo;
+    using Fr = juce::Grid::Fr;
+    
+    auto rotaryFr = 3;
+    
+    grid.templateColumns =
+    {
+        Track(Fr(rotaryFr)),
+        Track(Fr(rotaryFr)),
+        Track(Fr(rotaryFr)),
+        Track(Fr(rotaryFr)),
+        Track(Fr(rotaryFr)),
+        Track(Fr(1))
+    };
+    
+    grid.autoRows = Track(Fr(1));
+    
+    grid.items =
+    {
+        juce::GridItem(attackRotary),
+        juce::GridItem(releaseRotary),
+        juce::GridItem(thresholdRotary),
+        juce::GridItem(makeupGainRotary),
+        juce::GridItem(ratioRotary),
+        juce::GridItem(resetButton)
+    };
+    
+    grid.performLayout(getLocalBounds());
 }
 
 void CompressorBandControl::initRotarySettings(juce::Slider& rotaryControl,

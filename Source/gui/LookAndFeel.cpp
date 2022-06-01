@@ -47,3 +47,23 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     
     g.fillPath(p);
 }
+
+void LookAndFeel::drawButtonBackground(juce::Graphics& g,
+                                       juce::Button& button,
+                                       const juce::Colour& backgroundColour,
+                                       bool shouldDrawButtonAsHighlighted,
+                                       bool shouldDrawButtonAsDown)
+{
+    auto bounds = button.getLocalBounds();
+    
+    g.fillAll(backgroundColour);
+    
+    g.setColour(juce::Colours::white);
+    g.drawFittedText(button.getButtonText(),
+                     bounds.getX(),
+                     bounds.getY(),
+                     bounds.getWidth(),
+                     bounds.getHeight(),
+                     juce::Justification::centred,
+                     1);
+}

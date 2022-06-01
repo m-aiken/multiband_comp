@@ -12,6 +12,17 @@
 
 #include <JuceHeader.h>
 #include "RotaryControl.h"
+#include "LookAndFeel.h"
+
+//==============================================================================
+struct Button : juce::TextButton
+{
+    Button(const juce::String& buttonText);
+    ~Button() { setLookAndFeel(nullptr); }
+    void paint(juce::Graphics& g) override;
+private:
+    LookAndFeel lnf;
+};
 
 //==============================================================================
 struct CompressorBandControl : juce::Component
@@ -31,6 +42,7 @@ struct CompressorBandControl : juce::Component
 private:
     juce::AudioProcessorValueTreeState& apvts;
     RotaryControl attackRotary, releaseRotary, thresholdRotary, makeupGainRotary, ratioRotary;
-    juce::TextButton resetButton {"RESET"};
+//    juce::TextButton resetButton {"R"};
+    Button resetButton {"R"};
     juce::AudioProcessorValueTreeState::SliderAttachment attackAttachment, releaseAttachment, thresholdAttachment, makeupGainAttachment, ratioAttachment;
 };

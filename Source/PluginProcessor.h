@@ -19,8 +19,6 @@
 #define MIN_FREQUENCY 20.f
 #define MAX_FREQUENCY 20000.f
 #define MAX_BANDS 8
-#define MIN_BAND_NUM 0
-#define MAX_BAND_NUM 7
 
 //==============================================================================
 template<typename T>

@@ -11,10 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-
-// temporarily putting these here
-#define MIN_BAND_NUM 0
-#define MAX_BAND_NUM 7
+#include "Globals.h"
 
 //==============================================================================
 namespace Params
@@ -79,8 +76,8 @@ inline juce::String getMuteParamName(int bandNum)
 inline juce::String getCrossoverParamName(int lowBandNum, int highBandNum)
 {
     jassert(lowBandNum < highBandNum);
-    jassert(lowBandNum >= MIN_BAND_NUM);
-    jassert(highBandNum <= MAX_BAND_NUM);
+    jassert(lowBandNum >= Globals::getMinBandNum());
+    jassert(highBandNum <= Globals::getMaxBandNum());
     jassert(highBandNum - lowBandNum == 1);
     
     juce::String str;
