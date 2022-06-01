@@ -15,6 +15,7 @@
 #include "gui/DbScale.h"
 #include "gui/Meter.h"
 #include "gui/StereoMeter.h"
+#include "gui/CompressorBandControl.h"
 
 //==============================================================================
 /**
@@ -50,6 +51,8 @@ private:
     MeterValues inMeterValues, outMeterValues;
     
     StereoMeter inStereoMeter, outStereoMeter;
+    
+    CompressorBandControl bandControls{audioProcessor.apvts};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
