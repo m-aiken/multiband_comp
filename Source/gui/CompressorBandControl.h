@@ -38,11 +38,17 @@ struct CompressorBandControl : juce::Component
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void initRotarySettings(juce::Slider& rotaryControl, const double& rangeStart, const double& rangeEnd, const double& defaultValue);
+    //void initRotarySettings(juce::Slider& rotaryControl, const double& rangeStart, const double& rangeEnd, const double& defaultValue);
 private:
     juce::AudioProcessorValueTreeState& apvts;
-    RotaryControl attackRotary, releaseRotary, thresholdRotary, makeupGainRotary, ratioRotary;
+    std::unique_ptr<RotaryControl> attackRotary, releaseRotary, thresholdRotary, makeupGainRotary, ratioRotary;
 //    juce::TextButton resetButton {"R"};
     Button resetButton {"R"};
-    juce::AudioProcessorValueTreeState::SliderAttachment attackAttachment, releaseAttachment, thresholdAttachment, makeupGainAttachment, ratioAttachment;
+    
+    using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
+    std::unique_ptr<Attachment> attackAttachment,
+                                releaseAttachment,
+                                thresholdAttachment,
+                                makeupGainAttachment,
+                                ratioAttachment;
 };

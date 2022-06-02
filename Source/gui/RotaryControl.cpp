@@ -11,6 +11,14 @@
 #include "RotaryControl.h"
 
 //==============================================================================
+RotaryControl::RotaryControl(juce::RangedAudioParameter& rap, const juce::String& unitSuffix)
+    : juce::Slider(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag, juce::Slider::TextEntryBoxPosition::NoTextBox),
+      param(&rap),
+      suffix(unitSuffix)
+{
+    setLookAndFeel(&lnf);
+}
+
 void RotaryControl::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();

@@ -16,9 +16,11 @@
 //==============================================================================
 struct RotaryControl : juce::Slider
 {
-    RotaryControl() { setLookAndFeel(&lnf); }
+    RotaryControl(juce::RangedAudioParameter& rap, const juce::String& unitSuffix);
     ~RotaryControl() { setLookAndFeel(nullptr); }
     void paint(juce::Graphics& g) override;
 private:
     LookAndFeel lnf;
+    juce::RangedAudioParameter* param;
+    juce::String suffix;
 };
