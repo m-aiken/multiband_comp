@@ -31,19 +31,19 @@ void Button::paint(juce::Graphics& g)
 CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts)
     : apvts(_apvts)
 {
-    auto initRotaryControl = [&apvts = this->apvts](auto& rotaryControl, const auto& paramName, const auto& suffix)
+    auto initRotaryControl = [&apvts = this->apvts](auto& rotaryControl, const auto& paramName, const auto& suffix, const auto& title)
     {
         auto param = apvts.getParameter(paramName);
         jassert( param != nullptr );
         
-        rotaryControl = std::make_unique<RotaryControl>(*param, suffix);
+        rotaryControl = std::make_unique<RotaryControl>(*param, suffix, title);
     };
     
-    initRotaryControl(attackRotary,     Params::getAttackParamName(0),    "ms");
-    initRotaryControl(releaseRotary,    Params::getReleaseParamName(0),   "ms");
-    initRotaryControl(thresholdRotary,  Params::getThresholdParamName(0), "dB");
-    initRotaryControl(makeupGainRotary, Params::getGainParamName(0),      "dB");
-    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "db/Sec");
+    initRotaryControl(attackRotary,     Params::getAttackParamName(0),    "ms",     "ATTACK");
+    initRotaryControl(releaseRotary,    Params::getReleaseParamName(0),   "ms",     "RELEASE");
+    initRotaryControl(thresholdRotary,  Params::getThresholdParamName(0), "dB",     "THRESHOLD");
+    initRotaryControl(makeupGainRotary, Params::getGainParamName(0),      "dB",     "GAIN");
+    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "db/Sec", "RATIO");
     
     attackAttachment     = std::make_unique<Attachment>(apvts, Params::getAttackParamName(0),    *attackRotary);
     releaseAttachment    = std::make_unique<Attachment>(apvts, Params::getReleaseParamName(0),   *releaseRotary);
@@ -67,23 +67,16 @@ void CompressorBandControl::paint(juce::Graphics& g)
 
 void CompressorBandControl::resized()
 {
+    auto bounds = getLocalBounds();
+    auto rotaryBounds = bounds.withWidth(bounds.getWidth() * 0.9);
+
+    // Rotaries
     juce::Grid grid;
     
     using Track = juce::Grid::TrackInfo;
     using Fr = juce::Grid::Fr;
     
-    auto rotaryFr = 3;
-    
-    grid.templateColumns =
-    {
-        Track(Fr(rotaryFr)),
-        Track(Fr(rotaryFr)),
-        Track(Fr(rotaryFr)),
-        Track(Fr(rotaryFr)),
-        Track(Fr(rotaryFr)),
-        Track(Fr(1))
-    };
-    
+    grid.templateColumns = { Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)), Track(Fr(1)) };
     grid.autoRows = Track(Fr(1));
     
     grid.items =
@@ -92,11 +85,17 @@ void CompressorBandControl::resized()
         juce::GridItem(*releaseRotary),
         juce::GridItem(*thresholdRotary),
         juce::GridItem(*makeupGainRotary),
-        juce::GridItem(*ratioRotary),
-        juce::GridItem(resetButton)
+        juce::GridItem(*ratioRotary)
     };
     
-    grid.performLayout(getLocalBounds());
+    grid.performLayout(rotaryBounds);
+    
+    // Button
+    auto buttonSize = bounds.getWidth() * 0.07;
+    resetButton.setBounds(bounds.getRight() - buttonSize - 5,
+                          bounds.getCentreY() - (buttonSize * 0.5),
+                          buttonSize,
+                          buttonSize);
 }
 /*
 void CompressorBandControl::initRotarySettings(juce::Slider& rotaryControl,
