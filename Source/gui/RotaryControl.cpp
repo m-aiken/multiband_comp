@@ -56,7 +56,7 @@ void RotaryControl::paint(juce::Graphics& g)
                                       endAngle,                 // end angle
                                       *this);                   // slider
     
-    auto centre = rotaryBounds.toFloat().getCentre();
+    auto center = rotaryBounds.toFloat().getCentre();
     auto radius = rotaryBounds.getWidth() * 0.5f;
     
     g.setFont(getTextHeight());
@@ -68,7 +68,7 @@ void RotaryControl::paint(juce::Graphics& g)
         jassert(pos <= 1.f);
         
         auto angle = juce::jmap<float>(pos, 0.1, 1.f, startAngle, endAngle);
-        auto c = centre.getPointOnCircumference(radius + getTextHeight() * 0.5f + 1, angle);
+        auto c = center.getPointOnCircumference(radius + getTextHeight() * 0.5f + 1, angle);
         
         juce::Rectangle<float> r;
         auto str = labels[i].label;
@@ -76,7 +76,10 @@ void RotaryControl::paint(juce::Graphics& g)
         r.setCentre(c);
         r.setY(r.getY() + getTextHeight());
         
-        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+        // test for position
+        g.fillRect(r);
+        
+//        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
     }
 }
 

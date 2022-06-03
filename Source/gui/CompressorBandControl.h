@@ -27,13 +27,6 @@ private:
 //==============================================================================
 struct CompressorBandControl : juce::Component
 {
-    /*
-     Attack, Release, Threshold, Ratio sliders
-     Meters
-     
-     use same LNF from SimpleEQ for rotary sliders.
-     */
-    
     CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts);
     
     void paint(juce::Graphics& g) override;
@@ -44,8 +37,8 @@ struct CompressorBandControl : juce::Component
     void resetParamsToDefault();
 private:
     juce::AudioProcessorValueTreeState& apvts;
+    
     std::unique_ptr<RotaryControl> attackRotary, releaseRotary, thresholdRotary, makeupGainRotary, ratioRotary;
-    Button resetButton {"R"};
     
     using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     std::unique_ptr<Attachment> attackAttachment,
@@ -53,4 +46,6 @@ private:
                                 thresholdAttachment,
                                 makeupGainAttachment,
                                 ratioAttachment;
+    
+    Button resetButton {"R"};
 };
