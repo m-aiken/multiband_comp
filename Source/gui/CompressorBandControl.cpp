@@ -43,13 +43,15 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     initRotaryControl(releaseRotary,    Params::getReleaseParamName(0),   "ms",     "RELEASE");
     initRotaryControl(thresholdRotary,  Params::getThresholdParamName(0), "dB",     "THRESHOLD");
     initRotaryControl(makeupGainRotary, Params::getGainParamName(0),      "dB",     "GAIN");
-    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "db/Sec", "RATIO");
+    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "dB/S",   "RATIO");
     
     attackAttachment     = std::make_unique<Attachment>(apvts, Params::getAttackParamName(0),    *attackRotary);
     releaseAttachment    = std::make_unique<Attachment>(apvts, Params::getReleaseParamName(0),   *releaseRotary);
     thresholdAttachment  = std::make_unique<Attachment>(apvts, Params::getThresholdParamName(0), *thresholdRotary);
     makeupGainAttachment = std::make_unique<Attachment>(apvts, Params::getGainParamName(0),      *makeupGainRotary);
     ratioAttachment      = std::make_unique<Attachment>(apvts, Params::getRatioParamName(0),     *ratioRotary);
+    
+    resetButton.onClick = [this]() { resetParamsToDefault(); };
     
     addAndMakeVisible(*attackRotary);
     addAndMakeVisible(*releaseRotary);
@@ -91,18 +93,33 @@ void CompressorBandControl::resized()
     grid.performLayout(rotaryBounds);
     
     // Button
-    auto buttonSize = bounds.getWidth() * 0.07;
+    auto buttonSize = bounds.getWidth() * 0.06;
     resetButton.setBounds(bounds.getRight() - buttonSize - 5,
                           bounds.getCentreY() - (buttonSize * 0.5),
                           buttonSize,
                           buttonSize);
 }
-/*
-void CompressorBandControl::initRotarySettings(juce::Slider& rotaryControl,
-                                               const double& rangeStart,
-                                               const double& rangeEnd,
-                                               const double& defaultValue)
+
+void CompressorBandControl::resetHelper(const juce::String& paramName)
 {
+    auto param = apvts.getParameter(paramName);
+    jassert( param != nullptr );
     
+    resetHelper(param, param->getDefaultValue());
 }
-*/
+
+void CompressorBandControl::resetHelper(juce::RangedAudioParameter* param, const float& newValue)
+{
+    param->beginChangeGesture();
+    param->setValueNotifyingHost(newValue);
+    param->endChangeGesture();
+}
+
+void CompressorBandControl::resetParamsToDefault()
+{
+    resetHelper(Params::getAttackParamName(0));
+    resetHelper(Params::getReleaseParamName(0));
+    resetHelper(Params::getThresholdParamName(0));
+    resetHelper(Params::getGainParamName(0));
+    resetHelper(Params::getRatioParamName(0));
+}

@@ -38,11 +38,13 @@ struct CompressorBandControl : juce::Component
     
     void paint(juce::Graphics& g) override;
     void resized() override;
-    //void initRotarySettings(juce::Slider& rotaryControl, const double& rangeStart, const double& rangeEnd, const double& defaultValue);
+    
+    void resetHelper(const juce::String& paramName);
+    void resetHelper(juce::RangedAudioParameter* param, const float& newValue);
+    void resetParamsToDefault();
 private:
     juce::AudioProcessorValueTreeState& apvts;
     std::unique_ptr<RotaryControl> attackRotary, releaseRotary, thresholdRotary, makeupGainRotary, ratioRotary;
-//    juce::TextButton resetButton {"R"};
     Button resetButton {"R"};
     
     using Attachment = juce::AudioProcessorValueTreeState::SliderAttachment;
