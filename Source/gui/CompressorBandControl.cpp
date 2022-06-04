@@ -21,10 +21,10 @@ Button::Button(const juce::String& buttonText)
 void Button::paint(juce::Graphics& g)
 {
     getLookAndFeel().drawButtonBackground(g,
-                                          *this,                   // button
-                                          juce::Colours::darkgrey, // colour
-                                          true,                    // draw as highlighted
-                                          false);                  // draw as down
+                                          *this,              // button
+                                          juce::Colours::red, // colour
+                                          true,               // draw as highlighted
+                                          false);             // draw as down
 }
 
 //==============================================================================
@@ -64,7 +64,8 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
 
 void CompressorBandControl::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colours::yellow);
+    g.setColour(juce::Colours::black);
+    g.drawRect(getLocalBounds());
 }
 
 void CompressorBandControl::resized()

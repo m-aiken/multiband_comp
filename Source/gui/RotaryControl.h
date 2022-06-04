@@ -27,9 +27,11 @@ struct RotaryControl : juce::Slider
     
     juce::Array<LabelPos> labels;
     
+    void setLabels();
     void paint(juce::Graphics& g) override;
     juce::Rectangle<int> getRotaryBounds() const;
     int getTextHeight() const { return 13; }
+    juce::String getDisplayString() const;
 private:
     LookAndFeel lnf;
     juce::RangedAudioParameter* param;

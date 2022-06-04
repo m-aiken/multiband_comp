@@ -17,13 +17,25 @@ RotaryControl::RotaryControl(juce::RangedAudioParameter& rap, const juce::String
       suffix(unitSuffix)
 {
     setLookAndFeel(&lnf);
-    
-    labels.clear();
-    auto range = param->getNormalisableRange();
-    labels.add({0.f, juce::String(range.start) + suffix});
-    labels.add({1.f, juce::String(range.end) + suffix});
-
+    setLabels();
     setName(title);
+}
+
+void RotaryControl::setLabels()
+{
+    labels.clear();
+    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
+    {
+        auto choices = choiceParam->choices;
+        labels.add({0.f, choices[0]});
+        labels.add({1.f, choices[choices.size() - 1]});
+    }
+    else
+    {
+        auto range = param->getNormalisableRange();
+        labels.add({0.f, juce::String(range.start) + suffix});
+        labels.add({1.f, juce::String(range.end) + suffix});
+    }
 }
 
 void RotaryControl::paint(juce::Graphics& g)
@@ -61,8 +73,17 @@ void RotaryControl::paint(juce::Graphics& g)
     auto radius = rotaryBounds.getWidth() * 0.5f;
     
     g.setFont(getTextHeight());
-    g.setColour(juce::Colours::black);
     
+    // current value string
+    g.setColour(juce::Colours::white);
+    juce::Rectangle<float> r;
+    auto str = getDisplayString();
+    r.setSize(g.getCurrentFont().getStringWidth(str), getTextHeight());
+    r.setCentre(center);
+    g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+    
+    // value range labels
+    g.setColour(juce::Colours::black);
     for ( auto i = 0; i < labels.size(); ++i )
     {
         auto pos = labels[i].pos;
@@ -79,10 +100,6 @@ void RotaryControl::paint(juce::Graphics& g)
         r.setY(r.getY() + getTextHeight());
         
         g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
-        
-//        auto cY = c.getY();
-//        DBG(juce::String(cY));
-        
     }
 }
 
@@ -100,4 +117,22 @@ juce::Rectangle<int> RotaryControl::getRotaryBounds() const
     r.setY(bounds.getCentreY() - (size * 0.5));
 
     return r;
+}
+
+juce::String RotaryControl::getDisplayString() const
+{
+    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
+        return choiceParam->getCurrentChoiceName();
+
+    juce::String str;
+
+    if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+        str = juce::String(getValue());
+    else
+        jassertfalse;
+
+    if (suffix.isNotEmpty())
+        str << suffix;
+
+    return str;
 }
