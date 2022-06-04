@@ -15,6 +15,11 @@
 //==============================================================================
 namespace Globals
 {
+
 inline float getMaxDecibels() { return 18.f; }
 inline float getNegativeInf() { return -96.f; }
+
+inline int getMinBandNum() { return 0; }
+inline int getMaxBandNum() { return 7; }
+
 }

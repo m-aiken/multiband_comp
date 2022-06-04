@@ -5,20 +5,30 @@
               companyName="Matt Aiken" pluginChannelConfigs="{2,2}">
   <MAINGROUP id="vfcIbR" name="PFMProject12">
     <GROUP id="{B4CA764E-9214-1D1F-FDB0-0EE7E29659E4}" name="Source">
+      <FILE id="dQ6P3S" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <GROUP id="{9CD76FE6-CB69-6BBE-D6B6-6425BB5F5AEC}" name="dsp">
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
         <FILE id="rkLDHs" name="Averager.h" compile="0" resource="0" file="Source/gui/Averager.h"/>
+        <FILE id="y0WrKJ" name="CompressorBandControl.cpp" compile="1" resource="0"
+              file="Source/gui/CompressorBandControl.cpp"/>
+        <FILE id="WAbBe4" name="CompressorBandControl.h" compile="0" resource="0"
+              file="Source/gui/CompressorBandControl.h"/>
         <FILE id="P83VL0" name="DbScale.cpp" compile="1" resource="0" file="Source/gui/DbScale.cpp"/>
         <FILE id="grVZpO" name="DbScale.h" compile="0" resource="0" file="Source/gui/DbScale.h"/>
         <FILE id="r1dAGr" name="DecayingValueHolder.cpp" compile="1" resource="0"
               file="Source/gui/DecayingValueHolder.cpp"/>
         <FILE id="QtTURD" name="DecayingValueHolder.h" compile="0" resource="0"
               file="Source/gui/DecayingValueHolder.h"/>
+        <FILE id="JVh3Jb" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/gui/LookAndFeel.cpp"/>
+        <FILE id="PwgqbI" name="LookAndFeel.h" compile="0" resource="0" file="Source/gui/LookAndFeel.h"/>
         <FILE id="zjFcv9" name="Meter.cpp" compile="1" resource="0" file="Source/gui/Meter.cpp"/>
         <FILE id="SFUV7e" name="Meter.h" compile="0" resource="0" file="Source/gui/Meter.h"/>
+        <FILE id="hILXBf" name="RotaryControl.cpp" compile="1" resource="0"
+              file="Source/gui/RotaryControl.cpp"/>
+        <FILE id="KMguSl" name="RotaryControl.h" compile="0" resource="0" file="Source/gui/RotaryControl.h"/>
         <FILE id="nFKcIz" name="StereoMeter.cpp" compile="1" resource="0" file="Source/gui/StereoMeter.cpp"/>
         <FILE id="THZpvE" name="StereoMeter.h" compile="0" resource="0" file="Source/gui/StereoMeter.h"/>
       </GROUP>

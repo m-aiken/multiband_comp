@@ -15,6 +15,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
 {
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
+    addAndMakeVisible(bandControls);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(800, 600);
@@ -37,7 +38,7 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 void PFMProject12AudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
-    auto padding = bounds.getWidth() / 40;
+    auto padding = bounds.getWidth() / 50;
 
     auto stereoMeterWidth = padding * 4;
     
@@ -57,10 +58,16 @@ void PFMProject12AudioProcessorEditor::resized()
                             stereoMeterWidth,
                             JUCE_LIVE_CONSTANT(bounds.getHeight() * 0.8));
 #endif
+    
+    auto bandControlsHeight = 120;
+    bandControls.setBounds(inStereoMeter.getRight() + padding,
+                           inStereoMeter.getBottom() - bandControlsHeight - padding,
+                           outStereoMeter.getX() - inStereoMeter.getRight() - (padding * 2),
+                           bandControlsHeight);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
 {
-    handleMeterFifo<Fifo<MeterValues, 20>>(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
-    handleMeterFifo<Fifo<MeterValues, 20>>(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
+    handleMeterFifo(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
+    handleMeterFifo(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
 }
