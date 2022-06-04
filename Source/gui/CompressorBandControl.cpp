@@ -12,22 +12,6 @@
 #include "../Params.h"
 
 //==============================================================================
-Button::Button(const juce::String& buttonText)
-{
-    setLookAndFeel(&lnf);
-    setButtonText(buttonText);
-}
-
-void Button::paint(juce::Graphics& g)
-{
-    getLookAndFeel().drawButtonBackground(g,
-                                          *this,              // button
-                                          juce::Colours::red, // colour
-                                          true,               // draw as highlighted
-                                          false);             // draw as down
-}
-
-//==============================================================================
 CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts)
     : apvts(_apvts)
 {
@@ -51,6 +35,8 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     makeupGainAttachment = std::make_unique<Attachment>(apvts, Params::getGainParamName(0),      *makeupGainRotary);
     ratioAttachment      = std::make_unique<Attachment>(apvts, Params::getRatioParamName(0),     *ratioRotary);
     
+    resetButton.setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::red);
+    resetButton.setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
     resetButton.onClick = [this]() { resetParamsToDefault(); };
     
     addAndMakeVisible(*attackRotary);

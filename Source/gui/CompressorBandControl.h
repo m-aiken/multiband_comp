@@ -15,16 +15,6 @@
 #include "LookAndFeel.h"
 
 //==============================================================================
-struct Button : juce::TextButton
-{
-    Button(const juce::String& buttonText);
-    ~Button() { setLookAndFeel(nullptr); }
-    void paint(juce::Graphics& g) override;
-private:
-    LookAndFeel lnf;
-};
-
-//==============================================================================
 struct CompressorBandControl : juce::Component
 {
     CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts);
@@ -47,5 +37,5 @@ private:
                                 makeupGainAttachment,
                                 ratioAttachment;
     
-    Button resetButton {"R"};
+    juce::TextButton resetButton {"R"};
 };
