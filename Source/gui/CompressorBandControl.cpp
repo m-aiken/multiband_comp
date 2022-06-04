@@ -43,7 +43,7 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     initRotaryControl(releaseRotary,    Params::getReleaseParamName(0),   "ms",     "RELEASE");
     initRotaryControl(thresholdRotary,  Params::getThresholdParamName(0), "dB",     "THRESHOLD");
     initRotaryControl(makeupGainRotary, Params::getGainParamName(0),      "dB",     "GAIN");
-    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "dB/S",   "RATIO");
+    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "",       "RATIO");
     
     attackAttachment     = std::make_unique<Attachment>(apvts, Params::getAttackParamName(0),    *attackRotary);
     releaseAttachment    = std::make_unique<Attachment>(apvts, Params::getReleaseParamName(0),   *releaseRotary);

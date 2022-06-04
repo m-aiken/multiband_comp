@@ -22,7 +22,7 @@ RotaryControl::RotaryControl(juce::RangedAudioParameter& rap, const juce::String
     auto range = param->getNormalisableRange();
     labels.add({0.f, juce::String(range.start) + suffix});
     labels.add({1.f, juce::String(range.end) + suffix});
-    
+
     setName(title);
 }
 
@@ -30,7 +30,8 @@ void RotaryControl::paint(juce::Graphics& g)
 {
     auto startAngle = juce::degreesToRadians(180.f + 45.f);
     auto endAngle = juce::degreesToRadians(180.f - 45.f) + juce::MathConstants<float>::twoPi;
-    auto range = getRange();
+
+    auto range = param->getNormalisableRange();
     auto bounds = getLocalBounds();
     
     g.setColour(juce::Colours::black);
@@ -40,8 +41,8 @@ void RotaryControl::paint(juce::Graphics& g)
                      1);
     
     auto valueToDraw = juce::jmap<float>(getValue(),
-                                         range.getStart(),
-                                         range.getEnd(),
+                                         range.start,
+                                         range.end,
                                          startAngle,
                                          endAngle);
     
@@ -61,13 +62,14 @@ void RotaryControl::paint(juce::Graphics& g)
     
     g.setFont(getTextHeight());
     g.setColour(juce::Colours::black);
+    
     for ( auto i = 0; i < labels.size(); ++i )
     {
         auto pos = labels[i].pos;
         jassert(0.f <= pos);
         jassert(pos <= 1.f);
         
-        auto angle = juce::jmap<float>(pos, 0.1, 1.f, startAngle, endAngle);
+        auto angle = juce::jmap<float>(pos, 0.f, 1.f, startAngle, endAngle);
         auto c = center.getPointOnCircumference(radius + getTextHeight() * 0.5f + 1, angle);
         
         juce::Rectangle<float> r;
@@ -76,10 +78,11 @@ void RotaryControl::paint(juce::Graphics& g)
         r.setCentre(c);
         r.setY(r.getY() + getTextHeight());
         
-        // test for position
-        g.fillRect(r);
+        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
         
-//        g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
+//        auto cY = c.getY();
+//        DBG(juce::String(cY));
+        
     }
 }
 
