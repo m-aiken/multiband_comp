@@ -17,59 +17,34 @@
 namespace Params
 {
 
-inline juce::String getAttackParamName(int bandNum)
+enum class BandControl
 {
-    juce::String str;
-    str << "Band " << bandNum << " Attack";
-    return str;
-}
+    Attack,
+    Release,
+    Threshold,
+    Gain,
+    Ratio,
+    Bypass,
+    Solo,
+    Mute
+};
 
-inline juce::String getReleaseParamName(int bandNum)
+static std::map<BandControl, juce::String> bandControlMap =
 {
-    juce::String str;
-    str << "Band " << bandNum << " Release";
-    return str;
-}
+    { BandControl::Attack,    "Attack" },
+    { BandControl::Release,   "Release" },
+    { BandControl::Threshold, "Threshold" },
+    { BandControl::Gain,      "Gain" },
+    { BandControl::Ratio,     "Ratio" },
+    { BandControl::Bypass,    "Bypass" },
+    { BandControl::Solo,      "Solo" },
+    { BandControl::Mute,      "Mute" }
+};
 
-inline juce::String getThresholdParamName(int bandNum)
+inline juce::String getBandControlParamName(BandControl bandControl, const int& bandNum)
 {
     juce::String str;
-    str << "Band " << bandNum << " Threshold";
-    return str;
-}
-
-inline juce::String getGainParamName(int bandNum)
-{
-    juce::String str;
-    str << "Band " << bandNum << " Gain";
-    return str;
-}
-
-inline juce::String getRatioParamName(int bandNum)
-{
-    juce::String str;
-    str << "Band " << bandNum << " Ratio";
-    return str;
-}
-
-inline juce::String getBypassParamName(int bandNum)
-{
-    juce::String str;
-    str << "Band " << bandNum << " Bypass";
-    return str;
-}
-
-inline juce::String getSoloParamName(int bandNum)
-{
-    juce::String str;
-    str << "Band " << bandNum << " Solo";
-    return str;
-}
-
-inline juce::String getMuteParamName(int bandNum)
-{
-    juce::String str;
-    str << "Band " << bandNum << " Mute";
+    str << "Band " << bandNum << " " << bandControlMap.at(bandControl);
     return str;
 }
 

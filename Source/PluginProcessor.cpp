@@ -154,14 +154,14 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     
     for ( auto i = 0; i < compressors.size(); ++i )
     {
-        assignFloatParam  (compressors[i].attack,     Params::getAttackParamName    (i));
-        assignFloatParam  (compressors[i].release,    Params::getReleaseParamName   (i));
-        assignFloatParam  (compressors[i].threshold,  Params::getThresholdParamName (i));
-        assignFloatParam  (compressors[i].makeupGain, Params::getGainParamName      (i));
-        assignChoiceParam (compressors[i].ratio,      Params::getRatioParamName     (i));
-        assignBoolParam   (compressors[i].bypassed,   Params::getBypassParamName    (i));
-        assignBoolParam   (compressors[i].solo,       Params::getSoloParamName      (i));
-        assignBoolParam   (compressors[i].mute,       Params::getMuteParamName      (i));
+        assignFloatParam  (compressors[i].attack,     Params::getBandControlParamName(Params::BandControl::Attack, i));
+        assignFloatParam  (compressors[i].release,    Params::getBandControlParamName(Params::BandControl::Release, i));
+        assignFloatParam  (compressors[i].threshold,  Params::getBandControlParamName(Params::BandControl::Threshold, i));
+        assignFloatParam  (compressors[i].makeupGain, Params::getBandControlParamName(Params::BandControl::Gain, i));
+        assignChoiceParam (compressors[i].ratio,      Params::getBandControlParamName(Params::BandControl::Ratio, i));
+        assignBoolParam   (compressors[i].bypassed,   Params::getBandControlParamName(Params::BandControl::Bypass, i));
+        assignBoolParam   (compressors[i].solo,       Params::getBandControlParamName(Params::BandControl::Solo, i));
+        assignBoolParam   (compressors[i].mute,       Params::getBandControlParamName(Params::BandControl::Mute, i));
     }
     
     assignChoiceParam(numBands, "NumBands");
@@ -645,41 +645,41 @@ void PFMProject12AudioProcessor::addBandControls(juce::AudioProcessorValueTreeSt
     }
     
     //==============================================================================
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getAttackParamName(bandNum),
-                                                           Params::getAttackParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getBandControlParamName(Params::BandControl::Attack, bandNum),
+                                                           Params::getBandControlParamName(Params::BandControl::Attack, bandNum),
                                                            attackRange,
                                                            50.f));
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getReleaseParamName(bandNum),
-                                                           Params::getReleaseParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getBandControlParamName(Params::BandControl::Release, bandNum),
+                                                           Params::getBandControlParamName(Params::BandControl::Release, bandNum),
                                                            releaseRange,
                                                            250.f));
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getThresholdParamName(bandNum),
-                                                           Params::getThresholdParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getBandControlParamName(Params::BandControl::Threshold, bandNum),
+                                                           Params::getBandControlParamName(Params::BandControl::Threshold, bandNum),
                                                            thresholdRange,
                                                            0.f));
     
-    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getGainParamName(bandNum),
-                                                           Params::getGainParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterFloat>(Params::getBandControlParamName(Params::BandControl::Gain, bandNum),
+                                                           Params::getBandControlParamName(Params::BandControl::Gain, bandNum),
                                                            makeupGainRange,
                                                            0.f));
     
-    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getRatioParamName(bandNum),
-                                                            Params::getRatioParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterChoice>(Params::getBandControlParamName(Params::BandControl::Ratio, bandNum),
+                                                            Params::getBandControlParamName(Params::BandControl::Ratio, bandNum),
                                                             choicesStringArray,
                                                             2)); // 3:1 ratio set as default
     
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBypassParamName(bandNum),
-                                                          Params::getBypassParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBandControlParamName(Params::BandControl::Bypass, bandNum),
+                                                          Params::getBandControlParamName(Params::BandControl::Bypass, bandNum),
                                                           false));
     
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getSoloParamName(bandNum),
-                                                          Params::getSoloParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBandControlParamName(Params::BandControl::Solo, bandNum),
+                                                          Params::getBandControlParamName(Params::BandControl::Solo, bandNum),
                                                           false));
     
-    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getMuteParamName(bandNum),
-                                                          Params::getMuteParamName(bandNum),
+    layout.add(std::make_unique<juce::AudioParameterBool>(Params::getBandControlParamName(Params::BandControl::Mute, bandNum),
+                                                          Params::getBandControlParamName(Params::BandControl::Mute, bandNum),
                                                           false));
 }
 

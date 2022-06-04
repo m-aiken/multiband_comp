@@ -15,25 +15,25 @@
 CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts)
     : apvts(_apvts)
 {
-    auto initRotaryControl = [&apvts = this->apvts](auto& rotaryControl, const auto& paramName, const auto& suffix, const auto& title)
+    auto initRotaryControl = [&apvts = this->apvts](auto& rotaryControl, const auto& paramName, const auto& suffix, const auto& bandNum)
     {
-        auto param = apvts.getParameter(paramName);
+        auto param = apvts.getParameter(Params::getBandControlParamName(paramName, bandNum));
         jassert( param != nullptr );
         
-        rotaryControl = std::make_unique<RotaryControl>(*param, suffix, title);
+        rotaryControl = std::make_unique<RotaryControl>(*param, suffix, Params::bandControlMap.at(paramName));
     };
     
-    initRotaryControl(attackRotary,     Params::getAttackParamName(0),    "ms",     "ATTACK");
-    initRotaryControl(releaseRotary,    Params::getReleaseParamName(0),   "ms",     "RELEASE");
-    initRotaryControl(thresholdRotary,  Params::getThresholdParamName(0), "dB",     "THRESHOLD");
-    initRotaryControl(makeupGainRotary, Params::getGainParamName(0),      "dB",     "GAIN");
-    initRotaryControl(ratioRotary,      Params::getRatioParamName(0),     "",       "RATIO");
+    initRotaryControl(attackRotary,     Params::BandControl::Attack,    "ms", 0);
+    initRotaryControl(releaseRotary,    Params::BandControl::Release,   "ms", 0);
+    initRotaryControl(thresholdRotary,  Params::BandControl::Threshold, "dB", 0);
+    initRotaryControl(makeupGainRotary, Params::BandControl::Gain,      "dB", 0);
+    initRotaryControl(ratioRotary,      Params::BandControl::Ratio,     "",   0);
     
-    attackAttachment     = std::make_unique<Attachment>(apvts, Params::getAttackParamName(0),    *attackRotary);
-    releaseAttachment    = std::make_unique<Attachment>(apvts, Params::getReleaseParamName(0),   *releaseRotary);
-    thresholdAttachment  = std::make_unique<Attachment>(apvts, Params::getThresholdParamName(0), *thresholdRotary);
-    makeupGainAttachment = std::make_unique<Attachment>(apvts, Params::getGainParamName(0),      *makeupGainRotary);
-    ratioAttachment      = std::make_unique<Attachment>(apvts, Params::getRatioParamName(0),     *ratioRotary);
+    attackAttachment     = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Attack, 0),    *attackRotary);
+    releaseAttachment    = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Release, 0),   *releaseRotary);
+    thresholdAttachment  = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Threshold, 0), *thresholdRotary);
+    makeupGainAttachment = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Gain, 0),      *makeupGainRotary);
+    ratioAttachment      = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Ratio, 0),     *ratioRotary);
     
     resetButton.setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::red);
     resetButton.setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
@@ -104,9 +104,9 @@ void CompressorBandControl::resetHelper(juce::RangedAudioParameter* param, const
 
 void CompressorBandControl::resetParamsToDefault()
 {
-    resetHelper(Params::getAttackParamName(0));
-    resetHelper(Params::getReleaseParamName(0));
-    resetHelper(Params::getThresholdParamName(0));
-    resetHelper(Params::getGainParamName(0));
-    resetHelper(Params::getRatioParamName(0));
+    resetHelper(Params::getBandControlParamName(Params::BandControl::Attack, 0));
+    resetHelper(Params::getBandControlParamName(Params::BandControl::Release, 0));
+    resetHelper(Params::getBandControlParamName(Params::BandControl::Threshold, 0));
+    resetHelper(Params::getBandControlParamName(Params::BandControl::Gain, 0));
+    resetHelper(Params::getBandControlParamName(Params::BandControl::Ratio, 0));
 }
