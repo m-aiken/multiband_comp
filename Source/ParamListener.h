@@ -16,8 +16,8 @@
 template<typename T>
 struct ParamListener : juce::Timer
 {
-    ParamListener(juce::RangedAudioParameter& rap, std::function<void()>& lambda)
-    : param(&rap), handleValueChanged(lambda)
+    ParamListener(juce::RangedAudioParameter& rap, std::function<void()>& valueChangedHandler)
+    : param(&rap), handleValueChanged(valueChangedHandler)
     {
         jassert(param != nullptr);
         jassert(handleValueChanged != nullptr);
