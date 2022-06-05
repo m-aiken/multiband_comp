@@ -747,6 +747,7 @@ private:
     juce::AudioParameterChoice* processingMode { nullptr };
     juce::AudioParameterFloat* gainIn { nullptr };
     juce::AudioParameterFloat* gainOut { nullptr };
+    juce::AudioParameterInt* selectedBand { nullptr };
     
     juce::dsp::Gain<float> inputGain, outputGain;
     
