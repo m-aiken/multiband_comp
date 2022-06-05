@@ -37,10 +37,8 @@ struct ParamListener : juce::Timer
         if ( newValue != paramValue )
         {
             paramValue = newValue;
-            
-            auto paramRange = param->getNormalisableRange();
-            auto newValueDenormalized = juce::jmap<T>(newValue, 0, 1, paramRange.start, paramRange.end);
-            handleValueChanged(newValueDenormalized);
+
+            handleValueChanged(param->convertFrom0to1(paramValue));
         }
     }
     
