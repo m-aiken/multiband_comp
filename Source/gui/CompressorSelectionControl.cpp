@@ -39,21 +39,20 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     selectParamListener = std::make_unique<ParamListener<float>>(*selectedParam, selectedBandListenerLambda);
     
     selectButton.setButtonText(juce::String(bandNum + 1));
-    /*
-    auto initSoloMuteBypassButton = [this](const auto& button, const auto& listener, const auto& bandControl, const auto& buttonText)
+    
+    auto initSoloMuteBypassButton = [this](auto& button, auto& listener, const auto& bandControl, const auto& buttonText)
     {
         auto param = apvts.getParameter(Params::getBandControlParamName(bandControl, bandNum));
         jassert( param != nullptr );
         button.setButtonText(buttonText);
-        auto buttonPtr = &button;
-        button.onClick = [this](){ updateEnablements(buttonPtr); };
+        button.onClick = [this, &button](){ updateEnablements(&button); };
         listener = std::make_unique<ParamListener<float>>(*param, [this](){ updateButtonStates(); });
     };
     
     initSoloMuteBypassButton(soloButton, soloParamListener, Params::BandControl::Solo, "S");
     initSoloMuteBypassButton(muteButton, muteParamListener, Params::BandControl::Mute, "M");
     initSoloMuteBypassButton(bypassButton, bypassParamListener, Params::BandControl::Bypass, "X");
-    */
+    
 }
 
 void CompressorSelectionControl::resized()
