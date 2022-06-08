@@ -16,12 +16,13 @@
 //==============================================================================
 struct CompressorSelectionControl : juce::Component
 {
-    CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, int bandNum);
+    CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, int _bandNum);
     
     void resized() override;
     void setAsSelected(bool shouldBeSelected);
 private:
     juce::AudioProcessorValueTreeState& apvts;
+    int bandNum;
     bool callbackBlocker { false };
     
     void resetSelectButtonToDefaultColors();
@@ -35,10 +36,12 @@ private:
     juce::TextButton soloButton, muteButton, bypassButton, selectButton;
     
     using Attachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
-    std::unique_ptr<Attachment> soloAttachment, muteAttachment, bypassAttachment;
+    std::unique_ptr<Attachment> soloAttachment,
+                                muteAttachment,
+                                bypassAttachment;
     
-    std::unique_ptr<ParamListener<juce::TextButton>> soloParamListener,
-                                                     muteParamListener,
-                                                     bypassParamListener,
-                                                     selectParamListener;
+    std::unique_ptr<ParamListener<float>> soloParamListener,
+                                          muteParamListener,
+                                          bypassParamListener,
+                                          selectParamListener;
 };
