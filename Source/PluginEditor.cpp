@@ -16,6 +16,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
     addAndMakeVisible(bandControls);
+    addAndMakeVisible(compSelectionControls);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(800, 600);
@@ -64,6 +65,11 @@ void PFMProject12AudioProcessorEditor::resized()
                            inStereoMeter.getBottom() - bandControlsHeight - padding,
                            outStereoMeter.getX() - inStereoMeter.getRight() - (padding * 2),
                            bandControlsHeight);
+    
+    compSelectionControls.setBounds(bandControls.getX(),
+                                    bandControls.getY() - bandControlsHeight - 2,
+                                    bandControls.getWidth() / 7,
+                                    bandControlsHeight);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
