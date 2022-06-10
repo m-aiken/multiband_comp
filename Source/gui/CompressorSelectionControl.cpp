@@ -54,6 +54,10 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     initSoloMuteBypassButton(muteButton, muteParamListener, Params::BandControl::Mute, "M");
     initSoloMuteBypassButton(bypassButton, bypassParamListener, Params::BandControl::Bypass, "X");
     
+    setColors(soloButton, juce::Colours::green, juce::Colours::black);
+    setColors(muteButton, juce::Colours::yellow, juce::Colours::black);
+    setColors(bypassButton, juce::Colours::red, juce::Colours::black);
+    
     addAndMakeVisible(soloButton);
     addAndMakeVisible(muteButton);
     addAndMakeVisible(bypassButton);
@@ -99,7 +103,7 @@ void CompressorSelectionControl::resized()
 
 void CompressorSelectionControl::setAsSelected(bool shouldBeSelected)
 {
-    
+    selectButton.setToggleState(shouldBeSelected, juce::NotificationType::dontSendNotification);
 }
 
 void CompressorSelectionControl::resetSelectButtonToDefaultColors()
@@ -109,25 +113,73 @@ void CompressorSelectionControl::resetSelectButtonToDefaultColors()
 
 void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor, juce::Colour offColor)
 {
-    
+    comp.setColour(juce::TextButton::ColourIds::buttonOnColourId, fillColor);
+    comp.setColour(juce::TextButton::ColourIds::buttonColourId, offColor);
+    comp.repaint();
 }
 
 void CompressorSelectionControl::setColors(juce::Component& comp, juce::var fillColor, juce::var offColor)
 {
-    
+    auto& properties = comp.getProperties();
+    properties.set("Fill Color", fillColor);
+    properties.set("Off Color", offColor);
+    comp.repaint();
 }
 
 void CompressorSelectionControl::setColors(juce::Component& target, const juce::Component& source)
 {
-    
+    target.setColour(juce::TextButton::ColourIds::buttonOnColourId, source.findColour(juce::TextButton::ColourIds::buttonOnColourId));
+    target.setColour(juce::TextButton::ColourIds::buttonColourId, source.findColour(juce::TextButton::ColourIds::buttonColourId));
+    target.repaint();
 }
 
 void CompressorSelectionControl::updateButtonStates()
 {
-    
+    if ( soloButton.getToggleState() )
+        setColors(selectButton, soloButton);
+    else if ( muteButton.getToggleState() )
+        setColors(selectButton, muteButton);
+    else if ( bypassButton.getToggleState() )
+        setColors(selectButton, muteButton);
+    else
+        resetSelectButtonToDefaultColors();
 }
 
 void CompressorSelectionControl::updateEnablements(juce::Button* clickedButton)
 {
-    
+    if ( callbackBlocker == false )
+    {
+        juce::ScopedValueSetter<bool> svs(callbackBlocker, true);
+        
+        std::map<juce::String, int> buttons = { { "S", 0 }, { "M", 1 }, { "X", 2 } };
+        
+        switch ( buttons[clickedButton->getButtonText()] )
+        {
+            case 0: // Solo
+            {
+                soloButton.setToggleState(true, juce::NotificationType::sendNotification);
+                muteButton.setToggleState(false, juce::NotificationType::sendNotification);
+                bypassButton.setToggleState(false, juce::NotificationType::sendNotification);
+                break;
+            }
+            case 1: // Mute
+            {
+                soloButton.setToggleState(false, juce::NotificationType::sendNotification);
+                muteButton.setToggleState(true, juce::NotificationType::sendNotification);
+                bypassButton.setToggleState(false, juce::NotificationType::sendNotification);
+                break;
+            }
+            case 2: // Bypass
+            {
+                soloButton.setToggleState(false, juce::NotificationType::sendNotification);
+                muteButton.setToggleState(false, juce::NotificationType::sendNotification);
+                bypassButton.setToggleState(true, juce::NotificationType::sendNotification);
+                break;
+            }
+            default:
+                break;
+        }
+        
+        updateButtonStates();
+    }
 }

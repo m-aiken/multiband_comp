@@ -33,7 +33,7 @@ private:
     
     void updateButtonStates();
     void updateEnablements(juce::Button* clickedButton);
-    
+        
     juce::TextButton soloButton, muteButton, bypassButton, selectButton;
     
     using Attachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
