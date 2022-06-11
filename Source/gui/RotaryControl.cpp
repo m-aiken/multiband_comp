@@ -9,6 +9,7 @@
 */
 
 #include "RotaryControl.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
 RotaryControl::RotaryControl(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, const juce::String& title)
@@ -46,7 +47,7 @@ void RotaryControl::paint(juce::Graphics& g)
     auto range = param->getNormalisableRange();
     auto bounds = getLocalBounds();
     
-    g.setColour(juce::Colours::black);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawFittedText(getName(),
                      bounds.removeFromTop(getTextHeight() + 3),
                      juce::Justification::centred,
@@ -75,7 +76,7 @@ void RotaryControl::paint(juce::Graphics& g)
     g.setFont(getTextHeight());
     
     // current value string
-    g.setColour(juce::Colours::white);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     juce::Rectangle<float> r;
     auto str = getDisplayString();
     r.setSize(g.getCurrentFont().getStringWidth(str), getTextHeight());
@@ -83,7 +84,6 @@ void RotaryControl::paint(juce::Graphics& g)
     g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
     
     // value range labels
-    g.setColour(juce::Colours::black);
     for ( auto i = 0; i < labels.size(); ++i )
     {
         auto pos = labels[i].pos;

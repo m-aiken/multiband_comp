@@ -16,7 +16,7 @@
 //==============================================================================
 struct CompressorSelectionControl : juce::Component
 {
-    CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, int _bandNum);
+    CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, const int& _bandNum);
     
     void paint(juce::Graphics& g) override;
     void resized() override;
@@ -27,19 +27,18 @@ private:
     bool callbackBlocker { false };
     
     void resetSelectButtonToDefaultColors();
-    void setColors(juce::Component& comp, juce::Colour fillColor, juce::Colour offColor);
-    void setColors(juce::Component& comp, juce::var fillColor, juce::var offColor);
+    void setColors(juce::Component& comp, juce::Colour fillColor);
     void setColors(juce::Component& target, const juce::Component& source);
     
     void updateButtonStates();
     void updateEnablements(juce::Button* clickedButton);
-        
+    
+    juce::RangedAudioParameter* selectedBandParam; // to stop EXC_BAD_ACCESS
     juce::TextButton soloButton, muteButton, bypassButton, selectButton;
     
-    using Attachment = juce::AudioProcessorValueTreeState::ButtonAttachment;
-    std::unique_ptr<Attachment> soloAttachment,
-                                muteAttachment,
-                                bypassAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> soloAttachment,
+                                                                          muteAttachment,
+                                                                          bypassAttachment;
     
     std::unique_ptr<ParamListener<float>> soloParamListener,
                                           muteParamListener,

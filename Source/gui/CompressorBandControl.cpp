@@ -10,6 +10,7 @@
 
 #include "CompressorBandControl.h"
 #include "../Params.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
 CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts)
@@ -35,8 +36,8 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     makeupGainAttachment = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Gain, 0),      *makeupGainRotary);
     ratioAttachment      = std::make_unique<Attachment>(apvts, Params::getBandControlParamName(Params::BandControl::Ratio, 0),     *ratioRotary);
     
-    resetButton.setColour(juce::TextButton::ColourIds::buttonColourId, juce::Colours::red);
-    resetButton.setColour(juce::TextButton::ColourIds::textColourOffId, juce::Colours::white);
+    resetButton.setColour(juce::TextButton::ColourIds::buttonColourId, ColourPalette::getColour(ColourPalette::Red));
+    resetButton.setColour(juce::TextButton::ColourIds::textColourOffId, ColourPalette::getColour(ColourPalette::Text));
     resetButton.onClick = [this]() { resetParamsToDefault(); };
     
     addAndMakeVisible(*attackRotary);
@@ -50,7 +51,7 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
 
 void CompressorBandControl::paint(juce::Graphics& g)
 {
-    g.setColour(juce::Colours::black);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(getLocalBounds());
 }
 

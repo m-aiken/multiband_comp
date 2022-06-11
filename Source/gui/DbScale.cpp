@@ -10,6 +10,7 @@
 
 #include "DbScale.h"
 #include "../Globals.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
 void DbScale::paint(juce::Graphics& g)
@@ -40,6 +41,8 @@ void DbScale::buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBou
     auto boundsWidth = bounds.getWidth();
     auto textHeight = 12;
     auto meterY = meterBounds.getY();
+    
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     
     for ( auto i = 0; i < ticks.size(); ++i )
     {

@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "ColourPalette.h"
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
@@ -33,7 +34,8 @@ PFMProject12AudioProcessorEditor::~PFMProject12AudioProcessorEditor()
 void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll(juce::Colour(105u, 109u, 125u)); // background
+//    g.fillAll(juce::Colour(105u, 109u, 125u)); // background
+    g.fillAll(ColourPalette::getColour(ColourPalette::Background)); // background
 }
 
 void PFMProject12AudioProcessorEditor::resized()

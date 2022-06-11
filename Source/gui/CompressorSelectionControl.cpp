@@ -10,65 +10,83 @@
 
 #include "CompressorSelectionControl.h"
 #include "../Params.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
-CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, int _bandNum)
+CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, const int& _bandNum)
 : apvts(_apvts), bandNum(_bandNum)
 {
     const auto& params = Params::getParams();
     
     // Select Button
-    auto selectedParam = apvts.getParameter(params.at(Params::Names::Selected_Band));
-    jassert( selectedParam != nullptr );
-    
-    selectButton.onClick = [this, &selectedParam]()
-    {
-        selectedParam->beginChangeGesture();
-        selectedParam->setValueNotifyingHost(selectedParam->convertTo0to1(bandNum));
-        selectedParam->endChangeGesture();
-    };
-    
-    auto selectedBandListenerLambda = [this](const auto& selectedBandNum)
-    {
-        if ( selectedBandNum == bandNum )
-        {
-            selectButton.setToggleState(true, juce::NotificationType::dontSendNotification);
-        }
-    };
-    
-    selectParamListener = std::make_unique<ParamListener<float>>(*selectedParam, selectedBandListenerLambda);
-    
     selectButton.setButtonText(juce::String(bandNum + 1));
+    setColors(selectButton, juce::Colours::skyblue);
+    
+    selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
+    jassert( selectedBandParam != nullptr );
+    
+    selectButton.onClick = [&]()
+    {
+        selectedBandParam->beginChangeGesture();
+        selectedBandParam->setValueNotifyingHost(selectedBandParam->convertTo0to1(bandNum));
+        selectedBandParam->endChangeGesture();
+    };
+    
+    auto selectedBandCallback = [this](const auto& selectedBandNum)
+    {
+        selectButton.setToggleState(selectedBandNum == bandNum, juce::NotificationType::dontSendNotification);
+    };
+    
+    selectParamListener = std::make_unique<ParamListener<float>>(*selectedBandParam, selectedBandCallback);
     
     // Solo, Mute, Bypass Buttons
-    auto initSoloMuteBypassButton = [this](auto& button, auto& listener, const auto& bandControl, const auto& buttonText)
+    auto initSMB_Button = [this](auto& button, auto& attachment, auto& listener, const auto& bandControl, const auto& buttonText, const auto& onColour)
     {
-        auto param = apvts.getParameter(Params::getBandControlParamName(bandControl, bandNum));
+        attachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(apvts, Params::getBandControlParamName(bandControl, bandNum), button);
+        
+        auto param = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(Params::getBandControlParamName(bandControl, bandNum)));
         jassert( param != nullptr );
-        button.setButtonText(buttonText);
+        
         button.onClick = [this, &button](){ updateEnablements(&button); };
+        
         listener = std::make_unique<ParamListener<float>>(*param, [this](const auto& parameterValue){ updateButtonStates(); });
+        
+        button.setButtonText(buttonText);
+        setColors(button, onColour);
     };
     
-    initSoloMuteBypassButton(soloButton, soloParamListener, Params::BandControl::Solo, "S");
-    initSoloMuteBypassButton(muteButton, muteParamListener, Params::BandControl::Mute, "M");
-    initSoloMuteBypassButton(bypassButton, bypassParamListener, Params::BandControl::Bypass, "X");
+    initSMB_Button(soloButton,
+                   soloAttachment,
+                   soloParamListener,
+                   Params::BandControl::Solo,
+                   "S",
+                   juce::Colours::lightgreen);
     
-    setColors(soloButton, juce::Colours::green, juce::Colours::black);
-    setColors(muteButton, juce::Colours::yellow, juce::Colours::black);
-    setColors(bypassButton, juce::Colours::red, juce::Colours::black);
+    initSMB_Button(muteButton,
+                   muteAttachment,
+                   muteParamListener,
+                   Params::BandControl::Mute,
+                   "M",
+                   juce::Colours::yellow);
     
+    initSMB_Button(bypassButton,
+                   bypassAttachment,
+                   bypassParamListener,
+                   Params::BandControl::Bypass,
+                   "X",
+                   juce::Colours::red);
+    
+    addAndMakeVisible(selectButton);
     addAndMakeVisible(soloButton);
     addAndMakeVisible(muteButton);
     addAndMakeVisible(bypassButton);
-    addAndMakeVisible(selectButton);
     
     updateButtonStates();
 }
 
 void CompressorSelectionControl::paint(juce::Graphics& g)
 {
-    g.setColour(juce::Colours::black);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(getLocalBounds());
 }
 
@@ -108,41 +126,50 @@ void CompressorSelectionControl::setAsSelected(bool shouldBeSelected)
 
 void CompressorSelectionControl::resetSelectButtonToDefaultColors()
 {
-    
+    setColors(selectButton, juce::Colours::skyblue);
 }
 
-void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor, juce::Colour offColor)
+void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor)
 {
     comp.setColour(juce::TextButton::ColourIds::buttonOnColourId, fillColor);
-    comp.setColour(juce::TextButton::ColourIds::buttonColourId, offColor);
-    comp.repaint();
-}
-
-void CompressorSelectionControl::setColors(juce::Component& comp, juce::var fillColor, juce::var offColor)
-{
-    auto& properties = comp.getProperties();
-    properties.set("Fill Color", fillColor);
-    properties.set("Off Color", offColor);
+    comp.setColour(juce::TextButton::ColourIds::buttonColourId, ColourPalette::getColour(ColourPalette::Background));
+    
+    comp.setColour(juce::TextButton::ColourIds::textColourOnId, ColourPalette::getColour(ColourPalette::Background));
+    comp.setColour(juce::TextButton::ColourIds::textColourOffId, ColourPalette::getColour(ColourPalette::Text));
+    
     comp.repaint();
 }
 
 void CompressorSelectionControl::setColors(juce::Component& target, const juce::Component& source)
 {
     target.setColour(juce::TextButton::ColourIds::buttonOnColourId, source.findColour(juce::TextButton::ColourIds::buttonOnColourId));
-    target.setColour(juce::TextButton::ColourIds::buttonColourId, source.findColour(juce::TextButton::ColourIds::buttonColourId));
+    target.setColour(juce::TextButton::ColourIds::textColourOnId, source.findColour(juce::TextButton::ColourIds::textColourOnId));
+    
     target.repaint();
 }
 
 void CompressorSelectionControl::updateButtonStates()
 {
-    if ( soloButton.getToggleState() )
-        setColors(selectButton, soloButton);
-    else if ( muteButton.getToggleState() )
-        setColors(selectButton, muteButton);
-    else if ( bypassButton.getToggleState() )
-        setColors(selectButton, muteButton);
-    else
+    std::array<juce::Button*, 3> buttonPtrs{ &soloButton, &muteButton, &bypassButton };
+    
+    bool selected = false;
+    for ( auto i = 0; i < buttonPtrs.size(); ++i )
+    {
+        // if any button is selected, set the select button to it's colour and stop looking
+        if ( buttonPtrs[i]->getToggleState() )
+        {
+            selected = true;
+            setColors(selectButton, *buttonPtrs[i]);
+            setAsSelected(true);
+            break;
+        }
+    }
+    
+    if ( !selected )
+    {
+        // if none are selected reset the select button's colour
         resetSelectButtonToDefaultColors();
+    }
 }
 
 void CompressorSelectionControl::updateEnablements(juce::Button* clickedButton)
@@ -151,33 +178,21 @@ void CompressorSelectionControl::updateEnablements(juce::Button* clickedButton)
     {
         juce::ScopedValueSetter<bool> svs(callbackBlocker, true);
         
-        std::map<juce::String, int> buttons = { { "S", 0 }, { "M", 1 }, { "X", 2 } };
+        std::array<juce::Button*, 3> buttonPtrs{ &soloButton, &muteButton, &bypassButton };
         
-        switch ( buttons[clickedButton->getButtonText()] )
+        for ( auto i = 0; i < buttonPtrs.size(); ++i )
         {
-            case 0: // Solo
+            
+            if ( buttonPtrs[i]->getButtonText() == clickedButton->getButtonText() )
             {
-                soloButton.setToggleState(true, juce::NotificationType::sendNotification);
-                muteButton.setToggleState(false, juce::NotificationType::sendNotification);
-                bypassButton.setToggleState(false, juce::NotificationType::sendNotification);
-                break;
+                // toggle the clicked button's state
+                buttonPtrs[i]->setToggleState(!buttonPtrs[i]->getToggleState(), juce::NotificationType::sendNotification);
             }
-            case 1: // Mute
+            else if ( buttonPtrs[i]->getToggleState() )
             {
-                soloButton.setToggleState(false, juce::NotificationType::sendNotification);
-                muteButton.setToggleState(true, juce::NotificationType::sendNotification);
-                bypassButton.setToggleState(false, juce::NotificationType::sendNotification);
-                break;
+                // if the others are in a clicked/true state - set them false
+                buttonPtrs[i]->setToggleState(false, juce::NotificationType::sendNotification);
             }
-            case 2: // Bypass
-            {
-                soloButton.setToggleState(false, juce::NotificationType::sendNotification);
-                muteButton.setToggleState(false, juce::NotificationType::sendNotification);
-                bypassButton.setToggleState(true, juce::NotificationType::sendNotification);
-                break;
-            }
-            default:
-                break;
         }
         
         updateButtonStates();
