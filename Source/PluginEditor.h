@@ -16,6 +16,7 @@
 #include "gui/Meter.h"
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
+#include "gui/CompressorSelectionControl.h"
 
 //==============================================================================
 /**
@@ -53,6 +54,7 @@ private:
     StereoMeter inStereoMeter, outStereoMeter;
     
     CompressorBandControl bandControls{audioProcessor.apvts};
+    CompressorSelectionControl compSelectionControls{audioProcessor.apvts, 0};
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };

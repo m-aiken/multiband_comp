@@ -9,6 +9,7 @@
 */
 
 #include "LookAndFeel.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
 void LookAndFeel::drawRotarySlider(juce::Graphics& g,
@@ -20,10 +21,12 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
 {
     auto bounds = juce::Rectangle<float>(x, y, width, height);
     
-    g.setColour(juce::Colours::black);
+    g.setColour(ColourPalette::getColour(ColourPalette::Background).contrasting(0.05f));
     g.fillEllipse(bounds);
+    g.setColour(juce::Colours::skyblue);
+    g.drawEllipse(bounds, 1.f);
     
-    g.setColour(juce::Colours::white);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     
     juce::Path p;
     
