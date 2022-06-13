@@ -592,21 +592,25 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     addBandControls(layout, 6);
     addBandControls(layout, 7);
     
+    juce::StringArray numBandsStrArray{ "2", "3", "4", "5", "6", "7", "8" };
+    
     layout.add(std::make_unique<juce::AudioParameterChoice>("NumBands",
                                                             "Number Of Bands",
-                                                            juce::StringArray{ "2", "3", "4", "5", "6", "7", "8" },
-                                                            6)); // 8 set as default
-    
+                                                            numBandsStrArray,
+                                                            numBandsStrArray.indexOf(juce::String(Globals::getNumMaxBands()))));
     
     //==============================================================================
     
-    auto defaultCenterFreqs = getDefaultCenterFrequencies(MAX_BANDS);
+    auto defaultCenterFreqs = getDefaultCenterFrequencies(Globals::getNumMaxBands());
     
     for ( auto i = 0; i < defaultCenterFreqs.size(); ++i )
     {
         layout.add(std::make_unique<AudioParameterFloatWithResettableDefaultValue>(Params::getCrossoverParamName(i, i+1),
                                                                                    Params::getCrossoverParamName(i, i+1),
-                                                                                   juce::NormalisableRange<float>(MIN_FREQUENCY, MAX_FREQUENCY, 1.f, 1.f),
+                                                                                   juce::NormalisableRange<float>(Globals::getMinFrequency(),
+                                                                                                                  Globals::getMaxFrequency(),
+                                                                                                                  1.f,
+                                                                                                                  1.f),
                                                                                    defaultCenterFreqs[i]));
     }
     
@@ -708,7 +712,7 @@ std::vector<float> PFMProject12AudioProcessor::getDefaultCenterFrequencies(size_
 
     for ( auto i = 0; i < centerFrequencies.size(); ++i )
     {
-        centerFrequencies[i] = std::round( juce::mapToLog10(juce::jmap<float>(i+1, 0, numBands, 0.f, 1.f), MIN_FREQUENCY, MAX_FREQUENCY) );
+        centerFrequencies[i] = std::round( juce::mapToLog10(juce::jmap<float>(i+1, 0, numBands, 0.f, 1.f), Globals::getMinFrequency(), Globals::getMaxFrequency()) );
     }
     
     return centerFrequencies;

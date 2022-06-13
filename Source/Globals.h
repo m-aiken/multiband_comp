@@ -16,10 +16,15 @@
 namespace Globals
 {
 
-inline float getMaxDecibels() { return 18.f; }
-inline float getNegativeInf() { return -96.f; }
+constexpr float getMaxDecibels() { return 18.f; }
+constexpr float getNegativeInf() { return -96.f; }
 
-inline int getMinBandNum() { return 0; }
-inline int getMaxBandNum() { return 7; }
+constexpr int getMinBandNum() { return 0; }
+constexpr int getMaxBandNum() { return 7; }
+
+constexpr int getNumMaxBands() { return 8; }
+
+constexpr float getMinFrequency() { return 20.f; }
+constexpr float getMaxFrequency() { return 20000.f; }
 
 }

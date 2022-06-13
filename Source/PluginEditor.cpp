@@ -70,7 +70,7 @@ void PFMProject12AudioProcessorEditor::resized()
     
     compSelectionControls.setBounds(bandControls.getX(),
                                     bandControls.getY() - bandControlsHeight - 2,
-                                    bandControls.getWidth() / 7,
+                                    bandControls.getWidth(),
                                     bandControlsHeight);
 }
 

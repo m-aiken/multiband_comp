@@ -84,12 +84,6 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     updateButtonStates();
 }
 
-void CompressorSelectionControl::paint(juce::Graphics& g)
-{
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
-    g.drawRect(getLocalBounds());
-}
-
 void CompressorSelectionControl::resized()
 {
     auto bounds = getLocalBounds();
@@ -127,6 +121,11 @@ void CompressorSelectionControl::setAsSelected(bool shouldBeSelected)
 void CompressorSelectionControl::resetSelectButtonToDefaultColors()
 {
     setColors(selectButton, juce::Colours::skyblue);
+    
+    const auto& params = Params::getParams();
+    selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
+    jassert( selectedBandParam != nullptr );
+    setAsSelected(selectedBandParam->getValue() == bandNum);
 }
 
 void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor)

@@ -18,7 +18,6 @@ struct CompressorSelectionControl : juce::Component
 {
     CompressorSelectionControl(juce::AudioProcessorValueTreeState& _apvts, const int& _bandNum);
     
-    void paint(juce::Graphics& g) override;
     void resized() override;
     void setAsSelected(bool shouldBeSelected);
 private:
