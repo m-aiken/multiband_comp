@@ -179,7 +179,6 @@ void CompressorSelectionControl::updateButtonStates()
         {
             selected = true;
             setColors(selectButton, *buttonPtrs[i]);
-//            setAsSelected(true);
             break;
         }
     }
