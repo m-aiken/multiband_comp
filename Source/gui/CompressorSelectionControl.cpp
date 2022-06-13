@@ -90,7 +90,13 @@ void CompressorSelectionControl::paint(juce::Graphics& g)
     if ( selectedBandParam->convertFrom0to1(selectedBandParam->getValue()) == bandNum )
     {
         g.setColour(juce::Colours::skyblue);
-        g.fillEllipse(5.f, 5.f, 7.f, 7.f);
+        auto bounds = getLocalBounds().toFloat();
+        auto padding = 5.f;
+        g.drawLine(bounds.getX() + padding,
+                   bounds.getBottom() - padding,
+                   bounds.getRight() - padding,
+                   bounds.getBottom() - padding,
+                   padding);
     }
 }
 
