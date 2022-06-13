@@ -171,7 +171,7 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
         assignBoolParam   (compressors[i].mute,       Params::getBandControlParamName(Params::BandControl::Mute, i));
     }
     
-    assignChoiceParam(numBands, "NumBands");
+    assignIntParam(numBands, "NumBands");
     
     const auto& params = Params::getParams();
     
@@ -533,7 +533,7 @@ void PFMProject12AudioProcessor::updateBands()
 
 void PFMProject12AudioProcessor::updateNumberOfBands()
 {
-    size_t currentSelection = numBands->getCurrentChoiceName().getIntValue();
+    size_t currentSelection = numBands->get();
     if ( currentSelection != currentNumberOfBands )
     {
         filterCreator.requestSequence(currentSelection);
@@ -592,12 +592,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     addBandControls(layout, 6);
     addBandControls(layout, 7);
     
-    juce::StringArray numBandsStrArray{ "2", "3", "4", "5", "6", "7", "8" };
-    
-    layout.add(std::make_unique<juce::AudioParameterChoice>("NumBands",
-                                                            "Number Of Bands",
-                                                            numBandsStrArray,
-                                                            numBandsStrArray.indexOf(juce::String(Globals::getNumMaxBands()))));
+    layout.add(std::make_unique<juce::AudioParameterInt>("NumBands", "Number Of Bands", 2, 8, Globals::getNumMaxBands()));
     
     //==============================================================================
     

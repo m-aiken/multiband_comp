@@ -740,7 +740,7 @@ private:
     
     juce::dsp::ProcessSpec spec;
     
-    juce::AudioParameterChoice* numBands { nullptr };
+    juce::AudioParameterInt* numBands { nullptr };
     juce::AudioParameterChoice* processingMode { nullptr };
     juce::AudioParameterFloat* gainIn { nullptr };
     juce::AudioParameterFloat* gainOut { nullptr };
