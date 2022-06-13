@@ -62,7 +62,7 @@ void CompressorSelectionControlContainer::changeNumBandsDisplayed(int numBands)
     const auto& params = Params::getParams();
     auto selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
     jassert( selectedBandParam != nullptr );
-    auto selectedBandNum = selectedBandParam->getValue();
+    auto selectedBandNum = selectedBandParam->convertFrom0to1(selectedBandParam->getValue());
     
     for ( auto i = 0; i < numBands; ++i )
     {
