@@ -35,6 +35,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     auto selectedBandCallback = [this](const auto& selectedBandNum)
     {
         selectButton.setToggleState(selectedBandNum == bandNum, juce::NotificationType::dontSendNotification);
+        repaint();
     };
     
     selectParamListener = std::make_unique<ParamListener<float>>(*selectedBandParam, selectedBandCallback);
@@ -82,6 +83,15 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     addAndMakeVisible(bypassButton);
     
     updateButtonStates();
+}
+
+void CompressorSelectionControl::paint(juce::Graphics& g)
+{
+    if ( selectedBandParam->convertFrom0to1(selectedBandParam->getValue()) == bandNum )
+    {
+        g.setColour(juce::Colours::skyblue);
+        g.fillEllipse(5.f, 5.f, 7.f, 7.f);
+    }
 }
 
 void CompressorSelectionControl::resized()
