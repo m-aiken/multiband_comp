@@ -156,7 +156,7 @@ void CompressorSelectionControl::setColors(juce::Component& target, const juce::
     target.setColour(juce::TextButton::ColourIds::textColourOnId, source.findColour(juce::TextButton::ColourIds::textColourOnId));
     
     /*
-    Scenario: if user has this band select, has s/m/b toggled, then selected another band:
+    Scenario: if user has this band selected, has s/m/b toggled, then selects another band:
     - the background/text for this select button should stay with the s/m/b colour
     - set the select button "off" background/text colour to the s/m/b "on" colour
     */
