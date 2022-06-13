@@ -24,16 +24,16 @@ void CompressorSelectionControlContainer::paint(juce::Graphics& g)
     auto bounds = getLocalBounds();
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(bounds);
-    auto boundBottom = bounds.getBottom();
+    auto boundsBottom = bounds.getBottom();
     auto cell = bounds.getWidth() / numBandsDisplayed;
     
     for ( auto i = 1; i < numBandsDisplayed; ++i )
     {
-        g.drawLine(cell * i,        // start x
-                   1,               // start y
-                   cell * i,        // end x
-                   boundBottom - 1, // end y
-                   1.f);            // line thickness
+        g.drawLine(cell * i,         // start x
+                   1,                // start y
+                   cell * i,         // end x
+                   boundsBottom - 1, // end y
+                   1.f);             // line thickness
     }
 }
 
