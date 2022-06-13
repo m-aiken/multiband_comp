@@ -20,7 +20,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     
     // Select Button
     selectButton.setButtonText(juce::String(bandNum + 1));
-    setColors(selectButton, juce::Colours::skyblue, ColourPalette::getColour(ColourPalette::Background));
+    setColors(selectButton, juce::Colours::skyblue);
     
     selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
     jassert( selectedBandParam != nullptr );
@@ -52,7 +52,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
         listener = std::make_unique<ParamListener<float>>(*param, [this](const auto& parameterValue){ updateButtonStates(); });
         
         button.setButtonText(buttonText);
-        setColors(button, onColour, ColourPalette::getColour(ColourPalette::Background));
+        setColors(button, onColour);
     };
     
     initSMB_Button(soloButton,
@@ -120,15 +120,15 @@ void CompressorSelectionControl::setAsSelected(bool shouldBeSelected)
 
 void CompressorSelectionControl::resetSelectButtonToDefaultColors()
 {
-    setColors(selectButton, juce::Colours::skyblue, ColourPalette::getColour(ColourPalette::Background));
+    setColors(selectButton, juce::Colours::skyblue);
 }
 
-void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor, juce::Colour offColor)
+void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor)
 {
     comp.setColour(juce::TextButton::ColourIds::buttonOnColourId, fillColor);
-    comp.setColour(juce::TextButton::ColourIds::buttonColourId, offColor);
+    comp.setColour(juce::TextButton::ColourIds::buttonColourId, ColourPalette::getColour(ColourPalette::Background));
     
-    comp.setColour(juce::TextButton::ColourIds::textColourOnId, offColor);
+    comp.setColour(juce::TextButton::ColourIds::textColourOnId, ColourPalette::getColour(ColourPalette::Background));
     comp.setColour(juce::TextButton::ColourIds::textColourOffId, ColourPalette::getColour(ColourPalette::Text));
     
     comp.repaint();

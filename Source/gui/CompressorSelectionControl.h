@@ -26,7 +26,7 @@ private:
     bool callbackBlocker { false };
     
     void resetSelectButtonToDefaultColors();
-    void setColors(juce::Component& comp, juce::Colour fillColor, juce::Colour offColor);
+    void setColors(juce::Component& comp, juce::Colour fillColor);
     void setColors(juce::Component& target, const juce::Component& source);
     
     void updateButtonStates();
