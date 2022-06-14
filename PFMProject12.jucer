@@ -12,6 +12,10 @@
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
+        <FILE id="y6gLWE" name="CompressorSelectionControlContainer.cpp" compile="1"
+              resource="0" file="Source/gui/CompressorSelectionControlContainer.cpp"/>
+        <FILE id="gOV1Ts" name="CompressorSelectionControlContainer.h" compile="0"
+              resource="0" file="Source/gui/CompressorSelectionControlContainer.h"/>
         <FILE id="q6dR7X" name="ParamListener.h" compile="0" resource="0" file="Source/gui/ParamListener.h"/>
         <FILE id="rkLDHs" name="Averager.h" compile="0" resource="0" file="Source/gui/Averager.h"/>
         <FILE id="y0WrKJ" name="CompressorBandControl.cpp" compile="1" resource="0"

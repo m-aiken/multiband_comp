@@ -11,14 +11,11 @@
 #include <JuceHeader.h>
 #include "dsp/Decibel.h"
 #include "Params.h"
+#include "Globals.h"
 
 #define DISPLAY_FILTER_CONFIGURATIONS false
 #define TEST_FILTER_NETWORK false
 #define USE_TEST_OSC false
-
-#define MIN_FREQUENCY 20.f
-#define MAX_FREQUENCY 20000.f
-#define MAX_BANDS 8
 
 //==============================================================================
 template<typename T>
@@ -535,7 +532,7 @@ struct FilterCreator : juce::Thread
     }
     
 private:
-    juce::Atomic<size_t> numBandsToMake { MAX_BANDS };
+    juce::Atomic<size_t> numBandsToMake { Globals::getNumMaxBands() };
     juce::Atomic<bool> sequenceRequested { false };
     
     ReleasePool<Sequence>& releasePool;
@@ -734,7 +731,7 @@ public:
     Fifo<MeterValues, 20> inMeterValuesFifo, outMeterValuesFifo;
     
 private:
-    std::array<CompressorBand, MAX_BANDS> compressors;
+    std::array<CompressorBand, Globals::getNumMaxBands()> compressors;
     
     ReleasePool<FilterSequence<float>> releasePool;
     FilterCreator<float> filterCreator { releasePool };
@@ -743,7 +740,7 @@ private:
     
     juce::dsp::ProcessSpec spec;
     
-    juce::AudioParameterChoice* numBands { nullptr };
+    juce::AudioParameterInt* numBands { nullptr };
     juce::AudioParameterChoice* processingMode { nullptr };
     juce::AudioParameterFloat* gainIn { nullptr };
     juce::AudioParameterFloat* gainOut { nullptr };
@@ -751,8 +748,8 @@ private:
     
     juce::dsp::Gain<float> inputGain, outputGain;
     
-    std::array<juce::AudioBuffer<float>, MAX_BANDS> leftMidBuffers;
-    std::array<juce::AudioBuffer<float>, MAX_BANDS> rightSideBuffers;
+    std::array<juce::AudioBuffer<float>, Globals::getNumMaxBands()> leftMidBuffers;
+    std::array<juce::AudioBuffer<float>, Globals::getNumMaxBands()> rightSideBuffers;
     
     const float minusThreeDb = juce::Decibels::decibelsToGain(-3.f);
     

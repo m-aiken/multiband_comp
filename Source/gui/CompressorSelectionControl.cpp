@@ -35,6 +35,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     auto selectedBandCallback = [this](const auto& selectedBandNum)
     {
         selectButton.setToggleState(selectedBandNum == bandNum, juce::NotificationType::dontSendNotification);
+        repaint();
     };
     
     selectParamListener = std::make_unique<ParamListener<float>>(*selectedBandParam, selectedBandCallback);
@@ -86,8 +87,17 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
 
 void CompressorSelectionControl::paint(juce::Graphics& g)
 {
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
-    g.drawRect(getLocalBounds());
+    if ( selectedBandParam->convertFrom0to1(selectedBandParam->getValue()) == bandNum )
+    {
+        g.setColour(juce::Colours::skyblue);
+        auto bounds = getLocalBounds().toFloat();
+        auto padding = 5.f;
+        g.drawLine(bounds.getX() + padding,
+                   bounds.getBottom() - padding,
+                   bounds.getRight() - padding,
+                   bounds.getBottom() - padding,
+                   padding);
+    }
 }
 
 void CompressorSelectionControl::resized()
@@ -145,6 +155,15 @@ void CompressorSelectionControl::setColors(juce::Component& target, const juce::
     target.setColour(juce::TextButton::ColourIds::buttonOnColourId, source.findColour(juce::TextButton::ColourIds::buttonOnColourId));
     target.setColour(juce::TextButton::ColourIds::textColourOnId, source.findColour(juce::TextButton::ColourIds::textColourOnId));
     
+    /*
+    Scenario: if user has this band selected, has s/m/b toggled, then selects another band:
+    - the background/text for this select button should stay with the s/m/b colour
+    - set the select button "off" background/text colour to the s/m/b "on" colour
+    */
+    
+    target.setColour(juce::TextButton::ColourIds::buttonColourId, source.findColour(juce::TextButton::ColourIds::buttonOnColourId));
+    target.setColour(juce::TextButton::ColourIds::textColourOffId, source.findColour(juce::TextButton::ColourIds::textColourOnId));
+
     target.repaint();
 }
 
@@ -160,7 +179,6 @@ void CompressorSelectionControl::updateButtonStates()
         {
             selected = true;
             setColors(selectButton, *buttonPtrs[i]);
-            setAsSelected(true);
             break;
         }
     }
