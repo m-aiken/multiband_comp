@@ -29,7 +29,7 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     initRotaryControl(releaseRotary,    Params::BandControl::Release,   "ms");
     initRotaryControl(thresholdRotary,  Params::BandControl::Threshold, "dB");
     initRotaryControl(makeupGainRotary, Params::BandControl::Gain,      "dB");
-    initRotaryControl(ratioRotary,      Params::BandControl::Ratio,     "");
+    initRotaryControl(ratioRotary,      Params::BandControl::Ratio,     ":1");
     
     resetButton.setColour(juce::TextButton::ColourIds::buttonColourId, ColourPalette::getColour(ColourPalette::Red));
     resetButton.setColour(juce::TextButton::ColourIds::textColourOffId, ColourPalette::getColour(ColourPalette::Text));
