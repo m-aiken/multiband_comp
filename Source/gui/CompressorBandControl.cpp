@@ -40,7 +40,7 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     jassert( selectedBandParam != nullptr );
     selectedBandListener = std::make_unique<ParamListener<float>>(*selectedBandParam, [this](const auto& parameterValue){ updateAttachments(); });
     
-    auto msbCallback = [this](const float& selectedBand){ updateEnablements(); };
+    auto msbCallback = [this](const float& parameterValue){ updateEnablements(); };
     for ( auto i = 0; i < Globals::getNumMaxBands(); ++i )
     {
         auto muteParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(Params::getBandControlParamName(Params::BandControl::Mute, i)));
