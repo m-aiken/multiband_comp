@@ -28,6 +28,14 @@ void RotaryControl::setLabels()
     if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
     {
         auto choices = choiceParam->choices;
+
+        for ( auto& choice : choices )
+        {
+            if ( choice.substring(choice.indexOf(".")) != ".5" )
+                choice = choice.substring(0, choice.indexOf("."));
+            choice += ":1";
+        }
+        
         labels.add({0.f, choices[0]});
         labels.add({1.f, choices[choices.size() - 1]});
     }
@@ -121,10 +129,19 @@ juce::Rectangle<int> RotaryControl::getRotaryBounds() const
 
 juce::String RotaryControl::getDisplayString() const
 {
-    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
-        return choiceParam->getCurrentChoiceName();
-
     juce::String str;
+    
+    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
+    {
+        auto currentChoice = choiceParam->getCurrentChoiceName();
+        
+        if ( currentChoice.substring(currentChoice.indexOf(".")) == ".5" )
+            str << currentChoice << ":1";
+        else
+            str << currentChoice.substring(0, currentChoice.indexOf(".")) << ":1";
+        
+        return str;
+    }
 
     if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
         str = juce::String(getValue());

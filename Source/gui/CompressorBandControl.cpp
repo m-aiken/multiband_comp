@@ -40,7 +40,7 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     jassert( selectedBandParam != nullptr );
     selectedBandListener = std::make_unique<ParamListener<float>>(*selectedBandParam, [this](const auto& parameterValue){ updateAttachments(); });
     
-    auto mbsCallback = [this](const float& selectedBand){ updateEnablements(); };
+    auto msbCallback = [this](const float& selectedBand){ updateEnablements(); };
     for ( auto i = 0; i < Globals::getNumMaxBands(); ++i )
     {
         auto muteParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(Params::getBandControlParamName(Params::BandControl::Mute, i)));
@@ -49,9 +49,9 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
         
         jassert( muteParam != nullptr && soloParam != nullptr && bypassParam != nullptr);
         
-        muteListeners.push_back(std::make_unique<ParamListener<float>>(*muteParam, mbsCallback));
-        soloListeners.push_back(std::make_unique<ParamListener<float>>(*soloParam, mbsCallback));
-        bypassListeners.push_back(std::make_unique<ParamListener<float>>(*bypassParam, mbsCallback));
+        muteListeners.push_back(std::make_unique<ParamListener<float>>(*muteParam, msbCallback));
+        soloListeners.push_back(std::make_unique<ParamListener<float>>(*soloParam, msbCallback));
+        bypassListeners.push_back(std::make_unique<ParamListener<float>>(*bypassParam, msbCallback));
     }
     
     updateAttachments();
