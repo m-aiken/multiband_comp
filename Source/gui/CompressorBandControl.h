@@ -26,6 +26,7 @@ struct CompressorBandControl : juce::Component
     void resetHelper(juce::RangedAudioParameter* param, const float& newValue);
     void resetParamsToDefault();
     
+    void updateRotaryControls();
     void updateAttachments();
     void updateEnablements();
     int getSelectedBand();

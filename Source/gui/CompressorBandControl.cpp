@@ -38,7 +38,13 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
     const auto& params = Params::getParams();
     auto selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
     jassert( selectedBandParam != nullptr );
-    selectedBandListener = std::make_unique<ParamListener<float>>(*selectedBandParam, [this](const auto& parameterValue){ updateAttachments(); });
+    auto bandSelectCallback = [this](const auto& parameterValue)
+    {
+        updateRotaryControls();
+        updateAttachments();
+    };
+    
+    selectedBandListener = std::make_unique<ParamListener<float>>(*selectedBandParam, bandSelectCallback);
     
     auto msbCallback = [this](const float& parameterValue){ updateEnablements(); };
     for ( auto i = 0; i < Globals::getNumMaxBands(); ++i )
@@ -135,6 +141,24 @@ void CompressorBandControl::resetParamsToDefault()
     resetHelper(Params::getBandControlParamName(Params::BandControl::Threshold, selectedBand));
     resetHelper(Params::getBandControlParamName(Params::BandControl::Gain,      selectedBand));
     resetHelper(Params::getBandControlParamName(Params::BandControl::Ratio,     selectedBand));
+}
+
+void CompressorBandControl::updateRotaryControls()
+{
+    auto selectedBand = getSelectedBand();
+    auto updateParamPtr = [&](auto& rotaryControl, const auto& paramName)
+    {
+        auto param = apvts.getParameter(Params::getBandControlParamName(paramName, selectedBand));
+        jassert( param != nullptr );
+        
+        rotaryControl->updateParam(param);
+    };
+    
+    updateParamPtr(attackRotary,     Params::BandControl::Attack);
+    updateParamPtr(releaseRotary,    Params::BandControl::Release);
+    updateParamPtr(thresholdRotary,  Params::BandControl::Threshold);
+    updateParamPtr(makeupGainRotary, Params::BandControl::Gain);
+    updateParamPtr(ratioRotary,      Params::BandControl::Ratio);
 }
 
 void CompressorBandControl::updateAttachments()
