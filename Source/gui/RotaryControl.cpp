@@ -32,7 +32,9 @@ void RotaryControl::setLabels()
         for ( auto& choice : choices )
         {
             if ( choice.substring(choice.indexOf(".")) != ".5" )
+            {
                 choice = choice.substring(0, choice.indexOf("."));
+            }
         }
         
         labels.add({0.f, choices[0] + suffix});
