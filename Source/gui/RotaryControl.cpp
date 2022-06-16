@@ -138,9 +138,13 @@ juce::String RotaryControl::getDisplayString() const
             : currentChoice.substring(0, currentChoice.indexOf("."));
     }
     else if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+    {
         str = juce::String(getValue());
+    }
     else
+    {
         jassertfalse;
+    }
 
     str << suffix;
 
