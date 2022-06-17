@@ -5,17 +5,27 @@
               companyName="Matt Aiken" pluginChannelConfigs="{2,2}">
   <MAINGROUP id="vfcIbR" name="PFMProject12">
     <GROUP id="{B4CA764E-9214-1D1F-FDB0-0EE7E29659E4}" name="Source">
+      <FILE id="Dkofsp" name="ColourPalette.h" compile="0" resource="0" file="Source/ColourPalette.h"/>
       <FILE id="dQ6P3S" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <GROUP id="{9CD76FE6-CB69-6BBE-D6B6-6425BB5F5AEC}" name="dsp">
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
+        <FILE id="y6gLWE" name="CompressorSelectionControlContainer.cpp" compile="1"
+              resource="0" file="Source/gui/CompressorSelectionControlContainer.cpp"/>
+        <FILE id="gOV1Ts" name="CompressorSelectionControlContainer.h" compile="0"
+              resource="0" file="Source/gui/CompressorSelectionControlContainer.h"/>
+        <FILE id="q6dR7X" name="ParamListener.h" compile="0" resource="0" file="Source/gui/ParamListener.h"/>
         <FILE id="rkLDHs" name="Averager.h" compile="0" resource="0" file="Source/gui/Averager.h"/>
         <FILE id="y0WrKJ" name="CompressorBandControl.cpp" compile="1" resource="0"
               file="Source/gui/CompressorBandControl.cpp"/>
         <FILE id="WAbBe4" name="CompressorBandControl.h" compile="0" resource="0"
               file="Source/gui/CompressorBandControl.h"/>
+        <FILE id="ThZMTO" name="CompressorSelectionControl.cpp" compile="1"
+              resource="0" file="Source/gui/CompressorSelectionControl.cpp"/>
+        <FILE id="XKTtmS" name="CompressorSelectionControl.h" compile="0" resource="0"
+              file="Source/gui/CompressorSelectionControl.h"/>
         <FILE id="P83VL0" name="DbScale.cpp" compile="1" resource="0" file="Source/gui/DbScale.cpp"/>
         <FILE id="grVZpO" name="DbScale.h" compile="0" resource="0" file="Source/gui/DbScale.h"/>
         <FILE id="r1dAGr" name="DecayingValueHolder.cpp" compile="1" resource="0"

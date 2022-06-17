@@ -9,6 +9,7 @@
 */
 
 #include "RotaryControl.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
 RotaryControl::RotaryControl(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, const juce::String& title)
@@ -27,8 +28,17 @@ void RotaryControl::setLabels()
     if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
     {
         auto choices = choiceParam->choices;
-        labels.add({0.f, choices[0]});
-        labels.add({1.f, choices[choices.size() - 1]});
+
+        for ( auto& choice : choices )
+        {
+            if ( choice.substring(choice.indexOf(".")) != ".5" )
+            {
+                choice = choice.substring(0, choice.indexOf("."));
+            }
+        }
+        
+        labels.add({0.f, choices[0] + suffix});
+        labels.add({1.f, choices[choices.size() - 1] + suffix});
     }
     else
     {
@@ -46,7 +56,7 @@ void RotaryControl::paint(juce::Graphics& g)
     auto range = param->getNormalisableRange();
     auto bounds = getLocalBounds();
     
-    g.setColour(juce::Colours::black);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawFittedText(getName(),
                      bounds.removeFromTop(getTextHeight() + 3),
                      juce::Justification::centred,
@@ -75,7 +85,7 @@ void RotaryControl::paint(juce::Graphics& g)
     g.setFont(getTextHeight());
     
     // current value string
-    g.setColour(juce::Colours::white);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     juce::Rectangle<float> r;
     auto str = getDisplayString();
     r.setSize(g.getCurrentFont().getStringWidth(str), getTextHeight());
@@ -83,7 +93,6 @@ void RotaryControl::paint(juce::Graphics& g)
     g.drawFittedText(str, r.toNearestInt(), juce::Justification::centred, 1);
     
     // value range labels
-    g.setColour(juce::Colours::black);
     for ( auto i = 0; i < labels.size(); ++i )
     {
         auto pos = labels[i].pos;
@@ -121,18 +130,25 @@ juce::Rectangle<int> RotaryControl::getRotaryBounds() const
 
 juce::String RotaryControl::getDisplayString() const
 {
-    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
-        return choiceParam->getCurrentChoiceName();
-
     juce::String str;
-
-    if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+    
+    if (auto* choiceParam = dynamic_cast<juce::AudioParameterChoice*>(param))
+    {
+        auto currentChoice = choiceParam->getCurrentChoiceName();
+        str = ( currentChoice.substring(currentChoice.indexOf(".")) == ".5" )
+            ? currentChoice
+            : currentChoice.substring(0, currentChoice.indexOf("."));
+    }
+    else if (auto* floatParam = dynamic_cast<juce::AudioParameterFloat*>(param))
+    {
         str = juce::String(getValue());
+    }
     else
+    {
         jassertfalse;
+    }
 
-    if (suffix.isNotEmpty())
-        str << suffix;
+    str << suffix;
 
     return str;
 }

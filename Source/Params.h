@@ -64,7 +64,8 @@ enum class Names
 {
     Processing_Mode,
     Gain_In,
-    Gain_Out
+    Gain_Out,
+    Selected_Band
 };
 
 inline const std::map<Names, juce::String>& getParams()
@@ -73,7 +74,8 @@ inline const std::map<Names, juce::String>& getParams()
     {
         { Names::Processing_Mode, "Processing Mode" },
         { Names::Gain_In, "Gain In" },
-        { Names::Gain_Out, "Gain Out" }
+        { Names::Gain_Out, "Gain Out" },
+        { Names::Selected_Band, "Selected Band" }
     };
     
     return params;

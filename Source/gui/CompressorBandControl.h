@@ -12,7 +12,7 @@
 
 #include <JuceHeader.h>
 #include "RotaryControl.h"
-#include "LookAndFeel.h"
+#include "ParamListener.h"
 
 //==============================================================================
 struct CompressorBandControl : juce::Component
@@ -25,6 +25,11 @@ struct CompressorBandControl : juce::Component
     void resetHelper(const juce::String& paramName);
     void resetHelper(juce::RangedAudioParameter* param, const float& newValue);
     void resetParamsToDefault();
+    
+    void updateRotaryControls();
+    void updateAttachments();
+    void updateEnablements();
+    int getSelectedBand();
 private:
     juce::AudioProcessorValueTreeState& apvts;
     
@@ -38,4 +43,10 @@ private:
                                 ratioAttachment;
     
     juce::TextButton resetButton {"R"};
+    
+    std::unique_ptr<ParamListener<float>> selectedBandListener;
+    
+    std::vector<std::unique_ptr<ParamListener<float>>> muteListeners, soloListeners, bypassListeners;
+    
+    juce::TextButton bandNumButton;
 };

@@ -9,6 +9,7 @@
 */
 
 #include "Meter.h"
+#include "../ColourPalette.h"
 
 //==============================================================================
 Meter::Meter(const juce::String& label, const float& meterHeightProportion)
@@ -32,7 +33,7 @@ void Meter::paint(juce::Graphics& g)
                                                maxMeterHeight);
     
     // Peak Meter
-    g.setColour(juce::Colour(82u, 182u, 154u));
+    g.setColour(ColourPalette::getColour(ColourPalette::MeterGreen));
     
     auto peakScaled = juce::jmap<float>(peakDb,
                                         Globals::getNegativeInf(),
@@ -45,7 +46,7 @@ void Meter::paint(juce::Graphics& g)
                 .withY(peakScaled));
     
     // Average Meter
-    g.setColour(juce::Colour(217u, 237u, 146u));
+    g.setColour(ColourPalette::getColour(ColourPalette::MeterYellow));
     
     auto averageScaled = juce::jmap<float>(averageMeter.getAvg(),
                                            Globals::getNegativeInf(),
@@ -61,7 +62,7 @@ void Meter::paint(juce::Graphics& g)
                 .withX(bounds.getCentreX() - (avgMeterWidth * 0.5)));
     
     // Falling Tick
-    g.setColour( fallingTick.isOverThreshold() ? juce::Colours::red : juce::Colours::white );
+    g.setColour( fallingTick.isOverThreshold() ? ColourPalette::getColour(ColourPalette::Red) : ColourPalette::getColour(ColourPalette::Text) );
     
     auto tickValueScaled = juce::jmap<float>(fallingTick.getCurrentValue(),
                                              Globals::getNegativeInf(),
@@ -86,7 +87,7 @@ void Meter::paint(juce::Graphics& g)
                      1);
     
     // Meter bounding box/line
-    g.setColour(juce::Colours::white);
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(maxMeterBounds);
 }
 

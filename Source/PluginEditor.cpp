@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "ColourPalette.h"
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
@@ -16,6 +17,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
     addAndMakeVisible(bandControls);
+    addAndMakeVisible(compSelectionControls);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(800, 600);
@@ -32,7 +34,8 @@ PFMProject12AudioProcessorEditor::~PFMProject12AudioProcessorEditor()
 void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-    g.fillAll(juce::Colour(105u, 109u, 125u)); // background
+//    g.fillAll(juce::Colour(105u, 109u, 125u)); // background
+    g.fillAll(ColourPalette::getColour(ColourPalette::Background)); // background
 }
 
 void PFMProject12AudioProcessorEditor::resized()
@@ -64,6 +67,11 @@ void PFMProject12AudioProcessorEditor::resized()
                            inStereoMeter.getBottom() - bandControlsHeight - padding,
                            outStereoMeter.getX() - inStereoMeter.getRight() - (padding * 2),
                            bandControlsHeight);
+    
+    compSelectionControls.setBounds(bandControls.getX(),
+                                    bandControls.getY() - bandControlsHeight - 2,
+                                    bandControls.getWidth(),
+                                    bandControlsHeight);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()
