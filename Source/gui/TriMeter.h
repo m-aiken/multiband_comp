@@ -1,8 +1,8 @@
 /*
   ==============================================================================
 
-    DbScale.h
-    Created: 31 May 2022 1:01:45am
+    TriMeter.h
+    Created: 18 Jun 2022 1:59:30pm
     Author:  Matt Aiken
 
   ==============================================================================
@@ -11,15 +11,19 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "../Globals.h"
 #include "Tick.h"
 
 //==============================================================================
-struct DbScale : juce::Component
+struct TriMeter : juce::Component
 {
-    ~DbScale() override = default;
     void paint(juce::Graphics& g) override;
-    void buildBackgroundImage(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb);
-    static std::vector<Tick> getTicks(int dbDivision, juce::Rectangle<int> meterBounds, int minDb, int maxDb);
+    void resized() override;
+    void update(float inDb, float outDb);
+    
+    std::vector<Tick> getTicks(int dbDivision);
 private:
-    juce::Image bkgd;
+    juce::Rectangle<int> getMeterBounds();
+    float inValueDb { Globals::getNegativeInf() }, outValueDb { Globals::getNegativeInf() };
+    std::vector<Tick> ticks;
 };
