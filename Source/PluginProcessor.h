@@ -556,6 +556,23 @@ struct CompressorBand
     void updateBypassState();
     void process(juce::AudioBuffer<float>& buffer);
     
+    float getRMSInputLevelDb();
+    float getRMSOutputLevelDb();
+    
+    template<typename T>
+    float computeRMSLevel(const T& buffer)
+    {
+        auto numSamples = buffer.getNumSamples();
+        auto numChannels = buffer.getNumChannels();
+        auto sum = 0.f;
+        for ( auto channel = 0; channel < numChannels; ++channel )
+        {
+            sum += buffer.getRMSLevel(channel, 0, numSamples);
+        }
+        
+        return sum / numChannels;
+    }
+    
     juce::AudioParameterFloat*  attack     { nullptr };
     juce::AudioParameterFloat*  release    { nullptr };
     juce::AudioParameterFloat*  threshold  { nullptr };
@@ -572,6 +589,7 @@ private:
     
     juce::dsp::Compressor<float> compressor;
     juce::dsp::Gain<float> gain;
+    std::atomic<float> rmsInputLevelDb, rmsOutputLevelDb;
 };
 
 //==============================================================================
