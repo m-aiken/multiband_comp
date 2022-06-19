@@ -12,6 +12,10 @@
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
+        <FILE id="QBxojs" name="BandLevel.h" compile="0" resource="0" file="Source/gui/BandLevel.h"/>
+        <FILE id="szVdCb" name="Tick.h" compile="0" resource="0" file="Source/gui/Tick.h"/>
+        <FILE id="ymvAex" name="TriMeter.cpp" compile="1" resource="0" file="Source/gui/TriMeter.cpp"/>
+        <FILE id="buMMck" name="TriMeter.h" compile="0" resource="0" file="Source/gui/TriMeter.h"/>
         <FILE id="y6gLWE" name="CompressorSelectionControlContainer.cpp" compile="1"
               resource="0" file="Source/gui/CompressorSelectionControlContainer.cpp"/>
         <FILE id="gOV1Ts" name="CompressorSelectionControlContainer.h" compile="0"

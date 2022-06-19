@@ -11,14 +11,9 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Tick.h"
 
 //==============================================================================
-struct Tick
-{
-    float db { 0.f };
-    int y { 0 };
-};
-
 struct DbScale : juce::Component
 {
     ~DbScale() override = default;

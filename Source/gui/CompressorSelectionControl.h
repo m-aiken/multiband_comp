@@ -12,6 +12,8 @@
 
 #include <JuceHeader.h>
 #include "ParamListener.h"
+#include "TriMeter.h"
+#include "BandLevel.h"
 
 //==============================================================================
 struct CompressorSelectionControl : juce::Component
@@ -21,6 +23,7 @@ struct CompressorSelectionControl : juce::Component
     void paint(juce::Graphics& g) override;
     void resized() override;
     void setAsSelected(bool shouldBeSelected);
+    void updateMeter(const BandLevel& level);
 private:
     juce::AudioProcessorValueTreeState& apvts;
     int bandNum;
@@ -44,4 +47,6 @@ private:
                                           muteParamListener,
                                           bypassParamListener,
                                           selectParamListener;
+    
+    TriMeter meter;
 };

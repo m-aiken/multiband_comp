@@ -81,6 +81,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     addAndMakeVisible(soloButton);
     addAndMakeVisible(muteButton);
     addAndMakeVisible(bypassButton);
+    addAndMakeVisible(meter);
     
     updateButtonStates();
 }
@@ -90,13 +91,7 @@ void CompressorSelectionControl::paint(juce::Graphics& g)
     if ( selectedBandParam->convertFrom0to1(selectedBandParam->getValue()) == bandNum )
     {
         g.setColour(juce::Colours::skyblue);
-        auto bounds = getLocalBounds().toFloat();
-        auto padding = 5.f;
-        g.drawLine(bounds.getX() + padding,
-                   bounds.getBottom() - padding,
-                   bounds.getRight() - padding,
-                   bounds.getBottom() - padding,
-                   padding);
+        g.fillEllipse(5.f, 5.f, 8.f, 8.f);
     }
 }
 
@@ -127,6 +122,12 @@ void CompressorSelectionControl::resized()
                            soloMuteBypassY,
                            soloMuteBypassWidth,
                            soloMuteBypassWidth);
+    
+    auto meterWidth = 54;
+    meter.setBounds(bounds.getCentreX() - (meterWidth * 0.5),
+                    bypassButton.getBottom() + 5,
+                    meterWidth,
+                    bounds.getBottom() - bypassButton.getBottom() - 5);
 }
 
 void CompressorSelectionControl::setAsSelected(bool shouldBeSelected)
@@ -215,4 +216,9 @@ void CompressorSelectionControl::updateEnablements(juce::Button* clickedButton)
         
         updateButtonStates();
     }
+}
+
+void CompressorSelectionControl::updateMeter(const BandLevel& level)
+{
+    meter.update(level.rmsInputLevelDb, level.rmsOutputLevelDb);
 }

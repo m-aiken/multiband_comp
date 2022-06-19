@@ -106,6 +106,8 @@ void CompressorBand::process(juce::AudioBuffer<float>& buffer)
     jassert(compressorConfigured);
     jassert(gainConfigured);
     
+    rmsInputLevelDb.store(juce::Decibels::gainToDecibels(computeRMSLevel(buffer), Globals::getNegativeInf()));
+    
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
     
@@ -116,6 +118,18 @@ void CompressorBand::process(juce::AudioBuffer<float>& buffer)
     
     compressorConfigured = false;
     gainConfigured = false;
+    
+    rmsOutputLevelDb.store(juce::Decibels::gainToDecibels(computeRMSLevel(buffer), Globals::getNegativeInf()));
+}
+
+float CompressorBand::getRMSInputLevelDb()
+{
+    return rmsInputLevelDb.load();
+}
+
+float CompressorBand::getRMSOutputLevelDb()
+{
+    return rmsOutputLevelDb.load();
 }
 
 //==============================================================================
