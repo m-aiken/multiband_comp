@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "ColourPalette.h"
+#include "gui/BandLevel.h"
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
@@ -78,4 +79,17 @@ void PFMProject12AudioProcessorEditor::timerCallback()
 {
     handleMeterFifo(audioProcessor.inMeterValuesFifo, inMeterValues, inStereoMeter);
     handleMeterFifo(audioProcessor.outMeterValuesFifo, outMeterValues, outStereoMeter);
+    
+    auto& compressors = audioProcessor.getCompressors();
+    std::array<BandLevel, Globals::getNumMaxBands()> levels;
+    
+    for ( auto i = 0; i < Globals::getNumMaxBands(); ++i )
+    {
+        BandLevel bandLevel;
+        bandLevel.rmsInputLevelDb = compressors[i].getRMSInputLevelDb();
+        bandLevel.rmsOutputLevelDb = compressors[i].getRMSOutputLevelDb();
+        levels.at(i) = bandLevel;
+    }
+    
+    compSelectionControls.updateMeters(levels);
 }

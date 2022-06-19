@@ -748,6 +748,8 @@ public:
     
     Fifo<MeterValues, 20> inMeterValuesFifo, outMeterValuesFifo;
     
+    std::array<CompressorBand, Globals::getNumMaxBands()>& getCompressors() { return compressors; };
+    
 private:
     std::array<CompressorBand, Globals::getNumMaxBands()> compressors;
     

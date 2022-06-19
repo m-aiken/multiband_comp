@@ -71,3 +71,11 @@ void CompressorSelectionControlContainer::changeNumBandsDisplayed(int numBands)
         addAndMakeVisible(*controls[i]);
     }
 }
+
+void CompressorSelectionControlContainer::updateMeters(std::array<BandLevel, Globals::getNumMaxBands()> levels)
+{
+    for ( auto i = 0; i < levels.size(); ++i )
+    {
+        controls[i]->updateMeter(levels[i]);
+    }
+}

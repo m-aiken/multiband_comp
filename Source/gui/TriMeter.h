@@ -26,4 +26,5 @@ private:
     juce::Rectangle<int> getMeterBounds();
     float inValueDb { Globals::getNegativeInf() }, outValueDb { Globals::getNegativeInf() };
     std::vector<Tick> ticks;
+    Tick zeroDbTick;
 };

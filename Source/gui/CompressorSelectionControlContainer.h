@@ -13,6 +13,7 @@
 #include <JuceHeader.h>
 #include "../Globals.h"
 #include "CompressorSelectionControl.h"
+#include "BandLevel.h"
 
 //==============================================================================
 struct CompressorSelectionControlContainer : juce::Component
@@ -21,6 +22,7 @@ struct CompressorSelectionControlContainer : juce::Component
     void paint(juce::Graphics& g) override;
     void resized() override;
     void changeNumBandsDisplayed(int numBands);
+    void updateMeters(std::array<BandLevel, Globals::getNumMaxBands()> levels);
 private:
     juce::AudioProcessorValueTreeState& apvts;
     std::vector<std::unique_ptr<CompressorSelectionControl>> controls;

@@ -18,47 +18,60 @@ void TriMeter::paint(juce::Graphics& g)
     auto meterWidth = meterBounds.getWidth() / 3;
     auto meterHeight = meterBounds.getHeight();
     
+    g.setColour(ColourPalette::getColour(ColourPalette::Background).contrasting(0.05f));
+    g.fillRect(meterBounds);
+    
     // meters
     // in meter
     g.setColour(juce::Colours::skyblue);
     auto inDbScaled = std::floor(juce::jmap<float>(inValueDb, Globals::getNegativeInf(), Globals::getMaxDecibels(), meterHeight, 0));
-    juce::Rectangle<int> inMeter(0, inDbScaled, meterWidth, meterHeight * inDbScaled);
+    auto inMeter = juce::Rectangle<int>(0, inDbScaled, meterWidth, meterHeight - inDbScaled);
     g.fillRect(inMeter);
     
     // out meter
     g.setColour(ColourPalette::getColour(ColourPalette::MeterGreen));
     auto outDbScaled = std::floor(juce::jmap<float>(outValueDb, Globals::getNegativeInf(), Globals::getMaxDecibels(), meterHeight, 0));
-    juce::Rectangle<int> outMeter(meterWidth, outDbScaled, meterWidth, meterHeight * outDbScaled);
+    auto outMeter = juce::Rectangle<int>(meterWidth, outDbScaled, meterWidth, meterHeight - outDbScaled);
     g.fillRect(outMeter);
 
     // gain reduction
     auto gainReduction = std::floor(juce::jmap<float>(outValueDb - inValueDb, Globals::getNegativeInf(), Globals::getMaxDecibels(), meterHeight, 0));
-    juce::Rectangle<int> grMeter(meterWidth * 2, gainReduction, meterWidth, meterHeight * gainReduction);
+    auto grMeter = juce::Rectangle<int>(meterWidth * 2, 0, meterWidth, gainReduction);
+    grMeter.removeFromTop(zeroDbTick.y);
     g.fillRect(grMeter);
     
     // ticks
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
-    
     for ( auto i = 0; i < 3; ++i )
     {
-        for ( auto j = 0; j < ticks.size(); ++j )
+        g.setColour(ColourPalette::getColour(ColourPalette::Background));
+        for ( auto j = 1; j < ticks.size() - 1; ++j ) // excluding first and last - they should be covered up by the bounding box anyway
         {
-            auto indent = j % 2 == 0 ? 2 : 10;
-            g.drawLine((meterWidth * i) + indent,     // start x
-                       ticks[j].y,                    // start y
-                       (meterWidth * (i+1)) - indent, // end x
-                       ticks[j].y,                    // end y
-                       1.f);                          // line thickness
+            if (ticks[j].y != zeroDbTick.y)
+            {
+                auto indent = j % 2 == 0 ? 4 : 8;
+                g.drawLine((meterWidth * i) + indent,     // start x
+                           ticks[j].y,                    // start y
+                           (meterWidth * (i+1)) - indent, // end x
+                           ticks[j].y,                    // end y
+                           1.f);                          // line thickness
+            }
         }
+        // draw the zero dB line separately so we're not reseting the colour for each tick
+        g.setColour(ColourPalette::getColour(ColourPalette::MeterGreen));
+        g.drawLine((meterWidth * i) + 4,     // start x
+                   zeroDbTick.y,             // start y
+                   (meterWidth * (i+1)) - 4, // end x
+                   zeroDbTick.y,             // end y
+                   1.f);                     // line thickness
     }
     
     // separation lines
-    g.drawLine(0, 0, meterBounds.getRight(), 0, 1.f); // top
-    g.drawLine(0, meterBounds.getBottom(), meterBounds.getRight(), meterBounds.getBottom(), 1.f); // bottom
-    for ( auto i = 1; i < 3; ++i )
-    {
-        g.drawLine(meterWidth * i, 0, meterWidth * i, meterBounds.getBottom(), 1.f);
-    }
+    g.setColour(ColourPalette::getColour(ColourPalette::Background));
+    g.drawLine(meterWidth * 1, 1, meterWidth * 1, meterBounds.getBottom() - 1, 1.f);
+    g.drawLine(meterWidth * 2, 1, meterWidth * 2, meterBounds.getBottom() - 1, 1.f);
+    
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
+    g.drawRect(meterBounds);
     
     // labels
     std::array<juce::String, 3> labels = { "I", "O", "GR" };
@@ -68,7 +81,7 @@ void TriMeter::paint(juce::Graphics& g)
                          meterWidth * label,           // x
                          meterBounds.getBottom(),      // y
                          meterWidth,                   // width
-                         12,                           // height
+                         16,                           // height
                          juce::Justification::centred, // justification
                          1);                           // num lines
     }
@@ -107,6 +120,12 @@ std::vector<Tick> TriMeter::getTicks(int dbDivision)
         tick.db = db;
         tick.y = juce::jmap<int>(db, Globals::getNegativeInf(), Globals::getMaxDecibels(), meterHeight, 0);
         ticks.emplace_back(tick);
+        
+        if (db == 0.f)
+        {
+            // store this so we don't have to recompute the 0db y location on each repaint
+            zeroDbTick = tick;
+        }
     }
     
     return ticks;
@@ -114,5 +133,7 @@ std::vector<Tick> TriMeter::getTicks(int dbDivision)
 
 juce::Rectangle<int> TriMeter::getMeterBounds()
 {
-    return getLocalBounds().reduced(0, 16);
+    auto bounds = getLocalBounds();
+    bounds.removeFromBottom(16);
+    return bounds;
 }
