@@ -15,10 +15,15 @@
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    
     bandCountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts,
                                                                                                    "NumBands",
                                                                                                    bandCountPicker);
+    
+    auto numBandRange = audioProcessor.apvts.getParameterRange("NumBands");
+    for ( auto i = static_cast<int>(numBandRange.start); i <= static_cast<int>(numBandRange.end); ++i )
+    {
+        bandCountPicker.addItem(juce::String(i), i); // the range is 2 to 8
+    }
     
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
