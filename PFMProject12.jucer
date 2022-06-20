@@ -9,6 +9,8 @@
       <FILE id="dQ6P3S" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <GROUP id="{9CD76FE6-CB69-6BBE-D6B6-6425BB5F5AEC}" name="dsp">
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
+        <FILE id="xJK5Om" name="FifoBackgroundUpdater.h" compile="0" resource="0"
+              file="Source/dsp/FifoBackgroundUpdater.h"/>
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
