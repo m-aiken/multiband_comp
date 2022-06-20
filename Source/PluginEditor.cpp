@@ -15,10 +15,16 @@
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    
+    bandCountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts,
+                                                                                                   "NumBands",
+                                                                                                   bandCountPicker);
+    
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
     addAndMakeVisible(bandControls);
     addAndMakeVisible(compSelectionControls);
+    addAndMakeVisible(bandCountPicker);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(800, 600);
@@ -62,6 +68,11 @@ void PFMProject12AudioProcessorEditor::resized()
                             stereoMeterWidth,
                             JUCE_LIVE_CONSTANT(bounds.getHeight() * 0.8));
 #endif
+    
+    bandCountPicker.setBounds(bounds.getRight() - 200,
+                              padding,
+                              60,
+                              40);
     
     auto bandControlsHeight = 120;
     bandControls.setBounds(inStereoMeter.getRight() + padding,
