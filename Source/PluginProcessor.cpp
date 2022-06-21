@@ -185,15 +185,12 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
         assignBoolParam   (compressors[i].mute,       Params::getBandControlParamName(Params::BandControl::Mute, i));
     }
     
-    assignIntParam(numBands, "NumBands");
-    
     const auto& params = Params::getParams();
     
+    assignIntParam(numBands, params.at(Params::Names::Number_Of_Bands));
     assignChoiceParam(processingMode, params.at(Params::Names::Processing_Mode));
-    
     assignFloatParam(gainIn, params.at(Params::Names::Gain_In));
     assignFloatParam(gainOut, params.at(Params::Names::Gain_Out));
-    
     assignIntParam(selectedBand, params.at(Params::Names::Selected_Band));
 }
 
@@ -606,7 +603,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     addBandControls(layout, 6);
     addBandControls(layout, 7);
     
-    layout.add(std::make_unique<juce::AudioParameterInt>("NumBands", "Number Of Bands", 2, 8, Globals::getNumMaxBands()));
+    const auto& params = Params::getParams();
+    
+    layout.add(std::make_unique<juce::AudioParameterInt>(params.at(Params::Names::Number_Of_Bands),
+                                                         params.at(Params::Names::Number_Of_Bands),
+                                                         2,
+                                                         8,
+                                                         Globals::getNumMaxBands()));
     
     //==============================================================================
     
@@ -632,7 +635,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
         processingModes.add(mode.second);
     }
     
-    const auto& params = Params::getParams();
     layout.add(std::make_unique<juce::AudioParameterChoice>(params.at(Params::Names::Processing_Mode),
                                                             params.at(Params::Names::Processing_Mode),
                                                             processingModes,

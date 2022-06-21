@@ -10,16 +10,19 @@
 #include "PluginEditor.h"
 #include "ColourPalette.h"
 #include "gui/BandLevel.h"
+#include "Params.h"
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
+    const auto& params = Params::getParams();
+    
     bandCountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts,
-                                                                                                   "NumBands",
+                                                                                                   params.at(Params::Names::Number_Of_Bands),
                                                                                                    bandCountPicker);
     
-    auto numBandRange = audioProcessor.apvts.getParameterRange("NumBands");
+    auto numBandRange = audioProcessor.apvts.getParameterRange(params.at(Params::Names::Number_Of_Bands));
     for ( auto i = static_cast<int>(numBandRange.start); i <= static_cast<int>(numBandRange.end); ++i )
     {
         bandCountPicker.addItem(juce::String(i), i); // the range is 2 to 8
