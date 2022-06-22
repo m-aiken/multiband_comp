@@ -111,4 +111,22 @@ void PFMProject12AudioProcessorEditor::timerCallback()
     }
     
     compSelectionControls.updateMeters(levels);
+    
+    auto nFilterBands = audioProcessor.numFilterBands.load();
+    if ( nFilterBands != numActiveFilterBands )
+    {
+        numActiveFilterBands = nFilterBands;
+        const auto& params = Params::getParams();
+        
+        auto selectedBand = dynamic_cast<juce::RangedAudioParameter*>(audioProcessor.apvts.getParameter(params.at(Params::Names::Selected_Band)));
+        jassert(selectedBand != nullptr);
+        if (static_cast<size_t>(selectedBand->convertFrom0to1(selectedBand->getValue())) > numActiveFilterBands)
+        {
+            selectedBand->beginChangeGesture();
+            selectedBand->setValueNotifyingHost(selectedBand->convertTo0to1(numActiveFilterBands));
+            selectedBand->endChangeGesture();
+        }
+        
+        compSelectionControls.changeNumBandsDisplayed(static_cast<int>(numActiveFilterBands));
+    }
 }

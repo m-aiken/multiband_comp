@@ -11,6 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Fifo.h"
 
 //==============================================================================
 template<typename Value>
@@ -21,10 +22,10 @@ struct FifoBackgroundUpdater : juce::Timer
     {
         if ( updateImmediately )
         {
-            updateNeeded.store(1);
+            updateNeeded.set(1);
         }
         
-        jassert(funcToRun != null);
+        jassert(funcToRun != nullptr);
         
         startTimerHz(60);
     }
@@ -35,13 +36,13 @@ struct FifoBackgroundUpdater : juce::Timer
     {
         if ( sharedValueFifo.push(value) )
         {
-            updateNeeded.store(updateNeeded.load() + 1);
+            updateNeeded.set(updateNeeded.get() + 1);
         }
     }
     
     void timerCallback() override
     {
-        auto currentUpdate = updateNeeded.load();
+        auto currentUpdate = updateNeeded.get();
         if ( lastUpdate == currentUpdate )
         {
             return;
@@ -53,14 +54,14 @@ struct FifoBackgroundUpdater : juce::Timer
         {
             if ( useEveryValue )
             {
-                while ( fifo.pull(newValues) )
+                while ( sharedValueFifo.pull(newValues) )
                 {
                     funcToRun(newValues);
                 }
             }
             else
             {
-                while ( fifo.pull(newValues) ) { }
+                while ( sharedValueFifo.pull(newValues) ) { }
                 funcToRun(newValues);
             }
         }
@@ -70,5 +71,5 @@ private:
     juce::Atomic<int> updateNeeded { 0 };
     int lastUpdate = 0;
     std::function<void(Value)> funcToRun;
-    Fifo<Value> sharedValueFifo;
+    Fifo<Value, 20> sharedValueFifo;
 };

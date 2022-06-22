@@ -58,6 +58,8 @@ private:
     
     juce::ComboBox bandCountPicker;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> bandCountAttachment;
+    
+    size_t numActiveFilterBands;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
