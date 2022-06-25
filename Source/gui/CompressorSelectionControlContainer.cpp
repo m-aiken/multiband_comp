@@ -55,12 +55,12 @@ void CompressorSelectionControlContainer::resized()
     grid.performLayout(getLocalBounds());
 }
 
-void CompressorSelectionControlContainer::changeNumBandsDisplayed(int numBands)
+void CompressorSelectionControlContainer::changeNumBandsDisplayed(const int& numBands)
 {
     controls.clear();
     
     const auto& params = Params::getParams();
-    auto selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
+    auto selectedBandParam = apvts.getParameter(params.at(Params::Names::Selected_Band));
     jassert( selectedBandParam != nullptr );
     auto selectedBandNum = selectedBandParam->convertFrom0to1(selectedBandParam->getValue());
     
@@ -71,13 +71,15 @@ void CompressorSelectionControlContainer::changeNumBandsDisplayed(int numBands)
         addAndMakeVisible(*controls[i]);
     }
     
+    numBandsDisplayed = numBands;
+
     resized();
     repaint();
 }
 
-void CompressorSelectionControlContainer::updateMeters(std::array<BandLevel, Globals::getNumMaxBands()> levels)
+void CompressorSelectionControlContainer::updateMeters(const std::array<BandLevel, Globals::getNumMaxBands()>& levels)
 {
-    for ( auto i = 0; i < levels.size(); ++i )
+    for ( auto i = 0; i < numBandsDisplayed; ++i )
     {
         controls[i]->updateMeter(levels[i]);
     }

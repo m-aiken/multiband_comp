@@ -19,7 +19,7 @@ struct TriMeter : juce::Component
 {
     void paint(juce::Graphics& g) override;
     void resized() override;
-    void update(float inDb, float outDb);
+    void update(const float& inDb, const float& outDb);
     
     std::vector<Tick> getTicks(int dbDivision);
 private:

@@ -193,9 +193,9 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     assignFloatParam(gainOut, params.at(Params::Names::Gain_Out));
     assignIntParam(selectedBand, params.at(Params::Names::Selected_Band));
     
-    defaultCenterFrequenciesUpdater = std::make_unique<FifoBackgroundUpdater<int>>([this](const int& nBands){ updateDefaultCenterFrequencies(numBands->get()); });
+    defaultCenterFrequenciesUpdater = std::make_unique<FifoBackgroundUpdater<int>>([this](const int& nBands){ updateDefaultCenterFrequencies(nBands); });
     
-    auto crossoverFreqOrderingUpdaterLambda = [this](const int& numBands)
+    auto crossoverFreqOrderingUpdaterLambda = [this](const int& nBands)
     {
         auto crossoverParams = getCrossoverParams();
         auto reorderedCrossoverFreqs = getReorderedCrossovers(crossoverParams);
@@ -557,11 +557,11 @@ void PFMProject12AudioProcessor::updateBands()
 
 std::vector<juce::RangedAudioParameter*> PFMProject12AudioProcessor::getCrossoverParams()
 {
-    std::vector<juce::RangedAudioParameter*> crossoverParams(numBands->get() - 1);
+    std::vector<juce::RangedAudioParameter*> crossoverParams(activeFilterSequence->getBufferCount() - 1);
     auto numCrossoverParams = crossoverParams.size();
     for ( auto i = 0; i < numCrossoverParams; ++i )
     {
-        auto param = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(Params::getCrossoverParamName(i, i+1)));
+        auto param = apvts.getParameter(Params::getCrossoverParamName(i, i+1));
         jassert(param != nullptr);
         crossoverParams[i] = param;
     }
@@ -571,7 +571,6 @@ std::vector<juce::RangedAudioParameter*> PFMProject12AudioProcessor::getCrossove
 
 std::vector<float> PFMProject12AudioProcessor::getReorderedCrossovers(const std::vector<juce::RangedAudioParameter*>& params)
 {
-    /*
     std::vector<float> crossoverParamsHz(params.size());
     auto numCrossoverParams = params.size();
     for ( auto i = 0; i < numCrossoverParams; ++i )
@@ -579,19 +578,20 @@ std::vector<float> PFMProject12AudioProcessor::getReorderedCrossovers(const std:
         crossoverParamsHz[i] = params[i]->convertFrom0to1(params[i]->getValue());
     }
     
-    return crossoverParamsHz;
-    */
+    std::sort(crossoverParamsHz.begin(), crossoverParamsHz.end());
     
-    return getDefaultCenterFrequencies(params.size());
+    return crossoverParamsHz;
 }
 
 void PFMProject12AudioProcessor::updateCrossovers(std::vector<float> xovers, const std::vector<juce::RangedAudioParameter*>& params)
 {
+    JUCE_ASSERT_MESSAGE_THREAD;
     jassert(xovers.size() == params.size());
+    
     auto numCrossoverParams = params.size();
     for ( auto i = 0; i < numCrossoverParams; ++i )
     {
-        params[i]->setValue(xovers[i]);
+        params[i]->setValueNotifyingHost(xovers[i]);
     }
 }
 
@@ -607,19 +607,14 @@ void PFMProject12AudioProcessor::updateNumberOfBands()
     
     if ( filterCreator.getSequence(newSequence) )
     {
-        updateDefaultCenterFrequencies(newSequence->getBufferCount());
+        auto sequenceLength = newSequence->getBufferCount();
         newSequence->prepare(spec);
         releasePool.add(activeFilterSequence);
+        defaultCenterFrequenciesUpdater->signalUpdateNeeded(static_cast<int>(sequenceLength));
+        crossoverFreqOrderingUpdater->signalUpdateNeeded(static_cast<int>(sequenceLength));
+        numFilterBands.store(sequenceLength);
         activeFilterSequence = newSequence;
         currentNumberOfBands = currentSelection;
-        
-//        auto sequenceLength = activeFilterSequence->getBufferCount();
-//        defaultCenterFrequenciesUpdater->signalUpdateNeeded(static_cast<int>(sequenceLength));
-//        crossoverFreqOrderingUpdater->signalUpdateNeeded(static_cast<int>(sequenceLength));
-//        numFilterBands.store(sequenceLength);
-        defaultCenterFrequenciesUpdater->signalUpdateNeeded(static_cast<int>(currentNumberOfBands));
-        crossoverFreqOrderingUpdater->signalUpdateNeeded(static_cast<int>(currentNumberOfBands));
-        numFilterBands.store(currentNumberOfBands);
     }
 }
 
@@ -668,7 +663,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     
     layout.add(std::make_unique<juce::AudioParameterInt>(params.at(Params::Names::Number_Of_Bands),
                                                          params.at(Params::Names::Number_Of_Bands),
-                                                         2,
+                                                         3,
                                                          8,
                                                          Globals::getNumMaxBands()));
     

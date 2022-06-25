@@ -109,7 +109,7 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         bandLevel.rmsOutputLevelDb = compressors[i].getRMSOutputLevelDb();
         levels.at(i) = bandLevel;
     }
-    
+
     compSelectionControls.updateMeters(levels);
     
     auto nFilterBands = audioProcessor.numFilterBands.load();
@@ -118,12 +118,13 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         numActiveFilterBands = nFilterBands;
         const auto& params = Params::getParams();
         
-        auto selectedBand = dynamic_cast<juce::RangedAudioParameter*>(audioProcessor.apvts.getParameter(params.at(Params::Names::Selected_Band)));
+        auto selectedBand = audioProcessor.apvts.getParameter(params.at(Params::Names::Selected_Band));
         jassert(selectedBand != nullptr);
-        if (static_cast<size_t>(selectedBand->convertFrom0to1(selectedBand->getValue())) > numActiveFilterBands)
+        
+        if (static_cast<size_t>(selectedBand->convertFrom0to1(selectedBand->getValue())) > numActiveFilterBands - 1)
         {
             selectedBand->beginChangeGesture();
-            selectedBand->setValueNotifyingHost(selectedBand->convertTo0to1(numActiveFilterBands));
+            selectedBand->setValueNotifyingHost(selectedBand->convertTo0to1(numActiveFilterBands - 1));
             selectedBand->endChangeGesture();
         }
         

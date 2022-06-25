@@ -93,7 +93,7 @@ void TriMeter::resized()
     ticks = getTicks(6);
 }
 
-void TriMeter::update(float inDb, float outDb)
+void TriMeter::update(const float& inDb, const float& outDb)
 {
     inValueDb = inDb;
     outValueDb = outDb;
