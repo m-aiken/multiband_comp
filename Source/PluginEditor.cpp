@@ -22,11 +22,17 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
                                                                                                    params.at(Params::Names::Number_Of_Bands),
                                                                                                    bandCountPicker);
     
-    auto numBandRange = audioProcessor.apvts.getParameterRange(params.at(Params::Names::Number_Of_Bands));
+    auto numBandsParam = audioProcessor.apvts.getParameter(params.at(Params::Names::Number_Of_Bands));
+    jassert(numBandsParam != nullptr);
+    
+    auto numBandRange = numBandsParam->getNormalisableRange();
     for ( auto i = static_cast<int>(numBandRange.start); i <= static_cast<int>(numBandRange.end); ++i )
     {
-        bandCountPicker.addItem(juce::String(i), i); // the range is 2 to 8
+        bandCountPicker.addItem(juce::String(i), i); // the range is 3 to 8
     }
+    
+    auto nBands = numBandsParam->convertFrom0to1(numBandsParam->getValue());
+    bandCountPicker.setSelectedId(nBands);
     
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
