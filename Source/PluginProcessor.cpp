@@ -591,7 +591,9 @@ void PFMProject12AudioProcessor::updateCrossovers(std::vector<float> xovers, con
     auto numCrossoverParams = params.size();
     for ( auto i = 0; i < numCrossoverParams; ++i )
     {
+        params[i]->beginChangeGesture();
         params[i]->setValueNotifyingHost(xovers[i]);
+        params[i]->endChangeGesture();
     }
 }
 

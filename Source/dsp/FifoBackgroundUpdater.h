@@ -36,7 +36,7 @@ struct FifoBackgroundUpdater : juce::Timer
     {
         if ( sharedValueFifo.push(value) )
         {
-            updateNeeded.set(updateNeeded.get() + 1);
+            ++updateNeeded;
         }
     }
     

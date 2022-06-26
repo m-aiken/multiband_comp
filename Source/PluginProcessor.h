@@ -622,7 +622,7 @@ public:
     
     std::array<CompressorBand, Globals::getNumMaxBands()>& getCompressors() { return compressors; };
     
-    std::atomic<size_t> numFilterBands;
+    std::atomic<size_t> numFilterBands { Globals::getNumMaxBands() };
 private:
     std::array<CompressorBand, Globals::getNumMaxBands()> compressors;
     
