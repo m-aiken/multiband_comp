@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "Globals.h"
 #include "gui/Averager.h"
 #include "gui/DecayingValueHolder.h"
 #include "gui/DbScale.h"
@@ -59,7 +60,7 @@ private:
     juce::ComboBox bandCountPicker;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> bandCountAttachment;
     
-    size_t numActiveFilterBands;
+    size_t numActiveFilterBands { Globals::getNumMaxBands() };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
