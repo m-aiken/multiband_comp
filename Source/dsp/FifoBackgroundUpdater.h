@@ -22,7 +22,7 @@ struct FifoBackgroundUpdater : juce::Timer
     {
         if ( updateImmediately )
         {
-            updateNeeded.set(1);
+            lastUpdate = updateNeeded.get() - 1;
         }
         
         jassert(funcToRun != nullptr);
