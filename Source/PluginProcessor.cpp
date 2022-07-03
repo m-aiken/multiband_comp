@@ -185,16 +185,24 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
         assignBoolParam   (compressors[i].mute,       Params::getBandControlParamName(Params::BandControl::Mute, i));
     }
     
-    assignIntParam(numBands, "NumBands");
-    
     const auto& params = Params::getParams();
     
+    assignIntParam(numBands, params.at(Params::Names::Number_Of_Bands));
     assignChoiceParam(processingMode, params.at(Params::Names::Processing_Mode));
-    
     assignFloatParam(gainIn, params.at(Params::Names::Gain_In));
     assignFloatParam(gainOut, params.at(Params::Names::Gain_Out));
-    
     assignIntParam(selectedBand, params.at(Params::Names::Selected_Band));
+    
+    defaultCenterFrequenciesUpdater = std::make_unique<FifoBackgroundUpdater<int>>([this](const int& nBands){ updateDefaultCenterFrequencies(nBands); });
+    
+    auto crossoverFreqOrderingUpdaterLambda = [this](const int& nBands)
+    {
+        auto crossoverParams = getCrossoverParams();
+        auto reorderedCrossoverFreqs = getReorderedCrossovers(crossoverParams);
+        updateCrossovers(reorderedCrossoverFreqs, crossoverParams);
+    };
+    
+    crossoverFreqOrderingUpdater = std::make_unique<FifoBackgroundUpdater<int>>(crossoverFreqOrderingUpdaterLambda);
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -531,9 +539,6 @@ void PFMProject12AudioProcessor::updateBands()
 {
     updateNumberOfBands();
     
-    inputGain.setGainDecibels(gainIn->get());
-    outputGain.setGainDecibels(gainOut->get());
-    
     for ( auto& comp : compressors )
     {
         comp.updateCompressor();
@@ -542,7 +547,54 @@ void PFMProject12AudioProcessor::updateBands()
     }
     
     auto afSequence = activeFilterSequence;
-    afSequence->updateFilterCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
+//    afSequence->updateFilterCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
+    auto crossoverFrequencies = getReorderedCrossovers(getCrossoverParams());
+    afSequence->updateFilterCutoffs(crossoverFrequencies);
+    
+    inputGain.setGainDecibels(gainIn->get());
+    outputGain.setGainDecibels(gainOut->get());
+}
+
+std::vector<juce::RangedAudioParameter*> PFMProject12AudioProcessor::getCrossoverParams()
+{
+    std::vector<juce::RangedAudioParameter*> crossoverParams(activeFilterSequence->getBufferCount() - 1);
+    auto numCrossoverParams = crossoverParams.size();
+    for ( auto i = 0; i < numCrossoverParams; ++i )
+    {
+        auto param = apvts.getParameter(Params::getCrossoverParamName(i, i+1));
+        jassert(param != nullptr);
+        crossoverParams[i] = param;
+    }
+    
+    return crossoverParams;
+}
+
+std::vector<float> PFMProject12AudioProcessor::getReorderedCrossovers(const std::vector<juce::RangedAudioParameter*>& params)
+{
+    std::vector<float> crossoverParamsHz(params.size());
+    auto numCrossoverParams = params.size();
+    for ( auto i = 0; i < numCrossoverParams; ++i )
+    {
+        crossoverParamsHz[i] = params[i]->convertFrom0to1(params[i]->getValue());
+    }
+    
+    std::sort(crossoverParamsHz.begin(), crossoverParamsHz.end());
+    
+    return crossoverParamsHz;
+}
+
+void PFMProject12AudioProcessor::updateCrossovers(std::vector<float> xovers, const std::vector<juce::RangedAudioParameter*>& params)
+{
+    JUCE_ASSERT_MESSAGE_THREAD;
+    jassert(xovers.size() == params.size());
+    
+    auto numCrossoverParams = params.size();
+    for ( auto i = 0; i < numCrossoverParams; ++i )
+    {
+        params[i]->beginChangeGesture();
+        params[i]->setValueNotifyingHost(params[i]->convertTo0to1(xovers[i]));
+        params[i]->endChangeGesture();
+    }
 }
 
 void PFMProject12AudioProcessor::updateNumberOfBands()
@@ -557,9 +609,12 @@ void PFMProject12AudioProcessor::updateNumberOfBands()
     
     if ( filterCreator.getSequence(newSequence) )
     {
-        updateDefaultCenterFrequencies(newSequence->getBufferCount());
+        auto sequenceLength = newSequence->getBufferCount();
         newSequence->prepare(spec);
         releasePool.add(activeFilterSequence);
+        defaultCenterFrequenciesUpdater->signalUpdateNeeded(static_cast<int>(sequenceLength));
+        crossoverFreqOrderingUpdater->signalUpdateNeeded(static_cast<int>(sequenceLength));
+        numFilterBands.store(sequenceLength);
         activeFilterSequence = newSequence;
         currentNumberOfBands = currentSelection;
     }
@@ -606,7 +661,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
     addBandControls(layout, 6);
     addBandControls(layout, 7);
     
-    layout.add(std::make_unique<juce::AudioParameterInt>("NumBands", "Number Of Bands", 2, 8, Globals::getNumMaxBands()));
+    const auto& params = Params::getParams();
+    
+    layout.add(std::make_unique<juce::AudioParameterInt>(params.at(Params::Names::Number_Of_Bands),
+                                                         params.at(Params::Names::Number_Of_Bands),
+                                                         3,
+                                                         8,
+                                                         Globals::getNumMaxBands()));
     
     //==============================================================================
     
@@ -632,7 +693,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
         processingModes.add(mode.second);
     }
     
-    const auto& params = Params::getParams();
     layout.add(std::make_unique<juce::AudioParameterChoice>(params.at(Params::Names::Processing_Mode),
                                                             params.at(Params::Names::Processing_Mode),
                                                             processingModes,
@@ -718,8 +778,8 @@ std::vector<float> PFMProject12AudioProcessor::getDefaultCenterFrequencies(size_
 {
     jassert( numBands > 1 );
     std::vector<float> centerFrequencies(numBands - 1);
-
-    for ( auto i = 0; i < centerFrequencies.size(); ++i )
+    auto numFrequencies = centerFrequencies.size();
+    for ( auto i = 0; i < numFrequencies; ++i )
     {
         centerFrequencies[i] = std::round( juce::mapToLog10(juce::jmap<float>(i+1, 0, numBands, 0.f, 1.f), Globals::getMinFrequency(), Globals::getMaxFrequency()) );
     }

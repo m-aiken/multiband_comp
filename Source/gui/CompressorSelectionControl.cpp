@@ -98,9 +98,9 @@ void CompressorSelectionControl::paint(juce::Graphics& g)
 void CompressorSelectionControl::resized()
 {
     auto bounds = getLocalBounds();
-    auto soloMuteBypassWidth = bounds.getWidth() * 0.25;
+    auto soloMuteBypassHeight = bounds.getHeight() * 0.15;
     
-    auto selectWidth = soloMuteBypassWidth * 1.4;
+    auto selectWidth = soloMuteBypassHeight * 1.4;
     selectButton.setBounds(bounds.getCentreX() - (selectWidth * 0.5),
                            3,
                            selectWidth,
@@ -108,20 +108,20 @@ void CompressorSelectionControl::resized()
     
     auto soloMuteBypassY = selectButton.getBottom() + 3;
     
-    muteButton.setBounds(bounds.getCentreX() - (soloMuteBypassWidth * 0.5),
+    muteButton.setBounds(bounds.getCentreX() - (soloMuteBypassHeight * 0.5),
                          soloMuteBypassY,
-                         soloMuteBypassWidth,
-                         soloMuteBypassWidth);
+                         soloMuteBypassHeight,
+                         soloMuteBypassHeight);
     
-    soloButton.setBounds(muteButton.getX() - soloMuteBypassWidth - 2,
+    soloButton.setBounds(muteButton.getX() - soloMuteBypassHeight - 2,
                          soloMuteBypassY,
-                         soloMuteBypassWidth,
-                         soloMuteBypassWidth);
+                         soloMuteBypassHeight,
+                         soloMuteBypassHeight);
     
     bypassButton.setBounds(muteButton.getRight() + 2,
                            soloMuteBypassY,
-                           soloMuteBypassWidth,
-                           soloMuteBypassWidth);
+                           soloMuteBypassHeight,
+                           soloMuteBypassHeight);
     
     auto meterWidth = 54;
     meter.setBounds(bounds.getCentreX() - (meterWidth * 0.5),
