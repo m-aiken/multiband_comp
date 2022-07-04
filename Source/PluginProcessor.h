@@ -12,8 +12,10 @@
 #include "dsp/Fifo.h"
 #include "dsp/FifoBackgroundUpdater.h"
 #include "dsp/Decibel.h"
+#include "dsp/SingleChannelSampleFifo.h"
 #include "Params.h"
 #include "Globals.h"
+#include "Channel.h"
 
 #define DISPLAY_FILTER_CONFIGURATIONS false
 #define TEST_FILTER_NETWORK false
@@ -623,6 +625,8 @@ public:
     std::array<CompressorBand, Globals::getNumMaxBands()>& getCompressors() { return compressors; };
     
     std::atomic<size_t> numFilterBands { Globals::getNumMaxBands() };
+    
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> SCSF { Channel::Left };
 private:
     std::array<CompressorBand, Globals::getNumMaxBands()> compressors;
     

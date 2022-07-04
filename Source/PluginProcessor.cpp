@@ -298,6 +298,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     inputGain.prepare(spec);
     outputGain.prepare(spec);
     
+    SCSF.prepare(samplesPerBlock);
+    
 //    guiFifo.prepare(samplesPerBlock, getTotalNumOutputChannels());
     
 #if USE_TEST_OSC
