@@ -10,6 +10,10 @@
       <FILE id="dQ6P3S" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <GROUP id="{9CD76FE6-CB69-6BBE-D6B6-6425BB5F5AEC}" name="dsp">
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
+        <FILE id="YEKJFb" name="FFTDataGenerator.cpp" compile="1" resource="0"
+              file="Source/dsp/FFTDataGenerator.cpp"/>
+        <FILE id="vvoWNa" name="FFTDataGenerator.h" compile="0" resource="0"
+              file="Source/dsp/FFTDataGenerator.h"/>
         <FILE id="HulqSZ" name="Fifo.h" compile="0" resource="0" file="Source/dsp/Fifo.h"/>
         <FILE id="xJK5Om" name="FifoBackgroundUpdater.h" compile="0" resource="0"
               file="Source/dsp/FifoBackgroundUpdater.h"/>
