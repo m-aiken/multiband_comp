@@ -26,7 +26,7 @@ struct FFTDataGenerator
     void changeOrder(FFTOrder newOrder);
     int getFFTSize() const { return 1 << order; }
     int getNumAvailableFFTDataBlocks() const { return fftDataFifo.getNumAvailableForReading(); }
-    bool getFFTData(std::vector<float>&& data) { return fftDataFifo.pull(data); }
+    bool getFFTData(std::vector<float>& data) { return fftDataFifo.pull(data); }
 private:
     FFTOrder order;
     std::vector<float> fftData;
