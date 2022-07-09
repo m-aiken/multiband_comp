@@ -9,6 +9,10 @@
       <FILE id="Dkofsp" name="ColourPalette.h" compile="0" resource="0" file="Source/ColourPalette.h"/>
       <FILE id="dQ6P3S" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <GROUP id="{9CD76FE6-CB69-6BBE-D6B6-6425BB5F5AEC}" name="dsp">
+        <FILE id="MLTllN" name="AnalyzerPathGenerator.cpp" compile="1" resource="0"
+              file="Source/dsp/AnalyzerPathGenerator.cpp"/>
+        <FILE id="EQsgau" name="AnalyzerPathGenerator.h" compile="0" resource="0"
+              file="Source/dsp/AnalyzerPathGenerator.h"/>
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
         <FILE id="YEKJFb" name="FFTDataGenerator.cpp" compile="1" resource="0"
               file="Source/dsp/FFTDataGenerator.cpp"/>

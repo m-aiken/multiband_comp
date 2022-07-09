@@ -23,7 +23,7 @@ void FFTDataGenerator::produceFFTDataForRendering(const juce::AudioBuffer<float>
     forwardFFT->performFrequencyOnlyForwardTransform(fftData.data(), true);
     
     auto numBins = static_cast<int>(getFFTSize() * 0.5);
-    juce::FloatVectorOperations::multiply(fftData.data(), static_cast<float>(1/numBins), numBins+1);
+    juce::FloatVectorOperations::multiply(fftData.data(), 1.f / static_cast<float>(numBins), numBins+1);
     
     for ( auto i = 0; i < numBins + 1; ++i )
     {
