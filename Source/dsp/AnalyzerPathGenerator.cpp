@@ -32,6 +32,8 @@ void AnalyzerPathGenerator::generatePath(const std::vector<float>& renderData,
     auto fftBoundsY = fftBounds.getY();
     auto fftBoundsWidth = fftBounds.getWidth();
     
+    auto lastXCoord = fftBounds.getX();
+    
     for ( auto i = 1; i < numBins + 1; i += pathResolution )
     {
         auto yCoord = juce::jmap<float>(renderData[i], negativeInfinity, maxDb, fftBoundsBottom, fftBoundsY);
@@ -41,7 +43,12 @@ void AnalyzerPathGenerator::generatePath(const std::vector<float>& renderData,
             auto binFreq = i * binWidth;
             auto normalizedX = juce::mapFromLog10(binFreq, minFreq, maxFreq);
             auto xCoord = std::floor(normalizedX * fftBoundsWidth);
-            path.lineTo(juce::Point<float>(xCoord, yCoord));
+            
+            if ( xCoord - lastXCoord >= pathResolution )
+            {
+                path.lineTo(juce::Point<float>(xCoord, yCoord));
+                lastXCoord = xCoord;
+            }
         }
     }
     
