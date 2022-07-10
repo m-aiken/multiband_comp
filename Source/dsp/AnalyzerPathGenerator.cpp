@@ -25,15 +25,22 @@ void AnalyzerPathGenerator::generatePath(const std::vector<float>& renderData,
     
     const int pathResolution = 2;
     
+    const float minFreq = Globals::getMinFrequency();
+    const float maxFreq = Globals::getMaxFrequency();
+    
+    auto fftBoundsBottom = fftBounds.getBottom();
+    auto fftBoundsY = fftBounds.getY();
+    auto fftBoundsWidth = fftBounds.getWidth();
+    
     for ( auto i = 1; i < numBins + 1; i += pathResolution )
     {
-        auto yCoord = juce::jmap<float>(renderData[i], negativeInfinity, maxDb, fftBounds.getBottom(), fftBounds.getY());
+        auto yCoord = juce::jmap<float>(renderData[i], negativeInfinity, maxDb, fftBoundsBottom, fftBoundsY);
         
         if (!std::isnan(yCoord) && !std::isinf(yCoord))
         {
             auto binFreq = i * binWidth;
-            auto normalizedX = juce::mapFromLog10(binFreq, Globals::getMinFrequency(), Globals::getMaxFrequency());
-            auto xCoord = std::floor(normalizedX * fftBounds.getWidth());
+            auto normalizedX = juce::mapFromLog10(binFreq, minFreq, maxFreq);
+            auto xCoord = std::floor(normalizedX * fftBoundsWidth);
             path.lineTo(juce::Point<float>(xCoord, yCoord));
         }
     }
