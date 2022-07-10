@@ -57,6 +57,13 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
 //    g.fillAll(juce::Colour(105u, 109u, 125u)); // background
     g.fillAll(ColourPalette::getColour(ColourPalette::Background)); // background
+    
+    juce::Path p;
+    if ( analyzerPathGtor.getPath(p) )
+    {
+        g.setColour(juce::Colours::white);
+        g.fillPath(p);
+    }
 }
 
 void PFMProject12AudioProcessorEditor::resized()
@@ -135,5 +142,30 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         }
         
         compSelectionControls.changeNumBandsDisplayed(static_cast<int>(numActiveFilterBands));
+    }
+    
+    // pull buffers from SCSF
+    if ( audioProcessor.SCSF.getNumCompleteBuffersAvailable() > 0 )
+    {
+        while ( audioProcessor.SCSF.getAudioBuffer(fftBuffer) ) { } // get the most recent
+        fftDataGtor.produceFFTDataForRendering(fftBuffer);
+    }
+    
+    if ( fftDataGtor.getNumAvailableFFTDataBlocks() > 0 )
+    {
+        while ( fftDataGtor.getFFTData(analyzerRenderData) ) { } // get the most recent
+        
+        auto bounds = getLocalBounds();
+        auto fftContainerWidth = 400;
+        auto fftBounds = juce::Rectangle<float>(bounds.getCentreX() - (fftContainerWidth * 0.5), 10, fftContainerWidth, 200);
+        
+        auto sampleRate = audioProcessor.getSampleRate();
+        auto fftSize = fftDataGtor.getFFTSize();
+        auto numBins = static_cast<int>(fftSize * 0.5);
+        auto binWidth = sampleRate / numBins;
+        
+        analyzerPathGtor.generatePath(analyzerRenderData, fftBounds, fftSize, binWidth);
+        
+        repaint();
     }
 }

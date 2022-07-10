@@ -475,6 +475,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     updateMeterFifos(outMeterValuesFifo, buffer);
     
+    SCSF.update(buffer);
+    
 #if USE_TEST_OSC
     buffer.clear();
     for ( int sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )

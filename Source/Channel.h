@@ -10,7 +10,7 @@
 
 #pragma once
 
-enum class Channel : int
+enum Channel
 {
     Left,
     Right
