@@ -14,17 +14,19 @@
 //==============================================================================
 void FFTDataGenerator::produceFFTDataForRendering(const juce::AudioBuffer<float>& audioData)
 {
+    const auto fftSize = getFFTSize();
+
     std::fill(fftData.begin(), fftData.end(), 0.f);
     
-    auto readIndex = audioData.getReadPointer(0);
-    std::copy(readIndex, readIndex + getFFTSize(), fftData.begin());
+    auto* bufferReadIdx = audioData.getReadPointer(0);
+    std::copy(bufferReadIdx, bufferReadIdx + fftSize, fftData.begin());
     
-    window->multiplyWithWindowingTable(fftData.data(), getFFTSize());
+    window->multiplyWithWindowingTable(fftData.data(), static_cast<size_t>(fftSize));
     forwardFFT->performFrequencyOnlyForwardTransform(fftData.data(), true);
     
-    auto numBins = static_cast<int>(getFFTSize() * 0.5);
+    auto numBins = static_cast<int>(fftSize * 0.5);
     juce::FloatVectorOperations::multiply(fftData.data(), 1.f / static_cast<float>(numBins), numBins+1);
-    
+        
     for ( auto i = 0; i < numBins + 1; ++i )
     {
         fftData[i] = juce::Decibels::gainToDecibels(fftData[i], Globals::getNegativeInf());
@@ -41,7 +43,8 @@ void FFTDataGenerator::changeOrder(FFTOrder newOrder)
     auto fftSize = getFFTSize();
     window = std::make_unique<juce::dsp::WindowingFunction<float>>(fftSize, juce::dsp::WindowingFunction<float>::blackmanHarris);
     
-    std::fill(fftData.begin(), fftData.end(), 0.f);
+    fftData.clear();
+    fftData.resize(static_cast<size_t>(fftSize * 2), 0.f);
     
-    fftDataFifo.prepare(fftSize);
+    fftDataFifo.prepare(fftData.size());
 }

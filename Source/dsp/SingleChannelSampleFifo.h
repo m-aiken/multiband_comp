@@ -31,17 +31,14 @@ struct SingleChannelSampleFifo
     
     void pushNextSampleIntoFifo(SampleType sample)
     {
-        bufferToFill.setSample(0, fifoIndex, sample);
-        
         if ( fifoIndex == getSize() )
         {
             audioBufferFifo.push(bufferToFill);
             fifoIndex = 0;
         }
-        else
-        {
-            ++fifoIndex;
-        }
+        
+        bufferToFill.setSample(0, fifoIndex, sample);
+        ++fifoIndex;
     }
     
     void prepare(int bufferSize)

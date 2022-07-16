@@ -305,7 +305,7 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 #if USE_TEST_OSC
     testOsc.prepare(spec);
     testOsc.initialise([](float f) { return std::sin(f); });
-    testOsc.setFrequency(440);
+    testOsc.setFrequency(500);
     
     testGain.prepare(spec);
 #endif
@@ -475,8 +475,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     updateMeterFifos(outMeterValuesFifo, buffer);
     
-    SCSF.update(buffer);
-    
 #if USE_TEST_OSC
     buffer.clear();
     for ( int sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )
@@ -496,6 +494,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 #endif
     
 //    guiFifo.push(buffer);
+    
+    SCSF.update(buffer);
     
 #if USE_TEST_OSC
     buffer.clear();
