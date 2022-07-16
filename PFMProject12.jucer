@@ -5,13 +5,24 @@
               companyName="Matt Aiken" pluginChannelConfigs="{2,2}">
   <MAINGROUP id="vfcIbR" name="PFMProject12">
     <GROUP id="{B4CA764E-9214-1D1F-FDB0-0EE7E29659E4}" name="Source">
+      <FILE id="arOr6p" name="Channel.h" compile="0" resource="0" file="Source/Channel.h"/>
       <FILE id="Dkofsp" name="ColourPalette.h" compile="0" resource="0" file="Source/ColourPalette.h"/>
       <FILE id="dQ6P3S" name="Params.h" compile="0" resource="0" file="Source/Params.h"/>
       <GROUP id="{9CD76FE6-CB69-6BBE-D6B6-6425BB5F5AEC}" name="dsp">
+        <FILE id="MLTllN" name="AnalyzerPathGenerator.cpp" compile="1" resource="0"
+              file="Source/dsp/AnalyzerPathGenerator.cpp"/>
+        <FILE id="EQsgau" name="AnalyzerPathGenerator.h" compile="0" resource="0"
+              file="Source/dsp/AnalyzerPathGenerator.h"/>
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
+        <FILE id="YEKJFb" name="FFTDataGenerator.cpp" compile="1" resource="0"
+              file="Source/dsp/FFTDataGenerator.cpp"/>
+        <FILE id="vvoWNa" name="FFTDataGenerator.h" compile="0" resource="0"
+              file="Source/dsp/FFTDataGenerator.h"/>
         <FILE id="HulqSZ" name="Fifo.h" compile="0" resource="0" file="Source/dsp/Fifo.h"/>
         <FILE id="xJK5Om" name="FifoBackgroundUpdater.h" compile="0" resource="0"
               file="Source/dsp/FifoBackgroundUpdater.h"/>
+        <FILE id="QQAPhb" name="SingleChannelSampleFifo.h" compile="0" resource="0"
+              file="Source/dsp/SingleChannelSampleFifo.h"/>
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">

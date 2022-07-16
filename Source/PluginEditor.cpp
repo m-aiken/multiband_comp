@@ -34,6 +34,10 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     auto nBands = numBandsParam->convertFrom0to1(numBandsParam->getValue());
     bandCountPicker.setSelectedId(nBands);
     
+    fftDataGtor.changeOrder(FFTOrder::order2048);
+    fftBuffer.setSize(1, fftDataGtor.getFFTSize());
+//    analyzerRenderData.resize(fftDataGtor.getFFTSize(), 0.f);
+    
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
     addAndMakeVisible(bandControls);
@@ -55,8 +59,53 @@ PFMProject12AudioProcessorEditor::~PFMProject12AudioProcessorEditor()
 void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
-//    g.fillAll(juce::Colour(105u, 109u, 125u)); // background
     g.fillAll(ColourPalette::getColour(ColourPalette::Background)); // background
+    
+    // For FFT path test
+    auto bounds = getLocalBounds();
+    auto width = bandControls.getWidth();
+    auto fftBounds = juce::Rectangle<float>(bounds.getCentreX() - (width * 0.5),
+                                            50,
+                                            width,
+                                            160);
+    
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
+    g.drawRect(fftBounds);
+    
+    drawFreqLines(g, fftBounds);
+    
+    fftPath.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), fftBounds.getY()));
+    g.setColour(juce::Colours::lightblue);
+    g.strokePath(fftPath, juce::PathStrokeType(1.f));
+}
+
+void PFMProject12AudioProcessorEditor::drawFreqLines(juce::Graphics& g, juce::Rectangle<float>& fftBounds)
+{
+    const float minFreq = Globals::getMinFrequency();
+    const float maxFreq = Globals::getMaxFrequency();
+    auto fftBoundsX = fftBounds.getX();
+    auto fftBoundsY = fftBounds.getY();
+    auto fftBoundsWidth = fftBounds.getWidth();
+    auto fftBoundsBottom = fftBounds.getBottom();
+    auto textWidth = 40;
+    auto textHeight = 10;
+
+    std::vector<float> freqs { 50.f, 100.f, 500.f, 1000.f, 5000.f, 10000.f, 20000.f };
+    
+    g.setColour(ColourPalette::getColour(ColourPalette::Text).withLightness(0.3f));
+    for ( auto& f : freqs )
+    {
+        auto normalizedX = juce::mapFromLog10<float>(f, minFreq, maxFreq);
+        auto freqLineX = fftBoundsX + fftBoundsWidth * normalizedX;
+        g.drawVerticalLine(freqLineX, fftBoundsY, fftBoundsBottom);
+        g.drawFittedText(juce::String(f),                          // text
+                         freqLineX - (textWidth * 0.5),            // x
+                         fftBoundsY - textHeight - 2,                  // y
+                         textWidth,                                // width
+                         textHeight,                               // height
+                         juce::Justification::horizontallyCentred, // justification
+                         1);                                       // max num lines
+    }
 }
 
 void PFMProject12AudioProcessorEditor::resized()
@@ -84,9 +133,9 @@ void PFMProject12AudioProcessorEditor::resized()
 #endif
     
     bandCountPicker.setBounds(bounds.getRight() - 200,
-                              padding,
+                              padding * 0.5,
                               60,
-                              40);
+                              20);
     
     auto bandControlsHeight = 120;
     bandControls.setBounds(inStereoMeter.getRight() + padding,
@@ -136,4 +185,42 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         
         compSelectionControls.changeNumBandsDisplayed(static_cast<int>(numActiveFilterBands));
     }
+    
+    while ( audioProcessor.SCSF.getNumCompleteBuffersAvailable() > 0 )
+    {
+        juce::AudioBuffer<float> tempFftBuffer;
+        if ( audioProcessor.SCSF.getAudioBuffer(tempFftBuffer) )
+        {
+            auto size = juce::jmin(tempFftBuffer.getNumSamples(), fftBuffer.getNumSamples());
+            auto readPtr = fftBuffer.getReadPointer(0, size);
+            auto writePtr = fftBuffer.getWritePointer(0, 0);
+            std::copy(readPtr, readPtr + (fftBuffer.getNumSamples() - size), writePtr);
+            
+            juce::FloatVectorOperations::copy(fftBuffer.getWritePointer(0, fftBuffer.getNumSamples() - size),
+                                              tempFftBuffer.getReadPointer(0, 0),
+                                              size);
+            
+            fftDataGtor.produceFFTDataForRendering(fftBuffer);
+        }
+    }
+    
+    while ( fftDataGtor.getNumAvailableFFTDataBlocks() > 0 )
+    {
+        std::vector<float> analyzerRenderData;
+        if ( fftDataGtor.getFFTData(analyzerRenderData) )
+        {
+            auto fftBounds = juce::Rectangle<float>(bandControls.getWidth(), 160.f);
+            auto fftSize = fftDataGtor.getFFTSize();
+            auto binWidth = audioProcessor.getSampleRate() / static_cast<float>(fftSize);
+        
+            analyzerPathGtor.generatePath(analyzerRenderData, fftBounds, fftSize, binWidth);
+        }
+    }
+    
+    if ( analyzerPathGtor.getNumPathsAvailable() > 0 )
+    {
+        while ( analyzerPathGtor.getPath(fftPath) ) { } // get most recent
+    }
+    
+    repaint();
 }

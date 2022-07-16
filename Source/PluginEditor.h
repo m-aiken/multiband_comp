@@ -18,6 +18,8 @@
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
 #include "gui/CompressorSelectionControlContainer.h"
+#include "dsp/FFTDataGenerator.h"
+#include "dsp/AnalyzerPathGenerator.h"
 
 //==============================================================================
 /**
@@ -61,6 +63,16 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> bandCountAttachment;
     
     size_t numActiveFilterBands { Globals::getNumMaxBands() };
-
+    
+    FFTDataGenerator fftDataGtor;
+    juce::AudioBuffer<float> fftBuffer;
+    
+    AnalyzerPathGenerator analyzerPathGtor;
+    
+    juce::Path fftPath;
+    
+    // for fft path test
+    void drawFreqLines(juce::Graphics& g, juce::Rectangle<float>& fftBounds);
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
