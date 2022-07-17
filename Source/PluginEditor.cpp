@@ -14,7 +14,9 @@
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+: AudioProcessorEditor (&p),
+  audioProcessor (p),
+  pathProducer(audioProcessor.getSampleRate(), audioProcessor.SCSF)
 {
     const auto& params = Params::getParams();
     
@@ -34,9 +36,13 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     auto nBands = numBandsParam->convertFrom0to1(numBandsParam->getValue());
     bandCountPicker.setSelectedId(nBands);
     
+    pathProducer.changeOrder(FFTOrder::order2048);
+    pathProducer.setFFTRectBounds(fftBounds);
+    pathProducer.setDecayRate(2.f);
+    pathProducer.toggleProcessing(true);
+    
     fftDataGtor.changeOrder(FFTOrder::order2048);
     fftBuffer.setSize(1, fftDataGtor.getFFTSize());
-//    analyzerRenderData.resize(fftDataGtor.getFFTSize(), 0.f);
     
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
@@ -63,23 +69,26 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
     
     // For FFT path test
     auto bounds = getLocalBounds();
-    auto width = bandControls.getWidth();
-    auto fftBounds = juce::Rectangle<float>(bounds.getCentreX() - (width * 0.5),
-                                            50,
-                                            width,
-                                            160);
+
+    fftBounds.setX(bounds.getCentreX() - (fftBounds.getWidth() * 0.5f));
+    fftBounds.setY(50);
     
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(fftBounds);
     
-    drawFreqLines(g, fftBounds);
-    
-    fftPath.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), fftBounds.getY()));
+    drawFreqLines(g);
+    /*
+    fftPath.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), 0));
     g.setColour(juce::Colours::lightblue);
     g.strokePath(fftPath, juce::PathStrokeType(1.f));
+    */
+    fftPath2.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), fftBounds.getY()));
+    g.setColour(juce::Colours::lightblue);
+    g.strokePath(fftPath2, juce::PathStrokeType(1.f));
+    
 }
 
-void PFMProject12AudioProcessorEditor::drawFreqLines(juce::Graphics& g, juce::Rectangle<float>& fftBounds)
+void PFMProject12AudioProcessorEditor::drawFreqLines(juce::Graphics& g)
 {
     const float minFreq = Globals::getMinFrequency();
     const float maxFreq = Globals::getMaxFrequency();
@@ -209,7 +218,6 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         std::vector<float> analyzerRenderData;
         if ( fftDataGtor.getFFTData(analyzerRenderData) )
         {
-            auto fftBounds = juce::Rectangle<float>(bandControls.getWidth(), 160.f);
             auto fftSize = fftDataGtor.getFFTSize();
             auto binWidth = audioProcessor.getSampleRate() / static_cast<float>(fftSize);
         
@@ -220,6 +228,11 @@ void PFMProject12AudioProcessorEditor::timerCallback()
     if ( analyzerPathGtor.getNumPathsAvailable() > 0 )
     {
         while ( analyzerPathGtor.getPath(fftPath) ) { } // get most recent
+    }
+    
+    if ( pathProducer.getNumAvailableForReading() > 0 )
+    {
+        while ( pathProducer.pull(fftPath2) ) { } // get most recent
     }
     
     repaint();

@@ -305,7 +305,7 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 #if USE_TEST_OSC
     testOsc.prepare(spec);
     testOsc.initialise([](float f) { return std::sin(f); });
-    testOsc.setFrequency(500);
+    testOsc.setFrequency(5000);
     
     testGain.prepare(spec);
 #endif

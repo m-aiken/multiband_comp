@@ -18,6 +18,7 @@
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
 #include "gui/CompressorSelectionControlContainer.h"
+#include "gui/PathProducer.h"
 #include "dsp/FFTDataGenerator.h"
 #include "dsp/AnalyzerPathGenerator.h"
 
@@ -64,15 +65,20 @@ private:
     
     size_t numActiveFilterBands { Globals::getNumMaxBands() };
     
+    juce::Rectangle<float> fftBounds{600.f, 160.f};
+    
+    PathProducer pathProducer;
+    
     FFTDataGenerator fftDataGtor;
     juce::AudioBuffer<float> fftBuffer;
     
     AnalyzerPathGenerator analyzerPathGtor;
     
     juce::Path fftPath;
+    juce::Path fftPath2;
     
     // for fft path test
-    void drawFreqLines(juce::Graphics& g, juce::Rectangle<float>& fftBounds);
+    void drawFreqLines(juce::Graphics& g);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
