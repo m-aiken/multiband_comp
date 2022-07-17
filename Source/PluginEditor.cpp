@@ -41,9 +41,10 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     pathProducer.setDecayRate(2.f);
     pathProducer.toggleProcessing(true);
     
+    /*
     fftDataGtor.changeOrder(FFTOrder::order2048);
     fftBuffer.setSize(1, fftDataGtor.getFFTSize());
-    
+    */
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
     addAndMakeVisible(bandControls);
@@ -82,9 +83,9 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
     g.setColour(juce::Colours::lightblue);
     g.strokePath(fftPath, juce::PathStrokeType(1.f));
     */
-    fftPath2.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), fftBounds.getY()));
+    fftPath.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), fftBounds.getY()));
     g.setColour(juce::Colours::lightblue);
-    g.strokePath(fftPath2, juce::PathStrokeType(1.f));
+    g.strokePath(fftPath, juce::PathStrokeType(1.f));
     
 }
 
@@ -194,7 +195,7 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         
         compSelectionControls.changeNumBandsDisplayed(static_cast<int>(numActiveFilterBands));
     }
-    
+    /*
     while ( audioProcessor.SCSF.getNumCompleteBuffersAvailable() > 0 )
     {
         juce::AudioBuffer<float> tempFftBuffer;
@@ -229,10 +230,10 @@ void PFMProject12AudioProcessorEditor::timerCallback()
     {
         while ( analyzerPathGtor.getPath(fftPath) ) { } // get most recent
     }
-    
+    */
     if ( pathProducer.getNumAvailableForReading() > 0 )
     {
-        while ( pathProducer.pull(fftPath2) ) { } // get most recent
+        while ( pathProducer.pull(fftPath) ) { } // get most recent
     }
     
     repaint();

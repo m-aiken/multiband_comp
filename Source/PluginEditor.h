@@ -69,13 +69,13 @@ private:
     
     PathProducer pathProducer;
     
+    /*
     FFTDataGenerator fftDataGtor;
     juce::AudioBuffer<float> fftBuffer;
     
     AnalyzerPathGenerator analyzerPathGtor;
-    
+    */
     juce::Path fftPath;
-    juce::Path fftPath2;
     
     // for fft path test
     void drawFreqLines(juce::Graphics& g);
