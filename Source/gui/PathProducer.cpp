@@ -38,6 +38,10 @@ void PathProducer::run()
         while ( singleChannelSampleFifo->getNumCompleteBuffersAvailable() > 0 )
         {
             juce::AudioBuffer<float> tempBuffer;
+            
+            if ( threadShouldExit() )
+                break;
+            
             if ( singleChannelSampleFifo->getAudioBuffer(tempBuffer) )
             {
                 auto size = juce::jmin(tempBuffer.getNumSamples(), bufferForGenerator.getNumSamples());
@@ -56,6 +60,10 @@ void PathProducer::run()
         while ( fftDataGenerator.getNumAvailableFFTDataBlocks() > 0 )
         {
             std::vector<float> fftData;
+            
+            if ( threadShouldExit() )
+                break;
+            
             if ( fftDataGenerator.getFFTData(fftData) )
             {
                 auto fftSize = getFFTSize();
