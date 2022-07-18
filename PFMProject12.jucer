@@ -18,6 +18,7 @@
               file="Source/dsp/FFTDataGenerator.cpp"/>
         <FILE id="vvoWNa" name="FFTDataGenerator.h" compile="0" resource="0"
               file="Source/dsp/FFTDataGenerator.h"/>
+        <FILE id="h5g5KH" name="FFTOrder.h" compile="0" resource="0" file="Source/dsp/FFTOrder.h"/>
         <FILE id="HulqSZ" name="Fifo.h" compile="0" resource="0" file="Source/dsp/Fifo.h"/>
         <FILE id="xJK5Om" name="FifoBackgroundUpdater.h" compile="0" resource="0"
               file="Source/dsp/FifoBackgroundUpdater.h"/>
@@ -26,6 +27,9 @@
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
+        <FILE id="BlClE8" name="PathProducer.cpp" compile="1" resource="0"
+              file="Source/gui/PathProducer.cpp"/>
+        <FILE id="w686MP" name="PathProducer.h" compile="0" resource="0" file="Source/gui/PathProducer.h"/>
         <FILE id="QBxojs" name="BandLevel.h" compile="0" resource="0" file="Source/gui/BandLevel.h"/>
         <FILE id="szVdCb" name="Tick.h" compile="0" resource="0" file="Source/gui/Tick.h"/>
         <FILE id="ymvAex" name="TriMeter.cpp" compile="1" resource="0" file="Source/gui/TriMeter.cpp"/>

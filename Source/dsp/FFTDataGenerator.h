@@ -11,15 +11,9 @@
 #pragma once
 
 #include "Fifo.h"
+#include "FFTOrder.h"
 
 //==============================================================================
-enum FFTOrder
-{
-    order2048 = 11,
-    order4096 = 12,
-    order8192 = 13
-};
-
 struct FFTDataGenerator
 {
     void produceFFTDataForRendering(const juce::AudioBuffer<float>& audioData);
