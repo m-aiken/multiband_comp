@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "dsp/AnalyzerProperties.h"
 
 //==============================================================================
 
@@ -721,6 +722,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout PFMProject12AudioProcessor::
                                                          Globals::getMinBandNum(),
                                                          Globals::getMaxBandNum(),
                                                          0));
+    
+    //==============================================================================
+    
+    AnalyzerProperties::addAnalyzerParams(layout);
     
     return layout;
 }
