@@ -27,7 +27,7 @@ struct AnalyzerBase : juce::Component
         return boundsForRendering.withTrimmedLeft(w).withTrimmedRight(w);
     }
     
-    inline int getTextHeight() const { return 16; }
+    inline int getTextHeight() const { return 12; }
     inline int getTextWidth() const { return 16; }
     void resized() override
     {

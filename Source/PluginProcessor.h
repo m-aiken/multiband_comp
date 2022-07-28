@@ -627,6 +627,8 @@ public:
     std::atomic<size_t> numFilterBands { Globals::getNumMaxBands() };
     
     SingleChannelSampleFifo<juce::AudioBuffer<float>> SCSF { Channel::Left };
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> leftSCSF { Channel::Left };
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> rightSCSF { Channel::Right };
 private:
     std::array<CompressorBand, Globals::getNumMaxBands()> compressors;
     

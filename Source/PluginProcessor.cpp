@@ -300,6 +300,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     outputGain.prepare(spec);
     
     SCSF.prepare(samplesPerBlock);
+    leftSCSF.prepare(samplesPerBlock);
+    rightSCSF.prepare(samplesPerBlock);
     
 //    guiFifo.prepare(samplesPerBlock, getTotalNumOutputChannels());
     
@@ -497,6 +499,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 //    guiFifo.push(buffer);
     
     SCSF.update(buffer);
+    leftSCSF.update(buffer);
+    rightSCSF.update(buffer);
     
 #if USE_TEST_OSC
     buffer.clear();

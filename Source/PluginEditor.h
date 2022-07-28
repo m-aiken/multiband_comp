@@ -18,7 +18,8 @@
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
 #include "gui/CompressorSelectionControlContainer.h"
-#include "gui/PathProducer.h"
+//#include "gui/PathProducer.h"
+#include "gui/SpectrumAnalyzer.h"
 #include "dsp/FFTDataGenerator.h"
 #include "dsp/AnalyzerPathGenerator.h"
 
@@ -67,7 +68,7 @@ private:
     
     juce::Rectangle<float> fftBounds{600.f, 160.f};
     
-    PathProducer pathProducer;
+//    PathProducer pathProducer;
     
     /*
     FFTDataGenerator fftDataGtor;
@@ -79,6 +80,8 @@ private:
     
     // for fft path test
     void drawFreqLines(juce::Graphics& g);
+    
+    SpectrumAnalyzer spectrumAnalyzer;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };

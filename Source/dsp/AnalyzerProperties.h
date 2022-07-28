@@ -31,7 +31,7 @@ enum ProcessingModes
     Post
 };
 
-const std::map<ParamNames, juce::String>& getAnalyzerParams()
+inline const std::map<ParamNames, juce::String>& getAnalyzerParams()
 {
     static std::map<ParamNames, juce::String> paramNamesMap =
     {
@@ -44,7 +44,7 @@ const std::map<ParamNames, juce::String>& getAnalyzerParams()
     return paramNamesMap;
 }
 
-const std::map<FFTOrder, juce::String>& getAnalyzerPoints()
+inline const std::map<FFTOrder, juce::String>& getAnalyzerPoints()
 {
     static std::map<FFTOrder, juce::String> fftOrderMap =
     {
@@ -56,7 +56,7 @@ const std::map<FFTOrder, juce::String>& getAnalyzerPoints()
     return fftOrderMap;
 }
 
-const std::map<ProcessingModes, juce::String>& getProcessingModes()
+inline const std::map<ProcessingModes, juce::String>& getProcessingModes()
 {
     static std::map<ProcessingModes, juce::String> processingModesMap =
     {
@@ -67,7 +67,7 @@ const std::map<ProcessingModes, juce::String>& getProcessingModes()
     return processingModesMap;
 }
 
-void addAnalyzerParams(juce::AudioProcessorValueTreeState::ParameterLayout& layout)
+inline void addAnalyzerParams(juce::AudioProcessorValueTreeState::ParameterLayout& layout)
 {
     const auto& params = getAnalyzerParams();
     const auto& fftOrders = getAnalyzerPoints();
@@ -89,8 +89,8 @@ void addAnalyzerParams(juce::AudioProcessorValueTreeState::ParameterLayout& layo
     
     layout.add(std::make_unique<juce::AudioParameterFloat>(params.at(Analyzer_Decay_Rate),
                                                            params.at(Analyzer_Decay_Rate),
-                                                           juce::NormalisableRange<float>(0.f, 30.f, 0.1f, 1.f),
-                                                           0.f));
+                                                           juce::NormalisableRange<float>(0.f, 60.f, 0.1f, 1.f),
+                                                           60.f));
 }
 
 }
