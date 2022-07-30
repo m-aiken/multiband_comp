@@ -17,7 +17,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
 : AudioProcessorEditor (&p),
   audioProcessor (p),
 //  pathProducer(audioProcessor.getSampleRate(), audioProcessor.SCSF),
-  spectrumAnalyzer(audioProcessor.getSampleRate(), audioProcessor.leftSCSF, audioProcessor.rightSCSF, audioProcessor.apvts)
+  spectrumAnalyzer(audioProcessor.getSampleRate(), audioProcessor.leftSCSF, audioProcessor.rightSCSF, audioProcessor.apvts),
+  analyzerControls(audioProcessor.apvts)
 {
     const auto& params = Params::getParams();
     
@@ -49,6 +50,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     addAndMakeVisible(compSelectionControls);
     addAndMakeVisible(bandCountPicker);
     addAndMakeVisible(spectrumAnalyzer);
+    addAndMakeVisible(analyzerControls);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(900, 700);
@@ -159,6 +161,12 @@ void PFMProject12AudioProcessorEditor::resized()
 //    fftBounds.setX(bounds.getCentreX() - (fftBounds.getWidth() * 0.5f));
 //    fftBounds.setY(50);
     spectrumAnalyzer.setBounds(bounds.getCentreX() - 350, 50, 700, 240);
+    
+    auto analyzerControlsWidth = bandControls.getWidth() * 0.5;
+    analyzerControls.setBounds(bounds.getCentreX() - (analyzerControlsWidth * 0.5),
+                               bandControls.getBottom() + padding,
+                               analyzerControlsWidth,
+                               bandControlsHeight);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()

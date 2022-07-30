@@ -89,8 +89,8 @@ inline void addAnalyzerParams(juce::AudioProcessorValueTreeState::ParameterLayou
     
     layout.add(std::make_unique<juce::AudioParameterFloat>(params.at(Analyzer_Decay_Rate),
                                                            params.at(Analyzer_Decay_Rate),
-                                                           juce::NormalisableRange<float>(0.f, 60.f, 0.1f, 1.f),
-                                                           60.f));
+                                                           juce::NormalisableRange<float>(0.f, 30.f, 0.1f, 1.f),
+                                                           30.f));
 }
 
 }

@@ -20,6 +20,7 @@
 #include "gui/CompressorSelectionControlContainer.h"
 //#include "gui/PathProducer.h"
 #include "gui/SpectrumAnalyzer.h"
+#include "gui/AnalyzerControls.h"
 #include "dsp/FFTDataGenerator.h"
 #include "dsp/AnalyzerPathGenerator.h"
 
@@ -82,6 +83,7 @@ private:
     void drawFreqLines(juce::Graphics& g);
     
     SpectrumAnalyzer spectrumAnalyzer;
+    AnalyzerControls analyzerControls;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };
