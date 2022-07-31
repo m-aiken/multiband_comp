@@ -11,18 +11,11 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "Globals.h"
-#include "gui/Averager.h"
-#include "gui/DecayingValueHolder.h"
-#include "gui/DbScale.h"
-#include "gui/Meter.h"
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
 #include "gui/CompressorSelectionControlContainer.h"
-//#include "gui/PathProducer.h"
 #include "gui/SpectrumAnalyzer.h"
 #include "gui/AnalyzerControls.h"
-#include "dsp/FFTDataGenerator.h"
-#include "dsp/AnalyzerPathGenerator.h"
 
 //==============================================================================
 /**
@@ -66,21 +59,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> bandCountAttachment;
     
     size_t numActiveFilterBands { Globals::getNumMaxBands() };
-    
-    juce::Rectangle<float> fftBounds{600.f, 160.f};
-    
-//    PathProducer pathProducer;
-    
-    /*
-    FFTDataGenerator fftDataGtor;
-    juce::AudioBuffer<float> fftBuffer;
-    
-    AnalyzerPathGenerator analyzerPathGtor;
-    */
-    juce::Path fftPath;
-    
-    // for fft path test
-    void drawFreqLines(juce::Graphics& g);
     
     SpectrumAnalyzer spectrumAnalyzer;
     AnalyzerControls analyzerControls;

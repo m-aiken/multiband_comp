@@ -9,14 +9,12 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "ColourPalette.h"
-#include "gui/BandLevel.h"
 #include "Params.h"
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
 : AudioProcessorEditor (&p),
   audioProcessor (p),
-//  pathProducer(audioProcessor.getSampleRate(), audioProcessor.SCSF),
   spectrumAnalyzer(audioProcessor.getSampleRate(), audioProcessor.leftSCSF, audioProcessor.rightSCSF, audioProcessor.apvts),
   analyzerControls(audioProcessor.apvts)
 {
@@ -37,12 +35,6 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     
     auto nBands = numBandsParam->convertFrom0to1(numBandsParam->getValue());
     bandCountPicker.setSelectedId(nBands);
-    /*
-    pathProducer.changeOrder(FFTOrder::order2048);
-    pathProducer.setFFTRectBounds(fftBounds);
-    pathProducer.setDecayRate(2.f);
-    pathProducer.toggleProcessing(true);
-    */
     
     addAndMakeVisible(inStereoMeter);
     addAndMakeVisible(outStereoMeter);
@@ -68,52 +60,6 @@ void PFMProject12AudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll(ColourPalette::getColour(ColourPalette::Background)); // background
-    
-    /*
-    // For FFT path test
-    auto bounds = getLocalBounds();
-
-    fftBounds.setX(bounds.getCentreX() - (fftBounds.getWidth() * 0.5f));
-    fftBounds.setY(50);
-    
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
-    g.drawRect(fftBounds);
-    
-    drawFreqLines(g);
-    
-    fftPath.applyTransform(juce::AffineTransform().translation(fftBounds.getX(), fftBounds.getY()));
-    g.setColour(juce::Colours::lightblue);
-    g.strokePath(fftPath, juce::PathStrokeType(1.f));
-    */
-}
-
-void PFMProject12AudioProcessorEditor::drawFreqLines(juce::Graphics& g)
-{
-    const float minFreq = Globals::getMinFrequency();
-    const float maxFreq = Globals::getMaxFrequency();
-    auto fftBoundsX = fftBounds.getX();
-    auto fftBoundsY = fftBounds.getY();
-    auto fftBoundsWidth = fftBounds.getWidth();
-    auto fftBoundsBottom = fftBounds.getBottom();
-    auto textWidth = 40;
-    auto textHeight = 10;
-
-    std::vector<float> freqs { 50.f, 100.f, 500.f, 1000.f, 5000.f, 10000.f, 20000.f };
-    
-    g.setColour(ColourPalette::getColour(ColourPalette::Text).withLightness(0.3f));
-    for ( auto& f : freqs )
-    {
-        auto normalizedX = juce::mapFromLog10<float>(f, minFreq, maxFreq);
-        auto freqLineX = fftBoundsX + fftBoundsWidth * normalizedX;
-        g.drawVerticalLine(freqLineX, fftBoundsY, fftBoundsBottom);
-        g.drawFittedText(juce::String(f),                          // text
-                         freqLineX - (textWidth * 0.5),            // x
-                         fftBoundsY - textHeight - 2,                  // y
-                         textWidth,                                // width
-                         textHeight,                               // height
-                         juce::Justification::horizontallyCentred, // justification
-                         1);                                       // max num lines
-    }
 }
 
 void PFMProject12AudioProcessorEditor::resized()
@@ -156,10 +102,6 @@ void PFMProject12AudioProcessorEditor::resized()
                                     bandControls.getWidth(),
                                     bandControlsHeight);
     
-//    juce::Rectangle<float> fftBounds{600.f, 160.f};
-//    auto bounds = getLocalBounds();
-//    fftBounds.setX(bounds.getCentreX() - (fftBounds.getWidth() * 0.5f));
-//    fftBounds.setY(50);
     spectrumAnalyzer.setBounds(bounds.getCentreX() - 350, 50, 700, 240);
     
     auto analyzerControlsWidth = bandControls.getWidth() * 0.5;
@@ -205,11 +147,6 @@ void PFMProject12AudioProcessorEditor::timerCallback()
         
         compSelectionControls.changeNumBandsDisplayed(static_cast<int>(numActiveFilterBands));
     }
-    /*
-    if ( pathProducer.getNumAvailableForReading() > 0 )
-    {
-        while ( pathProducer.pull(fftPath) ) { } // get most recent
-    }
-    */
+    
     repaint();
 }
