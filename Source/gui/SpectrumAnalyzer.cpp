@@ -137,9 +137,8 @@ void SpectrumAnalyzer::customizeScales(int lsMin, int lsMax, int rsMin, int rsMa
     leftPathProducer.changePathRange(leftScaleMin, leftScaleMax);
     rightPathProducer.changePathRange(leftScaleMin, leftScaleMax);
     
-    auto test = fftBoundingBox.getY() + 22;
-    analyzerScale.buildBackgroundImage(division, fftBoundingBox.withY(test), leftScaleMin, leftScaleMax);
-    eqScale.buildBackgroundImage(division, fftBoundingBox.withY(test), leftScaleMin, leftScaleMax);
+    analyzerScale.buildBackgroundImage(division, fftBoundingBox, leftScaleMin, leftScaleMax);
+    eqScale.buildBackgroundImage(division, fftBoundingBox, leftScaleMin, leftScaleMax);
     
     if (!getLocalBounds().isEmpty())
     {

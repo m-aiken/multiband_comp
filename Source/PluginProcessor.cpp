@@ -490,19 +490,11 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
 #if USE_TEST_OSC
     buffer.clear();
-    for ( int sampleIdx = 0; sampleIdx < buffer.getNumSamples(); ++sampleIdx )
-    {
-        auto newVal = testOsc.processSample(buffer.getSample(0, sampleIdx));
-            
-        for (int channel = 0; channel < totalNumOutputChannels; ++channel)
-        {
-            buffer.setSample(channel, sampleIdx, newVal);
-        }
-    }
     
-    testGain.setGainDecibels(JUCE_LIVE_CONSTANT(0));
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
+    testOsc.process(context);
+    testGain.setGainDecibels(JUCE_LIVE_CONSTANT(0));
     testGain.process(context);
 #endif
     
