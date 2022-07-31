@@ -38,6 +38,11 @@ AnalyzerControls::AnalyzerControls(juce::AudioProcessorValueTreeState& apvts)
     fftOrderAttachment  = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, params.at(AnalyzerProperties::ParamNames::Analyzer_Points), *fftOrderSlider);
     decayRateAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(apvts, params.at(AnalyzerProperties::ParamNames::Analyzer_Decay_Rate), *decayRateSlider);
     
+    auto analyzerEnabled = onOffButton->getToggleState();
+    prePostEqSlider->setEnabled(analyzerEnabled);
+    fftOrderSlider->setEnabled(analyzerEnabled);
+    decayRateSlider->setEnabled(analyzerEnabled);
+    
     addAndMakeVisible(*onOffButton);
     addAndMakeVisible(*prePostEqSlider);
     addAndMakeVisible(*fftOrderSlider);
@@ -107,4 +112,11 @@ void AnalyzerControls::paint(juce::Graphics& g)
     g.drawFittedText("8192", fftOrderSlider->getRight() + padding, fftOrderSlider->getY(),                           60, textHeight, juce::Justification::centredLeft, 1);
     g.drawFittedText("4096", fftOrderSlider->getRight() + padding, (fftOrderSlider->getHeight() * 0.5) + textHeight, 60, textHeight, juce::Justification::centredLeft, 1);
     g.drawFittedText("2048", fftOrderSlider->getRight() + padding, fftOrderSlider->getBottom() - textHeight,         60, textHeight, juce::Justification::centredLeft, 1);
+    
+    auto analyzerEnabled = onOffButton->getToggleState();
+    prePostEqSlider->setEnabled(analyzerEnabled);
+    fftOrderSlider->setEnabled(analyzerEnabled);
+    decayRateSlider->setEnabled(analyzerEnabled);
+    
+    setAlpha(analyzerEnabled ? 1.f : 0.5f);
 }
