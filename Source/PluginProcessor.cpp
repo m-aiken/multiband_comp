@@ -204,6 +204,13 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     };
     
     crossoverFreqOrderingUpdater = std::make_unique<FifoBackgroundUpdater<int>>(crossoverFreqOrderingUpdaterLambda);
+    
+    const auto& analyzerParams = AnalyzerProperties::getAnalyzerParams();
+    
+    onOffParam = apvts.getParameter(analyzerParams.at(AnalyzerProperties::ParamNames::Enable_Analyzer));
+    prePostParam = apvts.getParameter(analyzerParams.at(AnalyzerProperties::ParamNames::Analyzer_Processing_Mode));
+    jassert(onOffParam != nullptr);
+    jassert(prePostParam != nullptr);
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -365,7 +372,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-
+    
     updateBands();
     
 #if TEST_FILTER_NETWORK
@@ -374,6 +381,12 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 #endif
     
     applyGain(buffer, inputGain);
+    
+    if (onOffParam->getValue() && prePostParam->getValue() == AnalyzerProperties::ProcessingModes::Pre)
+    {
+        leftSCSF.update(buffer);
+        rightSCSF.update(buffer);
+    }
 
     updateMeterFifos(inMeterValuesFifo, buffer);
     
@@ -498,9 +511,14 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
 //    guiFifo.push(buffer);
     
-    SCSF.update(buffer);
-    leftSCSF.update(buffer);
-    rightSCSF.update(buffer);
+//    SCSF.update(buffer);
+//    leftSCSF.update(buffer);
+//    rightSCSF.update(buffer);
+    if (onOffParam->getValue() && prePostParam->getValue() == AnalyzerProperties::ProcessingModes::Post)
+    {
+        leftSCSF.update(buffer);
+        rightSCSF.update(buffer);
+    }
     
 #if USE_TEST_OSC
     buffer.clear();

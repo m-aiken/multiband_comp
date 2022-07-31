@@ -645,6 +645,9 @@ private:
     juce::AudioParameterFloat* gainOut { nullptr };
     juce::AudioParameterInt* selectedBand { nullptr };
     
+    juce::RangedAudioParameter* onOffParam { nullptr };
+    juce::RangedAudioParameter* prePostParam { nullptr };
+    
     juce::dsp::Gain<float> inputGain, outputGain;
     
     std::array<juce::AudioBuffer<float>, Globals::getNumMaxBands()> leftMidBuffers;
