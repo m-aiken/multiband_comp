@@ -79,13 +79,6 @@ void PFMProject12AudioProcessorEditor::resized()
                              stereoMeterWidth,
                              bounds.getHeight() * 0.8);
     
-#if USE_TEST_OSC
-    inStereoMeter.setBounds(padding,
-                            JUCE_LIVE_CONSTANT(0),
-                            stereoMeterWidth,
-                            JUCE_LIVE_CONSTANT(bounds.getHeight() * 0.8));
-#endif
-    
     bandCountPicker.setBounds(bounds.getRight() - 200,
                               padding * 0.5,
                               60,
