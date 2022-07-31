@@ -306,11 +306,8 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
     inputGain.prepare(spec);
     outputGain.prepare(spec);
     
-    SCSF.prepare(samplesPerBlock);
     leftSCSF.prepare(samplesPerBlock);
     rightSCSF.prepare(samplesPerBlock);
-    
-//    guiFifo.prepare(samplesPerBlock, getTotalNumOutputChannels());
     
 #if USE_TEST_OSC
     testOsc.prepare(spec);
@@ -509,11 +506,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     testGain.process(context);
 #endif
     
-//    guiFifo.push(buffer);
-    
-//    SCSF.update(buffer);
-//    leftSCSF.update(buffer);
-//    rightSCSF.update(buffer);
     if (onOffParam->getValue() && prePostParam->getValue() == AnalyzerProperties::ProcessingModes::Post)
     {
         leftSCSF.update(buffer);
@@ -531,27 +523,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
         addBand(buffer, invertedNetwork.getProcessedBuffer());
     }
 #endif
-}
-
-std::vector<float> PFMProject12AudioProcessor::createTestCrossovers(const size_t& numBands)
-{
-    std::vector<float> crossovers;
-    float interval = 8000.f / numBands;
-    float crossover = interval;
-    for ( auto i = 0; i < numBands - 1; ++i )
-    {
-        crossovers.push_back(crossover);
-        crossover += interval;
-    }
-    /*
-    juce::String str;
-    for ( auto& xOver : crossovers )
-    {
-        str += " " + juce::String(xOver);
-    }
-    DBG(str);
-    */
-    return crossovers;
 }
 
 void PFMProject12AudioProcessor::addBand(juce::AudioBuffer<float>& target, const juce::AudioBuffer<float>& source)
@@ -574,7 +545,6 @@ void PFMProject12AudioProcessor::updateBands()
     }
     
     auto afSequence = activeFilterSequence;
-//    afSequence->updateFilterCutoffs( getDefaultCenterFrequencies(currentNumberOfBands) );
     auto crossoverFrequencies = getReorderedCrossovers(getCrossoverParams());
     afSequence->updateFilterCutoffs(crossoverFrequencies);
     
