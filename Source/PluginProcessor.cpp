@@ -312,7 +312,12 @@ void PFMProject12AudioProcessor::prepareToPlay (double sampleRate, int samplesPe
 #if USE_TEST_OSC
     testOsc.prepare(spec);
     testOsc.initialise([](float f) { return std::sin(f); });
-    testOsc.setFrequency(5000);
+    
+    auto binWidth = sampleRate / 2048;
+    auto hz = 2000;
+    auto testFrequency = binWidth * (hz / binWidth);
+    
+    testOsc.setFrequency(testFrequency);
     
     testGain.prepare(spec);
 #endif
@@ -486,8 +491,6 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     applyGain(buffer, outputGain);
     
-    updateMeterFifos(outMeterValuesFifo, buffer);
-    
 #if USE_TEST_OSC
     buffer.clear();
     
@@ -497,6 +500,8 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     testGain.setGainDecibels(JUCE_LIVE_CONSTANT(0));
     testGain.process(context);
 #endif
+    
+    updateMeterFifos(outMeterValuesFifo, buffer);
     
     if (onOffParam->getValue() && prePostParam->getValue() == AnalyzerProperties::ProcessingModes::Post)
     {

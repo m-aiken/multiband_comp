@@ -19,7 +19,7 @@
 
 #define DISPLAY_FILTER_CONFIGURATIONS false
 #define TEST_FILTER_NETWORK false
-#define USE_TEST_OSC false
+#define USE_TEST_OSC true
 
 //==============================================================================
 template<typename ReferenceCountedType>
