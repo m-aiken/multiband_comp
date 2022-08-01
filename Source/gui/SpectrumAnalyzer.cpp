@@ -90,21 +90,20 @@ void SpectrumAnalyzer::resized()
     leftPathProducer.setFFTRectBounds(fftBoundingBox.toFloat());
     rightPathProducer.setFFTRectBounds(fftBoundingBox.toFloat());
     
-    auto textHeight = AnalyzerBase::getTextHeight();
-    auto textWidth = AnalyzerBase::getTextWidth() * 1.5;
-    auto textYOffset = AnalyzerBase::getTextHeight() * 0.6;
+    auto textHeight = getTextHeight();
+    auto textWidth = getTextWidth() * 1.5;
     
     auto localBounds = getLocalBounds();
     auto fftBoundsY = fftBoundingBox.getY();
     auto fftBoundsHeight = fftBoundingBox.getHeight();
     
     analyzerScale.setBounds(localBounds.getX(),
-                            fftBoundsY - textYOffset,
+                            fftBoundsY - getTextOffset(),
                             textWidth,
                             fftBoundsHeight + textHeight);
     
     eqScale.setBounds(localBounds.getRight() - textWidth,
-                      fftBoundsY - textYOffset,
+                      fftBoundsY - getTextOffset(),
                       textWidth,
                       fftBoundsHeight + textHeight);
     
@@ -117,8 +116,8 @@ void SpectrumAnalyzer::paint(juce::Graphics& g)
     
     g.reduceClipRegion(fftBoundingBox);
     
-    leftAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY()));
-    rightAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY()));
+    leftAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextOffset()));
+    rightAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextOffset()));
     
     g.setColour(juce::Colours::lightblue);
     g.strokePath(leftAnalyzerPath, juce::PathStrokeType(1.f));
