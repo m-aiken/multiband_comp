@@ -79,9 +79,8 @@ void SpectrumAnalyzer::timerCallback()
         {
             while ( rightPathProducer.pull(rightAnalyzerPath) ) { } // get most recent
         }
-        
-        repaint();
     }
+    repaint();
 }
 
 void SpectrumAnalyzer::resized()
