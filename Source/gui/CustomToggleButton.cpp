@@ -22,8 +22,8 @@ void CustomToggleButton::paint(juce::Graphics& g)
 {
     getLookAndFeel().drawToggleButton(g,      // graphics
                                       *this,  // button
-                                      false,  // draw as highlighted
-                                      false); // draw as down
+                                      true,   // draw as highlighted
+                                      true);  // draw as down
     
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(getLocalBounds());
