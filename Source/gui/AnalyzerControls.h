@@ -20,6 +20,7 @@ struct AnalyzerControls : juce::Component
 {
     AnalyzerControls(juce::AudioProcessorValueTreeState& apvts);
     void paint(juce::Graphics& g) override;
+    void resized() override;
 private:
     std::unique_ptr<CustomToggleButton> onOffButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> onOffAttachment;

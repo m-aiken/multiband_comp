@@ -60,33 +60,12 @@ void AnalyzerControls::paint(juce::Graphics& g)
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
     auto bounds = getLocalBounds();
     g.drawRect(bounds);
-    auto maxHeight = bounds.getHeight();
+
     auto quarterWidth = bounds.getWidth() * 0.25;
     auto sliderWidth = 16;
     auto padding = 6;
     auto labelHeight = 20;
     auto textHeight = 12;
-        
-    auto buttonHeight = maxHeight * 0.3;
-    onOffButton->setBounds(padding * 3,
-                           bounds.getCentreY() - (buttonHeight * 0.5),
-                           quarterWidth - (padding * 5),
-                           buttonHeight);
-    
-    prePostEqSlider->setBounds(quarterWidth + sliderWidth,
-                               labelHeight,
-                               sliderWidth,
-                               maxHeight - labelHeight - padding);
-    
-    fftOrderSlider->setBounds(quarterWidth * 2,
-                              labelHeight,
-                              sliderWidth,
-                              maxHeight - labelHeight - padding);
-    
-    decayRateSlider->setBounds(bounds.getRight() - (padding * 2) - quarterWidth,
-                               padding,
-                               quarterWidth + padding,
-                               maxHeight);
     
     g.drawFittedText("Analyzer",
                      onOffButton->getX(),
@@ -118,4 +97,35 @@ void AnalyzerControls::paint(juce::Graphics& g)
     g.drawFittedText("8192", fftOrderSlider->getRight() + padding, fftOrderSlider->getY(),                           60, textHeight, juce::Justification::centredLeft, 1);
     g.drawFittedText("4096", fftOrderSlider->getRight() + padding, (fftOrderSlider->getHeight() * 0.5) + textHeight, 60, textHeight, juce::Justification::centredLeft, 1);
     g.drawFittedText("2048", fftOrderSlider->getRight() + padding, fftOrderSlider->getBottom() - textHeight,         60, textHeight, juce::Justification::centredLeft, 1);
+}
+
+void AnalyzerControls::resized()
+{
+    auto bounds = getLocalBounds();
+    auto maxHeight = bounds.getHeight();
+    auto quarterWidth = bounds.getWidth() * 0.25;
+    auto sliderWidth = 16;
+    auto padding = 6;
+    auto labelHeight = 20;
+    auto buttonHeight = maxHeight * 0.3;
+    
+    onOffButton->setBounds(padding * 3,
+                           bounds.getCentreY() - (buttonHeight * 0.5),
+                           quarterWidth - (padding * 5),
+                           buttonHeight);
+    
+    prePostEqSlider->setBounds(quarterWidth + sliderWidth,
+                               labelHeight,
+                               sliderWidth,
+                               maxHeight - labelHeight - padding);
+    
+    fftOrderSlider->setBounds(quarterWidth * 2,
+                              labelHeight,
+                              sliderWidth,
+                              maxHeight - labelHeight - padding);
+    
+    decayRateSlider->setBounds(bounds.getRight() - (padding * 2) - quarterWidth,
+                               padding,
+                               quarterWidth + padding,
+                               maxHeight);
 }
