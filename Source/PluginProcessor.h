@@ -640,8 +640,8 @@ private:
     juce::AudioParameterFloat* gainOut { nullptr };
     juce::AudioParameterInt* selectedBand { nullptr };
     
-    juce::RangedAudioParameter* onOffParam { nullptr };
-    juce::RangedAudioParameter* prePostParam { nullptr };
+    juce::AudioParameterBool* onOffParam { nullptr };
+    juce::AudioParameterChoice* prePostParam { nullptr };
     
     juce::dsp::Gain<float> inputGain, outputGain;
     

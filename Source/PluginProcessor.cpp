@@ -207,10 +207,8 @@ PFMProject12AudioProcessor::PFMProject12AudioProcessor()
     
     const auto& analyzerParams = AnalyzerProperties::getAnalyzerParams();
     
-    onOffParam = apvts.getParameter(analyzerParams.at(AnalyzerProperties::ParamNames::Enable_Analyzer));
-    prePostParam = apvts.getParameter(analyzerParams.at(AnalyzerProperties::ParamNames::Analyzer_Processing_Mode));
-    jassert(onOffParam != nullptr);
-    jassert(prePostParam != nullptr);
+    assignBoolParam(onOffParam, analyzerParams.at(AnalyzerProperties::ParamNames::Enable_Analyzer));
+    assignChoiceParam(prePostParam, analyzerParams.at(AnalyzerProperties::ParamNames::Analyzer_Processing_Mode));
 }
 
 PFMProject12AudioProcessor::~PFMProject12AudioProcessor()
@@ -384,7 +382,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     applyGain(buffer, inputGain);
     
-    if (onOffParam->getValue() && prePostParam->getValue() == AnalyzerProperties::ProcessingModes::Pre)
+    if (onOffParam->get() && prePostParam->getCurrentChoiceName() == "Pre")
     {
         leftSCSF.update(buffer);
         rightSCSF.update(buffer);
@@ -503,7 +501,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     updateMeterFifos(outMeterValuesFifo, buffer);
     
-    if (onOffParam->getValue() && prePostParam->getValue() == AnalyzerProperties::ProcessingModes::Post)
+    if (onOffParam->get() && prePostParam->getCurrentChoiceName() == "Post")
     {
         leftSCSF.update(buffer);
         rightSCSF.update(buffer);
