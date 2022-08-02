@@ -11,16 +11,12 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "LookAndFeel.h"
 
 //==============================================================================
 struct CustomToggleButton : juce::ToggleButton
 {
-    CustomToggleButton(juce::RangedAudioParameter& rap);
-    ~CustomToggleButton() { setLookAndFeel(nullptr); }
-    
+    CustomToggleButton(juce::RangedAudioParameter& rap) : param(&rap) { }
     void paint(juce::Graphics& g) override;
 private:
-    LookAndFeel lnf;
     juce::RangedAudioParameter* param;
 };

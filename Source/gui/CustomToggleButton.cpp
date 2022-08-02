@@ -12,12 +12,6 @@
 #include "../ColourPalette.h"
 
 //==============================================================================
-CustomToggleButton::CustomToggleButton(juce::RangedAudioParameter& rap)
-: param(&rap)
-{
-    setLookAndFeel(&lnf);
-}
-
 void CustomToggleButton::paint(juce::Graphics& g)
 {
     getLookAndFeel().drawToggleButton(g,      // graphics

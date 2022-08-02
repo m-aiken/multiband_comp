@@ -12,13 +12,6 @@
 #include "../ColourPalette.h"
 
 //==============================================================================
-CustomLinearSlider::CustomLinearSlider(juce::RangedAudioParameter& rap)
-: juce::Slider(juce::Slider::SliderStyle::LinearVertical, juce::Slider::TextEntryBoxPosition::NoTextBox),
-  param(&rap)
-{
-    setLookAndFeel(&lnf);
-}
-
 void CustomLinearSlider::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();

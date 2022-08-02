@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "Globals.h"
+#include "gui/LookAndFeel.h"
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
 #include "gui/CompressorSelectionControlContainer.h"
@@ -62,6 +63,8 @@ private:
     
     SpectrumAnalyzer spectrumAnalyzer;
     AnalyzerControls analyzerControls;
+    
+    LookAndFeel lnf;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };

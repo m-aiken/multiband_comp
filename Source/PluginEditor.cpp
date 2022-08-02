@@ -18,6 +18,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
   spectrumAnalyzer(audioProcessor.getSampleRate(), audioProcessor.leftSCSF, audioProcessor.rightSCSF, audioProcessor.apvts),
   analyzerControls(audioProcessor.apvts)
 {
+    setLookAndFeel(&lnf);
+    
     const auto& params = Params::getParams();
     
     bandCountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(audioProcessor.apvts,
@@ -53,6 +55,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
 PFMProject12AudioProcessorEditor::~PFMProject12AudioProcessorEditor()
 {
     stopTimer();
+    setLookAndFeel(nullptr);
 }
 
 //==============================================================================

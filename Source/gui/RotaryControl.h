@@ -11,13 +11,11 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "LookAndFeel.h"
 
 //==============================================================================
 struct RotaryControl : juce::Slider
 {
     RotaryControl(juce::RangedAudioParameter& rap, const juce::String& unitSuffix, const juce::String& title);
-    ~RotaryControl() { setLookAndFeel(nullptr); }
     
     struct LabelPos
     {
@@ -34,7 +32,6 @@ struct RotaryControl : juce::Slider
     juce::String getDisplayString() const;
     void updateParam(juce::RangedAudioParameter* newParam) { param = newParam; }
 private:
-    LookAndFeel lnf;
     juce::RangedAudioParameter* param;
     juce::String suffix;
 };

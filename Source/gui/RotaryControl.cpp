@@ -17,7 +17,6 @@ RotaryControl::RotaryControl(juce::RangedAudioParameter& rap, const juce::String
       param(&rap),
       suffix(unitSuffix)
 {
-    setLookAndFeel(&lnf);
     setLabels();
     setName(title);
 }
