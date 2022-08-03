@@ -180,14 +180,14 @@ void SpectrumAnalyzer::paintBackground(juce::Graphics& g)
         auto freqLineX = fftBoundsX + fftBoundsWidth * normalizedX;
         
         g.setColour(ColourPalette::getColour(ColourPalette::Text).withLightness(0.2f));
-        g.drawVerticalLine(freqLineX, fftBoundsY + (textHeight * 0.5), fftBoundsBottom);
+        g.drawVerticalLine(freqLineX, fftBoundsY, fftBoundsBottom);
         
         juce::String text = freqs[i] >= 1000.f ? juce::String(freqs[i] / 1000.f) + "kHz" : juce::String(freqs[i]) + "Hz";
         
         g.setColour(ColourPalette::getColour(ColourPalette::Text));
         g.drawFittedText(text,                                     // text
                          freqLineX - (textWidth * 1.5),            // x
-                         fftBoundsY - (textHeight * 0.5),          // y
+                         fftBoundsY + (textHeight * 1.5),          // y
                          textWidth * 3,                            // width
                          textHeight,                               // height
                          juce::Justification::horizontallyCentred, // justification
