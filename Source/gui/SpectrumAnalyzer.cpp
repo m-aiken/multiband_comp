@@ -46,7 +46,7 @@ SpectrumAnalyzer::SpectrumAnalyzer(double _sampleRate,
     setActive(enabledParam->getValue());
 
     auto decayRateParam = apvts.getParameter(params.at(AnalyzerProperties::ParamNames::Analyzer_Decay_Rate));
-    updateDecayRate(decayRateParam->getValue());
+    updateDecayRate(decayRateParam->convertFrom0to1(decayRateParam->getValue()));
 
     auto orderParam = apvts.getParameter(params.at(AnalyzerProperties::ParamNames::Analyzer_Points));
     updateOrder(orderParam->getValue());

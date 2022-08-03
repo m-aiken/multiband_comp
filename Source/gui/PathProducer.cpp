@@ -131,7 +131,7 @@ void PathProducer::setFFTRectBounds(juce::Rectangle<float> bounds)
 
 void PathProducer::setDecayRate(float decayRate)
 {
-    decayRateInDbPerSec.store(decayRate);
+    decayRateInDbPerSec.store(decayRate / 60.f);
 }
 
 bool PathProducer::pull(juce::Path& path)
