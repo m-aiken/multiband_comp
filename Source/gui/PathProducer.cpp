@@ -68,7 +68,7 @@ void PathProducer::run()
             {
                 auto fftSize = getFFTSize();
                 auto numBins = static_cast<int>(fftSize * 0.5);
-                auto decayRate = decayRateInDbPerSec.load();
+                auto decayRate = decayRateInDbPerSec.load() / 60.f;
                 
                 updateRenderData(renderData, fftData, numBins, decayRate);
                 
@@ -131,7 +131,7 @@ void PathProducer::setFFTRectBounds(juce::Rectangle<float> bounds)
 
 void PathProducer::setDecayRate(float decayRate)
 {
-    decayRateInDbPerSec.store(decayRate / 60.f);
+    decayRateInDbPerSec.store(decayRate);
 }
 
 bool PathProducer::pull(juce::Path& path)
