@@ -94,17 +94,16 @@ void SpectrumAnalyzer::resized()
     
     auto localBounds = getLocalBounds();
     auto fftBoundsY = fftBoundingBox.getY();
-    auto fftBoundsHeight = fftBoundingBox.getHeight();
     
     analyzerScale.setBounds(localBounds.getX(),
-                            fftBoundsY - getTextOffset(),
+                            fftBoundsY - textHeight,
                             textWidth,
-                            fftBoundsHeight + textHeight);
+                            localBounds.getHeight());
     
     eqScale.setBounds(localBounds.getRight() - textWidth,
-                      fftBoundsY - getTextOffset(),
+                      fftBoundsY - textHeight,
                       textWidth,
-                      fftBoundsHeight + textHeight);
+                      localBounds.getHeight());
     
     customizeScales(leftScaleMin, leftScaleMax, rightScaleMin, rightScaleMax, scaleDivision);
 }
@@ -115,8 +114,8 @@ void SpectrumAnalyzer::paint(juce::Graphics& g)
     
     g.reduceClipRegion(fftBoundingBox);
     
-    leftAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextOffset()));
-    rightAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextOffset()));
+    leftAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextHeight()));
+    rightAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextHeight()));
     
     g.setColour(juce::Colours::lightblue);
     g.strokePath(leftAnalyzerPath, juce::PathStrokeType(1.f));
@@ -187,7 +186,7 @@ void SpectrumAnalyzer::paintBackground(juce::Graphics& g)
         g.setColour(ColourPalette::getColour(ColourPalette::Text));
         g.drawFittedText(text,                                     // text
                          freqLineX - (textWidth * 1.5),            // x
-                         fftBoundsY + (textHeight * 1.5),          // y
+                         fftBoundsY - textHeight,                  // y
                          textWidth * 3,                            // width
                          textHeight,                               // height
                          juce::Justification::horizontallyCentred, // justification

@@ -17,7 +17,7 @@ struct AnalyzerBase : juce::Component
 {
     juce::Rectangle<int> getBoundsForRendering() const
     {
-        return getLocalBounds().reduced(0, getTextOffset());
+        return getLocalBounds().reduced(0, getTextHeight());
     }
     
     juce::Rectangle<int> getBoundsForFFT()
@@ -29,7 +29,6 @@ struct AnalyzerBase : juce::Component
     
     inline int getTextHeight() const { return 12; }
     inline int getTextWidth() const { return 16; }
-    inline int getTextOffset() const { return static_cast<int>(std::floor(getTextHeight() * 0.6)); }
     
     void resized() override
     {
