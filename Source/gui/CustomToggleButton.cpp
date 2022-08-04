@@ -14,10 +14,10 @@
 //==============================================================================
 void CustomToggleButton::paint(juce::Graphics& g)
 {
-    getLookAndFeel().drawToggleButton(g,      // graphics
-                                      *this,  // button
-                                      true,   // draw as highlighted
-                                      true);  // draw as down
+    getLookAndFeel().drawToggleButton(g,                  // graphics
+                                      *this,              // button
+                                      isMouseOver(),      // draw as highlighted
+                                      !getToggleState()); // draw as down
     
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
     g.drawRect(getLocalBounds());

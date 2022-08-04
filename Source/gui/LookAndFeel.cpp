@@ -83,16 +83,25 @@ void LookAndFeel::drawToggleButton(juce::Graphics& g,
     auto bounds = toggleButton.getLocalBounds();
     
     // background
-    g.fillAll(toggleButton.getToggleState()
-              ? juce::Colours::skyblue
-              : ColourPalette::getColour(ColourPalette::Background));
+    juce::Colour backgroundColour;
+    
+    if (shouldDrawButtonAsDown)
+    {
+        backgroundColour = ColourPalette::getColour(ColourPalette::Background);
+    }
+    else
+    {
+        backgroundColour = shouldDrawButtonAsHighlighted ? juce::Colours::skyblue.brighter() : juce::Colours::skyblue;
+    }
+    
+    g.fillAll(backgroundColour);
     
     // text colour
-    g.setColour(toggleButton.getToggleState()
-                ? ColourPalette::getColour(ColourPalette::Background)
-                : ColourPalette::getColour(ColourPalette::Text));
+    g.setColour(shouldDrawButtonAsDown
+                ? ColourPalette::getColour(ColourPalette::Text)
+                : ColourPalette::getColour(ColourPalette::Background));
     
-    g.drawFittedText(toggleButton.getToggleState() ? "On" : "Off",
+    g.drawFittedText(shouldDrawButtonAsDown ? "Off" : "On",
                      bounds.getX(),
                      bounds.getY(),
                      bounds.getWidth(),
