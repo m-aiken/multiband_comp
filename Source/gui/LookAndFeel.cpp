@@ -50,3 +50,62 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     
     g.fillPath(p);
 }
+
+void LookAndFeel::drawLinearSlider(juce::Graphics& g,
+                                   int x, int y, int width, int height,
+                                   float sliderPos, float minSliderPos, float maxSliderPos,
+                                   const juce::Slider::SliderStyle sliderStyle,
+                                   juce::Slider& slider)
+{
+    auto tooltipHeight = height * 0.15;
+    float tooltipY = sliderPos - (tooltipHeight * 0.5);
+    
+    if (tooltipY < y)
+    {
+        tooltipY = y;
+    }
+    
+    if (height - sliderPos < tooltipHeight)
+    {
+        tooltipY = height - tooltipHeight;
+    }
+    
+    auto tooltip = juce::Rectangle<float>(0.f, tooltipY, width, tooltipHeight);
+    g.setColour(juce::Colours::skyblue);
+    g.fillRect(tooltip.reduced(2.f, 2.f));
+}
+
+void LookAndFeel::drawToggleButton(juce::Graphics& g,
+                                   juce::ToggleButton& toggleButton,
+                                   bool shouldDrawButtonAsHighlighted,
+                                   bool shouldDrawButtonAsDown)
+{
+    auto bounds = toggleButton.getLocalBounds();
+    
+    // background
+    juce::Colour backgroundColour;
+    
+    if (shouldDrawButtonAsDown)
+    {
+        backgroundColour = ColourPalette::getColour(ColourPalette::Background);
+    }
+    else
+    {
+        backgroundColour = shouldDrawButtonAsHighlighted ? juce::Colours::skyblue.brighter() : juce::Colours::skyblue;
+    }
+    
+    g.fillAll(backgroundColour);
+    
+    // text colour
+    g.setColour(shouldDrawButtonAsDown
+                ? ColourPalette::getColour(ColourPalette::Text)
+                : ColourPalette::getColour(ColourPalette::Background));
+    
+    g.drawFittedText(shouldDrawButtonAsDown ? "Off" : "On",
+                     bounds.getX(),
+                     bounds.getY(),
+                     bounds.getWidth(),
+                     bounds.getHeight(),
+                     juce::Justification::centred,
+                     1);
+}

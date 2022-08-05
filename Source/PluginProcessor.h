@@ -615,18 +615,15 @@ public:
     void updateDefaultCenterFrequencies(size_t numBands);
     
     juce::AudioProcessorValueTreeState apvts { *this, nullptr, "Parameters", createParameterLayout() };
-    
-    std::vector<float> createTestCrossovers(const size_t& numBands);
-    
-//    Fifo<juce::AudioBuffer<float>, 20> guiFifo;
-    
+        
     Fifo<MeterValues, 20> inMeterValuesFifo, outMeterValuesFifo;
     
     std::array<CompressorBand, Globals::getNumMaxBands()>& getCompressors() { return compressors; };
     
     std::atomic<size_t> numFilterBands { Globals::getNumMaxBands() };
     
-    SingleChannelSampleFifo<juce::AudioBuffer<float>> SCSF { Channel::Left };
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> leftSCSF { Channel::Left };
+    SingleChannelSampleFifo<juce::AudioBuffer<float>> rightSCSF { Channel::Right };
 private:
     std::array<CompressorBand, Globals::getNumMaxBands()> compressors;
     
@@ -643,6 +640,9 @@ private:
     juce::AudioParameterFloat* gainOut { nullptr };
     juce::AudioParameterInt* selectedBand { nullptr };
     
+    juce::AudioParameterBool* onOffParam { nullptr };
+    juce::AudioParameterChoice* prePostParam { nullptr };
+    
     juce::dsp::Gain<float> inputGain, outputGain;
     
     std::array<juce::AudioBuffer<float>, Globals::getNumMaxBands()> leftMidBuffers;
@@ -652,6 +652,9 @@ private:
     
     std::unique_ptr<FifoBackgroundUpdater<int>> defaultCenterFrequenciesUpdater;
     std::unique_ptr<FifoBackgroundUpdater<int>> crossoverFreqOrderingUpdater;
+    
+    const juce::String postStr{"Post"};
+    const juce::String preStr{"Pre"};
     
 #if USE_TEST_OSC
     juce::dsp::Oscillator<float> testOsc;

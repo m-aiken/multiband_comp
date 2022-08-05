@@ -68,7 +68,7 @@ void PathProducer::run()
             {
                 auto fftSize = getFFTSize();
                 auto numBins = static_cast<int>(fftSize * 0.5);
-                auto decayRate = decayRateInDbPerSec.load();
+                auto decayRate = decayRateInDbPerSec.load() / 60.f;
                 
                 updateRenderData(renderData, fftData, numBins, decayRate);
                 

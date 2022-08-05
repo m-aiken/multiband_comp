@@ -11,16 +11,12 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "Globals.h"
-#include "gui/Averager.h"
-#include "gui/DecayingValueHolder.h"
-#include "gui/DbScale.h"
-#include "gui/Meter.h"
+#include "gui/LookAndFeel.h"
 #include "gui/StereoMeter.h"
 #include "gui/CompressorBandControl.h"
 #include "gui/CompressorSelectionControlContainer.h"
-#include "gui/PathProducer.h"
-#include "dsp/FFTDataGenerator.h"
-#include "dsp/AnalyzerPathGenerator.h"
+#include "gui/SpectrumAnalyzer.h"
+#include "gui/AnalyzerControls.h"
 
 //==============================================================================
 /**
@@ -65,20 +61,10 @@ private:
     
     size_t numActiveFilterBands { Globals::getNumMaxBands() };
     
-    juce::Rectangle<float> fftBounds{600.f, 160.f};
+    SpectrumAnalyzer spectrumAnalyzer;
+    AnalyzerControls analyzerControls;
     
-    PathProducer pathProducer;
-    
-    /*
-    FFTDataGenerator fftDataGtor;
-    juce::AudioBuffer<float> fftBuffer;
-    
-    AnalyzerPathGenerator analyzerPathGtor;
-    */
-    juce::Path fftPath;
-    
-    // for fft path test
-    void drawFreqLines(juce::Graphics& g);
+    LookAndFeel lnf;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PFMProject12AudioProcessorEditor)
 };

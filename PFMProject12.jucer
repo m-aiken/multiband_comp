@@ -13,6 +13,8 @@
               file="Source/dsp/AnalyzerPathGenerator.cpp"/>
         <FILE id="EQsgau" name="AnalyzerPathGenerator.h" compile="0" resource="0"
               file="Source/dsp/AnalyzerPathGenerator.h"/>
+        <FILE id="z6Sbti" name="AnalyzerProperties.h" compile="0" resource="0"
+              file="Source/dsp/AnalyzerProperties.h"/>
         <FILE id="hJ5jAI" name="Decibel.h" compile="0" resource="0" file="Source/dsp/Decibel.h"/>
         <FILE id="YEKJFb" name="FFTDataGenerator.cpp" compile="1" resource="0"
               file="Source/dsp/FFTDataGenerator.cpp"/>
@@ -27,6 +29,22 @@
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
+        <FILE id="UgiR4d" name="CustomToggleButton.cpp" compile="1" resource="0"
+              file="Source/gui/CustomToggleButton.cpp"/>
+        <FILE id="pmiVBA" name="CustomToggleButton.h" compile="0" resource="0"
+              file="Source/gui/CustomToggleButton.h"/>
+        <FILE id="FxeCXM" name="LinearSlider.cpp" compile="1" resource="0"
+              file="Source/gui/LinearSlider.cpp"/>
+        <FILE id="q3Z8uv" name="LinearSlider.h" compile="0" resource="0" file="Source/gui/LinearSlider.h"/>
+        <FILE id="mPyQRI" name="AnalyzerControls.cpp" compile="1" resource="0"
+              file="Source/gui/AnalyzerControls.cpp"/>
+        <FILE id="mQfFI3" name="AnalyzerControls.h" compile="0" resource="0"
+              file="Source/gui/AnalyzerControls.h"/>
+        <FILE id="FgljPe" name="SpectrumAnalyzer.cpp" compile="1" resource="0"
+              file="Source/gui/SpectrumAnalyzer.cpp"/>
+        <FILE id="EmKzE6" name="SpectrumAnalyzer.h" compile="0" resource="0"
+              file="Source/gui/SpectrumAnalyzer.h"/>
+        <FILE id="UbxeEd" name="AnalyzerBase.h" compile="0" resource="0" file="Source/gui/AnalyzerBase.h"/>
         <FILE id="BlClE8" name="PathProducer.cpp" compile="1" resource="0"
               file="Source/gui/PathProducer.cpp"/>
         <FILE id="w686MP" name="PathProducer.h" compile="0" resource="0" file="Source/gui/PathProducer.h"/>
