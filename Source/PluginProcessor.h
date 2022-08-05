@@ -653,6 +653,9 @@ private:
     std::unique_ptr<FifoBackgroundUpdater<int>> defaultCenterFrequenciesUpdater;
     std::unique_ptr<FifoBackgroundUpdater<int>> crossoverFreqOrderingUpdater;
     
+    const juce::String postStr{"Post"};
+    const juce::String preStr{"Pre"};
+    
 #if USE_TEST_OSC
     juce::dsp::Oscillator<float> testOsc;
     juce::dsp::Gain<float> testGain;

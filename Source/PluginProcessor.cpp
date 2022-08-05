@@ -382,7 +382,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     applyGain(buffer, inputGain);
     
-    if (onOffParam->get() && prePostParam->getCurrentChoiceName() == "Pre")
+    if (onOffParam->get() && prePostParam->getCurrentChoiceName() == preStr)
     {
         leftSCSF.update(buffer);
         rightSCSF.update(buffer);
@@ -501,7 +501,7 @@ void PFMProject12AudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     
     updateMeterFifos(outMeterValuesFifo, buffer);
     
-    if (onOffParam->get() && prePostParam->getCurrentChoiceName() == "Post")
+    if (onOffParam->get() && prePostParam->getCurrentChoiceName() == postStr)
     {
         leftSCSF.update(buffer);
         rightSCSF.update(buffer);
