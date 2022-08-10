@@ -93,7 +93,7 @@ void AnalyzerControls::paint(juce::Graphics& g)
                      juce::Justification::centredLeft,
                      1);
     
-    g.setColour(ColourPalette::getColour(ColourPalette::Text).contrasting(0.5f));
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
     g.drawFittedText("Post", prePostEqSlider->getRight() + padding, prePostEqSlider->getY(),                   60, textHeight, juce::Justification::centredLeft, 1);
     g.drawFittedText("Pre",  prePostEqSlider->getRight() + padding, prePostEqSlider->getBottom() - textHeight, 60, textHeight, juce::Justification::centredLeft, 1);
     
