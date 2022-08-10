@@ -20,7 +20,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
     
     // Select Button
     selectButton.setButtonText(juce::String(bandNum + 1));
-    setColors(selectButton, juce::Colours::skyblue);
+    setColors(selectButton, ColourPalette::getColour(ColourPalette::Blue));
     
     selectedBandParam = dynamic_cast<juce::RangedAudioParameter*>(apvts.getParameter(params.at(Params::Names::Selected_Band)));
     jassert( selectedBandParam != nullptr );
@@ -61,7 +61,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
                    soloParamListener,
                    Params::BandControl::Solo,
                    "S",
-                   juce::Colours::lightgreen);
+                   ColourPalette::getColour(ColourPalette::MeterGreen));
     
     initSMB_Button(muteButton,
                    muteAttachment,
@@ -75,7 +75,7 @@ CompressorSelectionControl::CompressorSelectionControl(juce::AudioProcessorValue
                    bypassParamListener,
                    Params::BandControl::Bypass,
                    "X",
-                   juce::Colours::red);
+                   ColourPalette::getColour(ColourPalette::Red));
     
     addAndMakeVisible(selectButton);
     addAndMakeVisible(soloButton);
@@ -90,7 +90,7 @@ void CompressorSelectionControl::paint(juce::Graphics& g)
 {
     if ( selectedBandParam->convertFrom0to1(selectedBandParam->getValue()) == bandNum )
     {
-        g.setColour(juce::Colours::skyblue);
+        g.setColour(ColourPalette::getColour(ColourPalette::Blue));
         g.fillEllipse(5.f, 5.f, 8.f, 8.f);
     }
 }
@@ -137,7 +137,7 @@ void CompressorSelectionControl::setAsSelected(bool shouldBeSelected)
 
 void CompressorSelectionControl::resetSelectButtonToDefaultColors()
 {
-    setColors(selectButton, juce::Colours::skyblue);
+    setColors(selectButton, ColourPalette::getColour(ColourPalette::Blue));
 }
 
 void CompressorSelectionControl::setColors(juce::Component& comp, juce::Colour fillColor)

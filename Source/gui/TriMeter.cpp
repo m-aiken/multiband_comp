@@ -23,7 +23,7 @@ void TriMeter::paint(juce::Graphics& g)
     
     // meters
     // in meter
-    g.setColour(juce::Colours::skyblue);
+    g.setColour(ColourPalette::getColour(ColourPalette::Blue));
     auto inDbScaled = std::floor(juce::jmap<float>(inValueDb, Globals::getNegativeInf(), Globals::getMaxDecibels(), meterHeight, 0));
     auto inMeter = juce::Rectangle<int>(0, inDbScaled, meterWidth, meterHeight - inDbScaled);
     g.fillRect(inMeter);

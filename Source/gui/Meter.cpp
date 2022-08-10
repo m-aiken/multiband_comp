@@ -25,7 +25,7 @@ void Meter::paint(juce::Graphics& g)
     auto maxMeterHeight = componentHeight * (meterProportion / 100);
     auto meterBoundsYOffset = componentHeight - maxMeterHeight;
     
-    g.fillAll(juce::Colours::black); // background
+    g.fillAll(ColourPalette::getColour(ColourPalette::MeterBackground)); // background
     
     auto maxMeterBounds = juce::Rectangle<int>(0,
                                                meterBoundsYOffset,
