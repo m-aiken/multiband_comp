@@ -62,7 +62,7 @@ void Meter::paint(juce::Graphics& g)
                 .withX(bounds.getCentreX() - (avgMeterWidth * 0.5)));
     
     // Falling Tick
-    g.setColour( fallingTick.isOverThreshold() ? ColourPalette::getColour(ColourPalette::Red) : ColourPalette::getColour(ColourPalette::Text) );
+    g.setColour( fallingTick.isOverThreshold() ? ColourPalette::getColour(ColourPalette::Red) : ColourPalette::getColour(ColourPalette::Border) );
     
     auto tickValueScaled = juce::jmap<float>(fallingTick.getCurrentValue(),
                                              Globals::getNegativeInf(),
@@ -74,7 +74,7 @@ void Meter::paint(juce::Graphics& g)
                tickValueScaled,   // startY
                bounds.getRight(), // endX
                tickValueScaled,   // endY
-               3.f);              // line thickness
+               2.f);              // line thickness
     
     
     // L/R label
@@ -87,7 +87,7 @@ void Meter::paint(juce::Graphics& g)
                      1);
     
     // Meter bounding box/line
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
     g.drawRect(maxMeterBounds);
 }
 

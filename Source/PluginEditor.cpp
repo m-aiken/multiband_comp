@@ -87,22 +87,27 @@ void PFMProject12AudioProcessorEditor::resized()
                               60,
                               20);
     
-    auto bandControlsHeight = 120;
-    bandControls.setBounds(inStereoMeter.getRight() + padding,
-                           inStereoMeter.getBottom() - bandControlsHeight - padding,
-                           outStereoMeter.getX() - inStereoMeter.getRight() - (padding * 2),
-                           bandControlsHeight);
-    
-    compSelectionControls.setBounds(bandControls.getX(),
-                                    bandControls.getY() - bandControlsHeight - 2,
-                                    bandControls.getWidth(),
-                                    bandControlsHeight);
-    
     spectrumAnalyzer.setBounds(bounds.getCentreX() - 350, 50, 700, 240);
     
-    auto analyzerControlsWidth = bandControls.getWidth() * 0.5;
+    auto bandControlsHeight = 120;
+    auto bandControlsX = inStereoMeter.getRight() + padding;
+    auto bandControlsWidth = outStereoMeter.getX() - inStereoMeter.getRight() - (padding * 2);
+    auto controlsPadding = padding * 0.5;
+    
+    compSelectionControls.setBounds(bandControlsX,
+                                    spectrumAnalyzer.getBottom() + controlsPadding,
+                                    bandControlsWidth,
+                                    bandControlsHeight);
+    
+    
+    bandControls.setBounds(bandControlsX,
+                           compSelectionControls.getBottom() + controlsPadding,
+                           bandControlsWidth,
+                           bandControlsHeight);
+    
+    auto analyzerControlsWidth = bandControlsWidth * 0.5;
     analyzerControls.setBounds(bounds.getCentreX() - (analyzerControlsWidth * 0.5),
-                               bandControls.getBottom() + padding,
+                               bandControls.getBottom() + controlsPadding,
                                analyzerControlsWidth,
                                bandControlsHeight);
 }

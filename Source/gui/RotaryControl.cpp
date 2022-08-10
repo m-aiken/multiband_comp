@@ -56,8 +56,9 @@ void RotaryControl::paint(juce::Graphics& g)
     auto bounds = getLocalBounds();
     
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
+    
     g.drawFittedText(getName(),
-                     bounds.removeFromTop(getTextHeight() + 3),
+                     bounds.removeFromTop(getTextHeight()),
                      juce::Justification::centred,
                      1);
     
@@ -67,7 +68,7 @@ void RotaryControl::paint(juce::Graphics& g)
                                          startAngle,
                                          endAngle);
     
-    auto rotaryBounds = getRotaryBounds();
+    auto rotaryBounds = getRotaryBounds().reduced(4);
     getLookAndFeel().drawRotarySlider(g,
                                       rotaryBounds.getX(),      // x
                                       rotaryBounds.getY(),      // y
@@ -81,7 +82,7 @@ void RotaryControl::paint(juce::Graphics& g)
     auto center = rotaryBounds.toFloat().getCentre();
     auto radius = rotaryBounds.getWidth() * 0.5f;
     
-    g.setFont(getTextHeight());
+    g.setFont(rotaryBounds.getHeight() * 0.2);
     
     // current value string
     g.setColour(ColourPalette::getColour(ColourPalette::Text));

@@ -27,4 +27,7 @@ constexpr int getNumMaxBands() { return 8; }
 constexpr float getMinFrequency() { return 20.f; }
 constexpr float getMaxFrequency() { return 20000.f; }
 
+constexpr float getBorderCornerRadius() { return 5.f; }
+constexpr float getBorderThickness() { return 2.f; }
+
 }
