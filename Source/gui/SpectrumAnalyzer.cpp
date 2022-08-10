@@ -117,10 +117,10 @@ void SpectrumAnalyzer::paint(juce::Graphics& g)
     leftAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextHeight()));
     rightAnalyzerPath.applyTransform(juce::AffineTransform().translation(fftBoundingBox.getX(), fftBoundingBox.getY() - getTextHeight()));
     
-    g.setColour(juce::Colours::lightblue);
+    g.setColour(ColourPalette::getColour(ColourPalette::Blue));
     g.strokePath(leftAnalyzerPath, juce::PathStrokeType(1.f));
     
-    g.setColour(juce::Colours::lightgreen);
+    g.setColour(ColourPalette::getColour(ColourPalette::MeterGreen));
     g.strokePath(rightAnalyzerPath, juce::PathStrokeType(1.f));
 }
 

@@ -23,7 +23,7 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g,
     
     g.setColour(ColourPalette::getColour(ColourPalette::Background).contrasting(0.05f));
     g.fillEllipse(bounds);
-    g.setColour(juce::Colours::skyblue);
+    g.setColour(ColourPalette::getColour(ColourPalette::Blue));
     g.drawEllipse(bounds, 1.f);
     
     g.setColour(ColourPalette::getColour(ColourPalette::Text));
@@ -71,7 +71,7 @@ void LookAndFeel::drawLinearSlider(juce::Graphics& g,
     }
     
     auto tooltip = juce::Rectangle<float>(0.f, tooltipY, width, tooltipHeight);
-    g.setColour(juce::Colours::skyblue);
+    g.setColour(ColourPalette::getColour(ColourPalette::Blue));
     g.fillRect(tooltip.reduced(2.f, 2.f));
 }
 
@@ -91,7 +91,7 @@ void LookAndFeel::drawToggleButton(juce::Graphics& g,
     }
     else
     {
-        backgroundColour = shouldDrawButtonAsHighlighted ? juce::Colours::skyblue.brighter() : juce::Colours::skyblue;
+        backgroundColour = shouldDrawButtonAsHighlighted ? ColourPalette::getColour(ColourPalette::Blue).brighter() : ColourPalette::getColour(ColourPalette::Blue);
     }
     
     g.fillAll(backgroundColour);
