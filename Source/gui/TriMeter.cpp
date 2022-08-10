@@ -70,7 +70,7 @@ void TriMeter::paint(juce::Graphics& g)
     g.drawLine(meterWidth * 1, 1, meterWidth * 1, meterBounds.getBottom() - 1, 1.f);
     g.drawLine(meterWidth * 2, 1, meterWidth * 2, meterBounds.getBottom() - 1, 1.f);
     
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
     g.drawRect(meterBounds);
     
     // labels
