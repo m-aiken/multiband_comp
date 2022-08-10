@@ -82,7 +82,7 @@ void CompressorBandControl::paint(juce::Graphics& g)
 void CompressorBandControl::resized()
 {
     auto bounds = getLocalBounds();
-    auto rotaryBounds = bounds.withWidth(bounds.getWidth() * 0.9);
+    auto rotaryBounds = bounds.withWidth(bounds.getWidth() * 0.9).withHeight(bounds.getHeight() * 0.9).withY(bounds.getHeight() * 0.05);
 
     // Rotaries
     juce::Grid grid;

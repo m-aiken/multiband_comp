@@ -74,6 +74,7 @@ void TriMeter::paint(juce::Graphics& g)
     g.drawRect(meterBounds);
     
     // labels
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     std::array<juce::String, 3> labels = { "I", "O", "GR" };
     for ( auto label = 0; label < labels.size(); ++label )
     {
