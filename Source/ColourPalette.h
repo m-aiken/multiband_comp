@@ -37,7 +37,7 @@ inline std::map<Palette, juce::Colour> colourMap =
     { MeterYellow,     juce::Colour(253u, 158u, 43u).withAlpha(0.75f) },
     { MeterBackground, juce::Colour(37u, 32u, 37u) },
     { Blue,            juce::Colour(174u, 216u, 229u) },
-    { Border,          juce::Colour(201u, 209u, 207u).withAlpha(0.5f) }
+    { Border,          juce::Colour(201u, 209u, 207u).withAlpha(0.25f) }
 };
 
 inline juce::Colour getColour(Palette c) { return colourMap[c]; }
