@@ -22,8 +22,8 @@ CompressorSelectionControlContainer::CompressorSelectionControlContainer(juce::A
 void CompressorSelectionControlContainer::paint(juce::Graphics& g)
 {
     auto bounds = getLocalBounds();
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
-    g.drawRect(bounds);
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
+    g.drawRoundedRectangle(bounds.toFloat(), Globals::getBorderCornerRadius(), Globals::getBorderThickness());
     auto boundsBottom = bounds.getBottom();
     auto cell = bounds.getWidth() / numBandsDisplayed;
     

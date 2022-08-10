@@ -11,6 +11,7 @@
 #include "AnalyzerControls.h"
 #include "../dsp/AnalyzerProperties.h"
 #include "../ColourPalette.h"
+#include "../Globals.h"
 
 //==============================================================================
 AnalyzerControls::AnalyzerControls(juce::AudioProcessorValueTreeState& apvts)
@@ -57,15 +58,17 @@ AnalyzerControls::AnalyzerControls(juce::AudioProcessorValueTreeState& apvts)
 
 void AnalyzerControls::paint(juce::Graphics& g)
 {
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
     auto bounds = getLocalBounds();
-    g.drawRect(bounds);
+    g.drawRoundedRectangle(bounds.toFloat(), Globals::getBorderCornerRadius(), Globals::getBorderThickness());
 
     auto quarterWidth = bounds.getWidth() * 0.25;
     auto sliderWidth = 16;
     auto padding = 6;
     auto labelHeight = 20;
     auto textHeight = 12;
+    
+    g.setColour(ColourPalette::getColour(ColourPalette::Text));
     
     g.drawFittedText("Analyzer",
                      onOffButton->getX(),

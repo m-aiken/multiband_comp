@@ -11,6 +11,7 @@
 #include "CompressorBandControl.h"
 #include "../Params.h"
 #include "../ColourPalette.h"
+#include "../Globals.h"
 
 //==============================================================================
 CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState& _apvts)
@@ -74,8 +75,8 @@ CompressorBandControl::CompressorBandControl(juce::AudioProcessorValueTreeState&
 
 void CompressorBandControl::paint(juce::Graphics& g)
 {
-    g.setColour(ColourPalette::getColour(ColourPalette::Text));
-    g.drawRect(getLocalBounds());
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
+    g.drawRoundedRectangle(getLocalBounds().toFloat(), Globals::getBorderCornerRadius(), Globals::getBorderThickness());
 }
 
 void CompressorBandControl::resized()
