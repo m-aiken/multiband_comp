@@ -17,6 +17,7 @@
 #include "gui/CompressorSelectionControlContainer.h"
 #include "gui/SpectrumAnalyzer.h"
 #include "gui/AnalyzerControls.h"
+#include "gui/ModeSelector.h"
 
 //==============================================================================
 /**
@@ -63,6 +64,7 @@ private:
     
     SpectrumAnalyzer spectrumAnalyzer;
     AnalyzerControls analyzerControls;
+    ModeSelector modeSelector;
     
     LookAndFeel lnf;
     

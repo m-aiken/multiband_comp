@@ -16,7 +16,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
 : AudioProcessorEditor (&p),
   audioProcessor (p),
   spectrumAnalyzer(audioProcessor.getSampleRate(), audioProcessor.leftSCSF, audioProcessor.rightSCSF, audioProcessor.apvts),
-  analyzerControls(audioProcessor.apvts)
+  analyzerControls(audioProcessor.apvts),
+  modeSelector(audioProcessor.apvts)
 {
     setLookAndFeel(&lnf);
     
@@ -45,6 +46,7 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     addAndMakeVisible(bandCountPicker);
     addAndMakeVisible(spectrumAnalyzer);
     addAndMakeVisible(analyzerControls);
+    addAndMakeVisible(modeSelector);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(900, 700);
@@ -110,6 +112,12 @@ void PFMProject12AudioProcessorEditor::resized()
                                bandControls.getBottom() + controlsPadding,
                                analyzerControlsWidth,
                                bandControlsHeight);
+    
+    auto modeSelectorWidth = analyzerControlsWidth / 3;
+    modeSelector.setBounds(analyzerControls.getX() - modeSelectorWidth,
+                           bandControls.getBottom() + controlsPadding,
+                           modeSelectorWidth,
+                           bandControlsHeight);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()

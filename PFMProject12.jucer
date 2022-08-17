@@ -29,6 +29,9 @@
       </GROUP>
       <FILE id="wxHfm3" name="Globals.h" compile="0" resource="0" file="Source/Globals.h"/>
       <GROUP id="{36A5D06F-40DE-FBFC-7099-58DCDCC73D55}" name="gui">
+        <FILE id="nJVfz1" name="ModeSelector.cpp" compile="1" resource="0"
+              file="Source/gui/ModeSelector.cpp"/>
+        <FILE id="b6WO82" name="ModeSelector.h" compile="0" resource="0" file="Source/gui/ModeSelector.h"/>
         <FILE id="UgiR4d" name="CustomToggleButton.cpp" compile="1" resource="0"
               file="Source/gui/CustomToggleButton.cpp"/>
         <FILE id="pmiVBA" name="CustomToggleButton.h" compile="0" resource="0"
