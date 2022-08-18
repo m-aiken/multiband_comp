@@ -12,6 +12,13 @@
 #include "Params.h"
 
 //==============================================================================
+void ControlPlaceholder::paint(juce::Graphics& g)
+{
+    g.setColour(ColourPalette::getColour(ColourPalette::Border));
+    g.drawRoundedRectangle(getLocalBounds().toFloat(), Globals::getBorderCornerRadius(), Globals::getBorderThickness());
+};
+
+//==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
 : AudioProcessorEditor (&p),
   audioProcessor (p),
@@ -51,6 +58,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     addAndMakeVisible(modeSelector);
     addAndMakeVisible(gainInRotary);
     addAndMakeVisible(gainOutRotary);
+    
+    addAndMakeVisible(controlPlaceholder);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(900, 700);
@@ -105,33 +114,31 @@ void PFMProject12AudioProcessorEditor::resized()
                                     bandControlsWidth,
                                     bandControlsHeight);
     
-    
     bandControls.setBounds(bandControlsX,
                            compSelectionControls.getBottom() + controlsPadding,
                            bandControlsWidth,
                            bandControlsHeight);
+
+    juce::Rectangle<int> bottomControlsBounds;
+    bottomControlsBounds.setX(padding);
+    bottomControlsBounds.setY(static_cast<int>(std::floor(bandControls.getBottom() + controlsPadding)));
+    bottomControlsBounds.setWidth(bounds.getWidth() - (padding * 2));
+    bottomControlsBounds.setHeight(bandControlsHeight);
     
-    auto analyzerControlsWidth = bandControlsWidth * 0.5;
-    analyzerControls.setBounds(bounds.getCentreX() - (analyzerControlsWidth * 0.5),
-                               bandControls.getBottom() + controlsPadding,
-                               analyzerControlsWidth,
-                               bandControlsHeight);
+    juce::Grid grid;
+    using Track = juce::Grid::TrackInfo;
+    using Fr = juce::Grid::Fr;
     
-    auto modeSelectorWidth = analyzerControlsWidth / 3;
-    modeSelector.setBounds(analyzerControls.getX() - modeSelectorWidth,
-                           bandControls.getBottom() + controlsPadding,
-                           modeSelectorWidth,
-                           bandControlsHeight);
+    grid.templateColumns = { Track(Fr(1)), Track(Fr(1)), Track(Fr(3)), Track(Fr(2)), Track(Fr(1)) };
+    grid.autoRows = Track(Fr(1));
     
-    gainInRotary.setBounds(padding,
-                           bandControls.getBottom() + controlsPadding,
-                           modeSelectorWidth,
-                           bandControlsHeight);
+    grid.items.add(juce::GridItem(gainInRotary));
+    grid.items.add(juce::GridItem(modeSelector));
+    grid.items.add(juce::GridItem(analyzerControls));
+    grid.items.add(juce::GridItem(controlPlaceholder));
+    grid.items.add(juce::GridItem(gainOutRotary));
     
-    gainOutRotary.setBounds(bounds.getRight() - modeSelectorWidth - padding,
-                            bandControls.getBottom() + controlsPadding,
-                            modeSelectorWidth,
-                            bandControlsHeight);
+    grid.performLayout(bottomControlsBounds);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()

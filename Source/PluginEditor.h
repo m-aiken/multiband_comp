@@ -21,6 +21,12 @@
 #include "gui/MasterGainControl.h"
 
 //==============================================================================
+struct ControlPlaceholder : juce::Component
+{
+    void paint(juce::Graphics& g) override;
+};
+
+//==============================================================================
 /**
 */
 class PFMProject12AudioProcessorEditor : public juce::AudioProcessorEditor, juce::Timer
@@ -68,6 +74,8 @@ private:
     ModeSelector modeSelector;
     MasterGainControl gainInRotary;
     MasterGainControl gainOutRotary;
+    
+    ControlPlaceholder controlPlaceholder;
     
     LookAndFeel lnf;
     
