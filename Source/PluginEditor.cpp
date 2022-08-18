@@ -17,7 +17,9 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
   audioProcessor (p),
   spectrumAnalyzer(audioProcessor.getSampleRate(), audioProcessor.leftSCSF, audioProcessor.rightSCSF, audioProcessor.apvts),
   analyzerControls(audioProcessor.apvts),
-  modeSelector(audioProcessor.apvts)
+  modeSelector(audioProcessor.apvts),
+  gainInRotary(audioProcessor.apvts, Params::Names::Gain_In),
+  gainOutRotary(audioProcessor.apvts, Params::Names::Gain_Out)
 {
     setLookAndFeel(&lnf);
     
@@ -47,6 +49,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
     addAndMakeVisible(spectrumAnalyzer);
     addAndMakeVisible(analyzerControls);
     addAndMakeVisible(modeSelector);
+    addAndMakeVisible(gainInRotary);
+    addAndMakeVisible(gainOutRotary);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize(900, 700);
@@ -118,6 +122,16 @@ void PFMProject12AudioProcessorEditor::resized()
                            bandControls.getBottom() + controlsPadding,
                            modeSelectorWidth,
                            bandControlsHeight);
+    
+    gainInRotary.setBounds(padding,
+                           bandControls.getBottom() + controlsPadding,
+                           modeSelectorWidth,
+                           bandControlsHeight);
+    
+    gainOutRotary.setBounds(bounds.getRight() - modeSelectorWidth - padding,
+                            bandControls.getBottom() + controlsPadding,
+                            modeSelectorWidth,
+                            bandControlsHeight);
 }
 
 void PFMProject12AudioProcessorEditor::timerCallback()

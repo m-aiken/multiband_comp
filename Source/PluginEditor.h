@@ -18,6 +18,7 @@
 #include "gui/SpectrumAnalyzer.h"
 #include "gui/AnalyzerControls.h"
 #include "gui/ModeSelector.h"
+#include "gui/MasterGainControl.h"
 
 //==============================================================================
 /**
@@ -65,6 +66,8 @@ private:
     SpectrumAnalyzer spectrumAnalyzer;
     AnalyzerControls analyzerControls;
     ModeSelector modeSelector;
+    MasterGainControl gainInRotary;
+    MasterGainControl gainOutRotary;
     
     LookAndFeel lnf;
     
