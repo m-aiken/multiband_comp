@@ -12,11 +12,84 @@
 #include "Params.h"
 
 //==============================================================================
+ControlPlaceholder::ControlPlaceholder(juce::AudioProcessorValueTreeState& _apvts)
+: apvts(_apvts)
+{
+    placeholderButton.setColour(juce::TextButton::ColourIds::buttonColourId, ColourPalette::getColour(ColourPalette::Red));
+    placeholderButton.setColour(juce::TextButton::ColourIds::textColourOffId, ColourPalette::getColour(ColourPalette::Text));
+    
+    resetCompsButton.setColour(juce::TextButton::ColourIds::buttonColourId, ColourPalette::getColour(ColourPalette::Red));
+    resetCompsButton.setColour(juce::TextButton::ColourIds::textColourOffId, ColourPalette::getColour(ColourPalette::Text));
+    resetCompsButton.onClick = [this](){ resetCompressors(); };
+    
+    addAndMakeVisible(placeholderButton);
+    addAndMakeVisible(resetCompsButton);
+}
+
 void ControlPlaceholder::paint(juce::Graphics& g)
 {
     g.setColour(ColourPalette::getColour(ColourPalette::Border));
     g.drawRoundedRectangle(getLocalBounds().toFloat(), Globals::getBorderCornerRadius(), Globals::getBorderThickness());
 };
+
+void ControlPlaceholder::resized()
+{
+    juce::Grid grid;
+    using Track = juce::Grid::TrackInfo;
+    using Fr = juce::Grid::Fr;
+    
+    grid.templateColumns = { Track(Fr(1)), Track(Fr(10)), Track(Fr(1)) };
+    auto rowPadding = 4;
+    grid.templateRows = {
+        Track(Fr(rowPadding)),
+        Track(Fr(10)),
+        Track(Fr(rowPadding)),
+        Track(Fr(10)),
+        Track(Fr(rowPadding))
+    };
+    
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem(placeholderButton));
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem(resetCompsButton));
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    grid.items.add(juce::GridItem());
+    
+//    grid.setGap(juce::Grid::Px{5});
+        
+    grid.performLayout(getLocalBounds());
+}
+
+void ControlPlaceholder::resetHelper(const juce::String& paramName)
+{
+    auto param = apvts.getParameter(paramName);
+    jassert( param != nullptr );
+    
+    param->beginChangeGesture();
+    param->setValueNotifyingHost(param->getDefaultValue());
+    param->endChangeGesture();
+}
+
+void ControlPlaceholder::resetCompressors()
+{
+    for (auto i = 0; i < Globals::getNumMaxBands(); ++i)
+    {
+        resetHelper(Params::getBandControlParamName(Params::BandControl::Attack,    i));
+        resetHelper(Params::getBandControlParamName(Params::BandControl::Release,   i));
+        resetHelper(Params::getBandControlParamName(Params::BandControl::Threshold, i));
+        resetHelper(Params::getBandControlParamName(Params::BandControl::Gain,      i));
+        resetHelper(Params::getBandControlParamName(Params::BandControl::Ratio,     i));
+    }
+}
 
 //==============================================================================
 PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12AudioProcessor& p)
@@ -26,7 +99,8 @@ PFMProject12AudioProcessorEditor::PFMProject12AudioProcessorEditor (PFMProject12
   analyzerControls(audioProcessor.apvts),
   modeSelector(audioProcessor.apvts),
   gainInRotary(audioProcessor.apvts, Params::Names::Gain_In),
-  gainOutRotary(audioProcessor.apvts, Params::Names::Gain_Out)
+  gainOutRotary(audioProcessor.apvts, Params::Names::Gain_Out),
+  controlPlaceholder(audioProcessor.apvts)
 {
     setLookAndFeel(&lnf);
     

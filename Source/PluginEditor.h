@@ -23,7 +23,17 @@
 //==============================================================================
 struct ControlPlaceholder : juce::Component
 {
+    ControlPlaceholder(juce::AudioProcessorValueTreeState& _apvts);
     void paint(juce::Graphics& g) override;
+    void resized() override;
+    
+    void resetHelper(const juce::String& paramName);
+    void resetCompressors();
+    
+private:
+    juce::TextButton placeholderButton{"PLACEHOLDER"};
+    juce::TextButton resetCompsButton{"Reset All Compressors"};
+    juce::AudioProcessorValueTreeState& apvts;
 };
 
 //==============================================================================
